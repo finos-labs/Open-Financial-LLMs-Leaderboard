@@ -8,6 +8,7 @@ import json
 from apscheduler.schedulers.background import BackgroundScheduler
 import pandas as pd
 import datetime
+from utils import get_eval_results_dicts, make_clickable_model
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
@@ -29,21 +30,9 @@ if H4_TOKEN:
 
 # parse the results
 BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
-BENCH_TO_NAME = {
-    "arc_challenge":"ARC (25-shot) ⬆️",
-     "hellaswag":"HellaSwag (10-shot) ⬆️",
-     "hendrycks":"MMLU (5-shot) ⬆️",
-     "truthfulqa_mc":"TruthQA (0-shot) ⬆️",
-}
+
 METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
 
-
-def make_clickable_model(model_name):
-    # remove user from model name
-    #model_name_show = ' '.join(model_name.split('/')[1:])
-
-    link = "https://huggingface.co/" + model_name
-    return f'<a target="_blank" href="{link}" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
 
 def load_results(model, benchmark, metric):
     file_path = os.path.join("evals", model, f"{model}-eval_{benchmark}.json")
@@ -82,28 +71,29 @@ def get_leaderboard():
     if repo: 
         print("pulling changes")
         repo.git_pull()
-    entries = [entry for entry in os.listdir("evals") if not (entry.startswith('.') or entry=="eval_requests" or entry=="evals")] 
-    model_directories = [entry for entry in entries if os.path.isdir(os.path.join("evals", entry))]
-    all_data = []
-    for model in model_directories:
-        model_data = {"base_model": None, "eval_name": model}
+    # entries = [entry for entry in os.listdir("evals") if not (entry.startswith('.') or entry=="eval_requests" or entry=="evals")] 
+    # model_directories = [entry for entry in entries if os.path.isdir(os.path.join("evals", entry))]
+    # all_data = []
+    # for model in model_directories:
+    #     model_data = {"base_model": None, "eval_name": model}
         
-        for benchmark, metric in zip(BENCHMARKS, METRICS):
-            value, base_model = load_results(model, benchmark, metric)        
-            model_data[BENCH_TO_NAME[benchmark]] = round(value,3)
-            if base_model is not None: # in case the last benchmark failed
-                model_data["base_model"] = base_model
+    #     for benchmark, metric in zip(BENCHMARKS, METRICS):
+    #         value, base_model = load_results(model, benchmark, metric)        
+    #         model_data[BENCH_TO_NAME[benchmark]] = round(value,3)
+    #         if base_model is not None: # in case the last benchmark failed
+    #             model_data["base_model"] = base_model
             
-        model_data["total ⬆️"] = round(sum(model_data[benchmark] for benchmark in BENCH_TO_NAME.values()),3)
+    #     model_data["total ⬆️"] = round(sum(model_data[benchmark] for benchmark in BENCH_TO_NAME.values()),3)
         
-        if model_data["base_model"] is not None:
-            model_data["base_model"] = make_clickable_model(model_data["base_model"])
+    #     if model_data["base_model"] is not None:
+    #         model_data["base_model"] = make_clickable_model(model_data["base_model"])
         
-        model_data["# params"] = get_n_params(model_data["base_model"])
+    #     model_data["# params"] = get_n_params(model_data["base_model"])
         
-        if model_data["base_model"] is not None:
-            all_data.append(model_data)
+    #     if model_data["base_model"] is not None:
+    #         all_data.append(model_data)
         
+    all_data = get_eval_results_dicts()
     dataframe = pd.DataFrame.from_records(all_data)
     dataframe = dataframe.sort_values(by=['total ⬆️'], ascending=False)
     
