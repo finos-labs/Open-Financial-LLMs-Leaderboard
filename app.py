@@ -82,12 +82,11 @@ def get_leaderboard():
     if repo: 
         print("pulling changes")
         repo.git_pull()
-    entries = [entry for entry in os.listdir("evals") if not (entry.startswith('.') or entry=="eval_requests")] 
+    entries = [entry for entry in os.listdir("evals") if not (entry.startswith('.') or entry=="eval_requests" or entry=="evals")] 
     model_directories = [entry for entry in entries if os.path.isdir(os.path.join("evals", entry))]
     all_data = []
     for model in model_directories:
-        model_data = {"base_model": None}
-        model_data = {"eval_name": model}
+        model_data = {"base_model": None, "eval_name": model}
         
         for benchmark, metric in zip(BENCHMARKS, METRICS):
             value, base_model = load_results(model, benchmark, metric)        
@@ -102,7 +101,8 @@ def get_leaderboard():
         
         model_data["# params"] = get_n_params(model_data["base_model"])
         
-        all_data.append(model_data)
+        if model_data["base_model"] is not None:
+            all_data.append(model_data)
         
     dataframe = pd.DataFrame.from_records(all_data)
     dataframe = dataframe.sort_values(by=['total ⬆️'], ascending=False)
