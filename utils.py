@@ -44,6 +44,7 @@ def make_clickable_model(model_name):
 
 @dataclass
 class EvalResult:
+    eval_name : str
     org : str
     model : str
     is_8bit : bool
@@ -51,8 +52,9 @@ class EvalResult:
     
     def to_dict(self):    
         data_dict = {}
+        data_dict["eval_name"] = self.eval_name
         data_dict["base_model"] = make_clickable_model(f"{self.org}/{self.model}")
-        data_dict["total ⬆️"] = sum([v for k,v in self.results.items()])
+        data_dict["total ⬆️"] = round(sum([v for k,v in self.results.items()]),3)
         data_dict["# params"] = "unknown (todo)"
         
         for benchmark in BENCHMARKS:
@@ -86,8 +88,8 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
     for benchmark, metric  in zip(BENCHMARKS, METRICS):
         if benchmark in json_filepath:
             accs = np.array([v[metric] for k, v in data["results"].items()])
-            mean_acc = np.mean(accs)  
-            eval_result = EvalResult(org, model, is_8bit, {benchmark:mean_acc})
+            mean_acc = round(np.mean(accs),3)
+            eval_result = EvalResult(result_key, org, model, is_8bit, {benchmark:mean_acc})
         
     return result_key, eval_result
         
