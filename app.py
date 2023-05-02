@@ -8,7 +8,7 @@ import json
 from apscheduler.schedulers.background import BackgroundScheduler
 import pandas as pd
 import datetime
-from utils import get_eval_results_dicts, make_clickable_model
+from utils import get_eval_results_dicts, make_clickable_model, get_n_params
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
@@ -45,53 +45,16 @@ def load_results(model, benchmark, metric):
     mean_acc = np.mean(accs)  
     return mean_acc, data["config"]["model_args"]
 
-def get_n_params(base_model):
-    
-    # config = AutoConfig.from_pretrained(model_name)
 
-    # # Retrieve the number of parameters from the configuration
-    # try:
-    #     num_params = config.n_parameters
-    # except AttributeError:
-    #     print(f"Error: The number of parameters is not available in the config for the model '{model_name}'.")
-    #     return None
+COLS = ["eval_name",  "total ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️", "base_model"]
+TYPES = ["str",  "number", "number", "number", "number", "number","markdown", ]
 
-    # return num_params
-    
-    now = datetime.datetime.now()
-    time_string = now.strftime("%Y-%m-%d %H:%M:%S")
-    return time_string
-
-COLS = ["eval_name", "# params", "total ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️", "base_model"]
-TYPES = ["str","str",  "number", "number", "number", "number", "number","markdown", ]
-
-EVAL_COLS = ["model","# params", "private", "8bit_eval", "is_delta_weight", "status"]
-EVAL_TYPES = ["markdown","str",  "bool", "bool", "bool", "str"]
+EVAL_COLS = ["model", "revision", "private", "8bit_eval", "is_delta_weight", "status"]
+EVAL_TYPES = ["markdown","str", "bool", "bool", "bool", "str"]
 def get_leaderboard():
     if repo: 
         print("pulling changes")
         repo.git_pull()
-    # entries = [entry for entry in os.listdir("evals") if not (entry.startswith('.') or entry=="eval_requests" or entry=="evals")] 
-    # model_directories = [entry for entry in entries if os.path.isdir(os.path.join("evals", entry))]
-    # all_data = []
-    # for model in model_directories:
-    #     model_data = {"base_model": None, "eval_name": model}
-        
-    #     for benchmark, metric in zip(BENCHMARKS, METRICS):
-    #         value, base_model = load_results(model, benchmark, metric)        
-    #         model_data[BENCH_TO_NAME[benchmark]] = round(value,3)
-    #         if base_model is not None: # in case the last benchmark failed
-    #             model_data["base_model"] = base_model
-            
-    #     model_data["total ⬆️"] = round(sum(model_data[benchmark] for benchmark in BENCH_TO_NAME.values()),3)
-        
-    #     if model_data["base_model"] is not None:
-    #         model_data["base_model"] = make_clickable_model(model_data["base_model"])
-        
-    #     model_data["# params"] = get_n_params(model_data["base_model"])
-        
-    #     if model_data["base_model"] is not None:
-    #         all_data.append(model_data)
         
     all_data = get_eval_results_dicts()
     dataframe = pd.DataFrame.from_records(all_data)
@@ -116,6 +79,7 @@ def get_eval_table():
                 
             data["# params"] = get_n_params(data["model"])
             data["model"] = make_clickable_model(data["model"])
+            data["revision"] = data.get("revision", "main")
             
 
             all_evals.append(data)
@@ -127,7 +91,7 @@ def get_eval_table():
                 with open(file_path) as fp:
                     data = json.load(fp)
                     
-                data["# params"] = get_n_params(data["model"])
+                #data["# params"] = get_n_params(data["model"])
                 data["model"] = make_clickable_model(data["model"])
                 all_evals.append(data)
 
@@ -139,9 +103,9 @@ def get_eval_table():
 leaderboard = get_leaderboard()
 eval_queue = get_eval_table()
 
-def is_model_on_hub(model_name) -> bool:
+def is_model_on_hub(model_name, revision) -> bool:
     try:
-        config = AutoConfig.from_pretrained(model_name)
+        config = AutoConfig.from_pretrained(model_name, revision=revision)
         return True
         
     except Exception as e:
@@ -151,15 +115,19 @@ def is_model_on_hub(model_name) -> bool:
         
 
 
-def add_new_eval(model:str, private:bool, is_8_bit_eval: bool, is_delta_weight:bool):
+def add_new_eval(model:str, revision:str, private:bool, is_8_bit_eval: bool, is_delta_weight:bool):
     # check the model actually exists before adding the eval
-    if not is_model_on_hub(model):
+    if revision == "":
+        revision = "main"
+    print("revision", revision)
+    if not is_model_on_hub(model, revision):
         print(model, "not found on hub")
         return
     print("adding new eval")
     
     eval_entry = {
         "model" : model,
+        "revision" : revision,
         "private" : private,
         "8bit_eval" : is_8_bit_eval,
         "is_delta_weight" : is_delta_weight,
@@ -227,14 +195,17 @@ with block:
         # with gr.Row():
         #     gr.Markdown(f"""# Submit a new model for evaluation""")
         with gr.Row():
-            model_name_textbox = gr.Textbox(label="model_name")
-            is_8bit_toggle = gr.Checkbox(False, label="8 bit Eval?")
-            private = gr.Checkbox(False, label="Private?")
-            is_delta_weight = gr.Checkbox(False, label="Delta Weights?")
+            with gr.Column():
+                model_name_textbox = gr.Textbox(label="Model name")
+                revision_name_textbox = gr.Textbox(label="revision", placeholder="main")
+            with gr.Column():
+                is_8bit_toggle = gr.Checkbox(False, label="8 bit eval")
+                private = gr.Checkbox(False, label="Private")
+                is_delta_weight = gr.Checkbox(False, label="Delta weights")
             
         with gr.Row():
             submit_button = gr.Button("Submit Eval")
-            submit_button.click(add_new_eval, [model_name_textbox, is_8bit_toggle, private, is_delta_weight])
+            submit_button.click(add_new_eval, [model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
         
         
         

@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 import gradio as gr
 from huggingface_hub import Repository, HfApi
-from transformers import AutoConfig
+from transformers import AutoConfig, AutoModel
 import json
 from apscheduler.schedulers.background import BackgroundScheduler
 import pandas as pd
@@ -15,18 +15,6 @@ from typing import List, Tuple, Dict
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 
-# repo=None
-# if H4_TOKEN:
-#     print("pulling repo")
-#     # try:
-#     #     shutil.rmtree("./evals/")
-#     # except:
-#     #     pass
-
-#     repo = Repository(
-#         local_dir="./evals/", clone_from=LMEH_REPO, use_auth_token=H4_TOKEN, repo_type="dataset"
-#     )
-#     repo.git_pull()
 METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
 BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
 BENCH_TO_NAME = {
@@ -42,6 +30,21 @@ def make_clickable_model(model_name):
     link = "https://huggingface.co/" + model_name
     return f'<a target="_blank" href="{link}" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
 
+def get_n_params(base_model):
+    return "unknown"
+    
+    # WARNING: High memory usage
+
+    # Retrieve the number of parameters from the configuration
+    try:
+        config = AutoConfig.from_pretrained(base_model, use_auth_token=True, low_cpu_mem_usage=True)
+        n_params = AutoModel.from_config(config).num_parameters()
+    except Exception as e:
+        print(f"Error:{e} The number of parameters is not available in the config for the model '{base_model}'.")
+        return "unknown"
+
+    return str(n_params)
+
 @dataclass
 class EvalResult:
     eval_name : str
@@ -50,12 +53,17 @@ class EvalResult:
     is_8bit : bool
     results : dict
     
-    def to_dict(self):    
+    def to_dict(self):
+        
+        if self.org is not None:
+            base_model =f"{self.org}/{self.model}"
+        else:
+            base_model =f"{self.model}"
         data_dict = {}
         data_dict["eval_name"] = self.eval_name
-        data_dict["base_model"] = make_clickable_model(f"{self.org}/{self.model}")
+        data_dict["base_model"] = make_clickable_model(base_model)
         data_dict["total ⬆️"] = round(sum([v for k,v in self.results.items()]),3)
-        data_dict["# params"] = "unknown (todo)"
+        data_dict["# params"] = get_n_params(base_model)
         
         for benchmark in BENCHMARKS:
             if not benchmark in self.results.keys():

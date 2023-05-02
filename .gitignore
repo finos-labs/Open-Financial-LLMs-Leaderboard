@@ -1,2 +1,3 @@
 evals/
 venv/
+__pycache__/
