@@ -115,7 +115,7 @@ def is_model_on_hub(model_name, revision) -> bool:
         
 
 
-def add_new_eval(model:str, base_model : str, revision:str, private:bool, is_8_bit_eval: bool, is_delta_weight:bool):
+def add_new_eval(model:str, base_model : str, revision:str, is_8_bit_eval: bool, private:bool, is_delta_weight:bool):
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
