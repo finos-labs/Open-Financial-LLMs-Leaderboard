@@ -50,6 +50,7 @@ class EvalResult:
     eval_name : str
     org : str
     model : str
+    revision : str
     is_8bit : bool
     results : dict
     
@@ -60,8 +61,11 @@ class EvalResult:
         else:
             base_model =f"{self.model}"
         data_dict = {}
+        
         data_dict["eval_name"] = self.eval_name
+        data_dict["8bit"] = self.is_8bit
         data_dict["base_model"] = make_clickable_model(base_model)
+        data_dict["revision"] = self.revision
         data_dict["total ⬆️"] = round(sum([v for k,v in self.results.items()]),3)
         data_dict["# params"] = get_n_params(base_model)
         
@@ -83,21 +87,22 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
 
     path_split = json_filepath.split("/")
     org = None
-    model = path_split[-3]
+    model = path_split[-4]
     is_8bit = path_split[-2] == "8bit"
-    if len(path_split)== 5:
+    revision = path_split[-3]
+    if len(path_split)== 6:
         # handles gpt2 type models that don't have an org
-        result_key = f"{path_split[-3]}_{path_split[-2]}"
-    else:
         result_key = f"{path_split[-4]}_{path_split[-3]}_{path_split[-2]}"
-        org = path_split[-4]
+    else:
+        result_key = f"{path_split[-5]}_{path_split[-4]}_{path_split[-3]}_{path_split[-2]}"
+        org = path_split[-5]
         
     eval_result = None
     for benchmark, metric  in zip(BENCHMARKS, METRICS):
         if benchmark in json_filepath:
             accs = np.array([v[metric] for k, v in data["results"].items()])
             mean_acc = round(np.mean(accs),3)
-            eval_result = EvalResult(result_key, org, model, is_8bit, {benchmark:mean_acc})
+            eval_result = EvalResult(result_key, org, model, revision, is_8bit, {benchmark:mean_acc})
         
     return result_key, eval_result
         

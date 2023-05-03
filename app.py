@@ -46,8 +46,8 @@ def load_results(model, benchmark, metric):
     return mean_acc, data["config"]["model_args"]
 
 
-COLS = ["eval_name",  "total ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️", "base_model"]
-TYPES = ["str",  "number", "number", "number", "number", "number","markdown", ]
+COLS = ["base_model", "revision", "8bit", "total ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️"]
+TYPES = ["markdown","str", "bool", "number", "number", "number", "number", "number", ]
 
 EVAL_COLS = ["model", "revision", "private", "8bit_eval", "is_delta_weight", "status"]
 EVAL_TYPES = ["markdown","str", "bool", "bool", "bool", "str"]
@@ -59,7 +59,7 @@ def get_leaderboard():
     all_data = get_eval_results_dicts()
     dataframe = pd.DataFrame.from_records(all_data)
     dataframe = dataframe.sort_values(by=['total ⬆️'], ascending=False)
-    
+    print(dataframe)
     dataframe = dataframe[COLS]
     return dataframe
 
