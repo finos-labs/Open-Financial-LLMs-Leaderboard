@@ -115,11 +115,14 @@ def is_model_on_hub(model_name, revision) -> bool:
         
 
 
-def add_new_eval(model:str, revision:str, private:bool, is_8_bit_eval: bool, is_delta_weight:bool):
+def add_new_eval(model:str, base_model : str, revision:str, private:bool, is_8_bit_eval: bool, is_delta_weight:bool):
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
-    print("revision", revision)
+    if is_delta_weight and not is_model_on_hub(base_model, revision):
+        print(base_model, "base model not found on hub")
+        return
+    
     if not is_model_on_hub(model, revision):
         print(model, "not found on hub")
         return
@@ -127,6 +130,7 @@ def add_new_eval(model:str, revision:str, private:bool, is_8_bit_eval: bool, is_
     
     eval_entry = {
         "model" : model,
+        "base_model" : base_model,
         "revision" : revision,
         "private" : private,
         "8bit_eval" : is_8_bit_eval,
@@ -198,6 +202,7 @@ with block:
             with gr.Column():
                 model_name_textbox = gr.Textbox(label="Model name")
                 revision_name_textbox = gr.Textbox(label="revision", placeholder="main")
+                base_model_name_textbox = gr.Textbox(label="base model (for delta)")
             with gr.Column():
                 is_8bit_toggle = gr.Checkbox(False, label="8 bit eval")
                 private = gr.Checkbox(False, label="Private")
@@ -205,7 +210,7 @@ with block:
             
         with gr.Row():
             submit_button = gr.Button("Submit Eval")
-            submit_button.click(add_new_eval, [model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
+            submit_button.click(add_new_eval, [model_name_textbox, base_model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
         
         
         
