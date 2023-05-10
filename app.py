@@ -13,7 +13,7 @@ from utils import get_eval_results_dicts, make_clickable_model
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
-IS_PUBLIC = bool(True) # add secret here
+IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
 repo=None
 if H4_TOKEN:
@@ -47,7 +47,7 @@ def load_results(model, benchmark, metric):
     return mean_acc, data["config"]["model_args"]
 
 
-COLS = ["base_model", "revision", "total ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️"]
+COLS = ["Model", "Revision", "Average ⬆️", "ARC (25-shot) ⬆️", "HellaSwag (10-shot) ⬆️", "MMLU (5-shot) ⬆️", "TruthQA (0-shot) ⬆️"]
 TYPES = ["markdown","str", "number", "number", "number", "number", "number", ]
 
 if not IS_PUBLIC:
@@ -64,10 +64,10 @@ def get_leaderboard():
     all_data = get_eval_results_dicts(IS_PUBLIC)
     
     gpt4_values = {
-        "base_model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt4</a>', 
-        "revision":"tech report", 
+        "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt4</a>', 
+        "Revision":"tech report", 
         "8bit":None,
-        "total ⬆️":84.3,
+        "Average ⬆️":84.3,
         "ARC (25-shot) ⬆️":96.3,
         "HellaSwag (10-shot) ⬆️":95.3,
         "MMLU (5-shot) ⬆️":86.4,
@@ -75,10 +75,10 @@ def get_leaderboard():
     }
     all_data.append(gpt4_values)
     gpt35_values = {
-        "base_model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>', 
-        "revision":"tech report", 
+        "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>', 
+        "Revision":"tech report", 
         "8bit":None,
-        "total ⬆️":71.9,
+        "Average ⬆️":71.9,
         "ARC (25-shot) ⬆️":85.2,
         "HellaSwag (10-shot) ⬆️":85.5,
         "MMLU (5-shot) ⬆️":70.0,
@@ -87,7 +87,7 @@ def get_leaderboard():
     all_data.append(gpt35_values)
     
     dataframe = pd.DataFrame.from_records(all_data)
-    dataframe = dataframe.sort_values(by=['total ⬆️'], ascending=False)
+    dataframe = dataframe.sort_values(by=['Average ⬆️'], ascending=False)
     print(dataframe)
     dataframe = dataframe[COLS]
     return dataframe
@@ -202,13 +202,13 @@ with block:
         gr.Markdown(f"""
 # 🤗 Open Chatbot Leaderboard
 <font size="4">With the plethora of chatbot LLMs being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which chatbot is the current state of the art. The 🤗 Open Chatbot Leaderboard aims to track, rank and evaluate chatbot models as they are released. We evaluate models of 4 key benchmarks from the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. A key advantage of this leaderboard is that anyone from the community can submit a model for automated evaluation on the 🤗 research cluster. As long as it is Transformers model with weights on the 🤗 hub. We also support delta-weights for non-commercial licensed models, such as llama.
-<p>
+
 Evaluation is performed against 4 popular benchmarks:
 - <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
 - <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
 - <a href="https://arxiv.org/abs/2009.03300" target="_blank">  MMLU </a>  (5-shot) - a test to measure a text model's multitask accuracy. The test covers 57 tasks including elementary mathematics, US history, computer science, law, and more.
 - <a href="https://arxiv.org/abs/2109.07958" target="_blank">  Truthful QA MC </a> (0-shot) - a benchmark to measure whether a language model is truthful in generating answers to questions. 
-<p>
+
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings. </font>
         """)
     
