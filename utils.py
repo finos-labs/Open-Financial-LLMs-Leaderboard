@@ -23,27 +23,12 @@ BENCH_TO_NAME = {
      "hendrycks":"MMLU (5-shot) ⬆️",
      "truthfulqa_mc":"TruthQA (0-shot) ⬆️",
 }
-def make_clickable_model(model_name):
+def make_clickable_model(model_name):        
     # remove user from model name
     #model_name_show = ' '.join(model_name.split('/')[1:])
 
     link = "https://huggingface.co/" + model_name
     return f'<a target="_blank" href="{link}" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
-
-def get_n_params(base_model):
-    return "unknown"
-    
-    # WARNING: High memory usage
-
-    # Retrieve the number of parameters from the configuration
-    try:
-        config = AutoConfig.from_pretrained(base_model, use_auth_token=True, low_cpu_mem_usage=True)
-        n_params = AutoModel.from_config(config).num_parameters()
-    except Exception as e:
-        print(f"Error:{e} The number of parameters is not available in the config for the model '{base_model}'.")
-        return "unknown"
-
-    return str(n_params)
 
 @dataclass
 class EvalResult:
@@ -66,8 +51,8 @@ class EvalResult:
         data_dict["8bit"] = self.is_8bit
         data_dict["base_model"] = make_clickable_model(base_model)
         data_dict["revision"] = self.revision
-        data_dict["total ⬆️"] = round(sum([v for k,v in self.results.items()]),3)
-        data_dict["# params"] = get_n_params(base_model)
+        data_dict["total ⬆️"] = round(sum([v for k,v in self.results.items()])/4.0,1) 
+        #data_dict["# params"] = get_n_params(base_model)
         
         for benchmark in BENCHMARKS:
             if not benchmark in self.results.keys():
@@ -90,7 +75,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
     model = path_split[-4]
     is_8bit = path_split[-2] == "8bit"
     revision = path_split[-3]
-    if len(path_split)== 6:
+    if len(path_split)== 7:
         # handles gpt2 type models that don't have an org
         result_key = f"{path_split[-4]}_{path_split[-3]}_{path_split[-2]}"
     else:
@@ -101,7 +86,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
     for benchmark, metric  in zip(BENCHMARKS, METRICS):
         if benchmark in json_filepath:
             accs = np.array([v[metric] for k, v in data["results"].items()])
-            mean_acc = round(np.mean(accs),3)
+            mean_acc = round(np.mean(accs)*100.0,1)
             eval_result = EvalResult(result_key, org, model, revision, is_8bit, {benchmark:mean_acc})
         
     return result_key, eval_result
@@ -109,8 +94,12 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
     
     
    
-def get_eval_results() -> List[EvalResult]:
-    json_filepaths = glob.glob("evals/eval_results/**/*.json", recursive=True)
+def get_eval_results(is_public) -> List[EvalResult]:
+    json_filepaths = glob.glob("evals/eval_results/public/**/16bit/*.json", recursive=True)
+    if not is_public:
+        json_filepaths += glob.glob("evals/eval_results/private/**/*.json", recursive=True)
+        json_filepaths += glob.glob("evals/eval_results/private/**/*.json", recursive=True)
+        json_filepaths += glob.glob("evals/eval_results/public/**/8bit/*.json", recursive=True) # include the 8bit evals of public models
     eval_results = {}
     
     for json_filepath in json_filepaths:
@@ -125,8 +114,8 @@ def get_eval_results() -> List[EvalResult]:
     
     return eval_results
     
-def get_eval_results_dicts() -> List[Dict]:
-    eval_results = get_eval_results()
+def get_eval_results_dicts(is_public=True) -> List[Dict]:
+    eval_results = get_eval_results(is_public)
     
     return [e.to_dict() for e in eval_results]
 
