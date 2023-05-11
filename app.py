@@ -252,5 +252,5 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
             submit_button.click(add_new_eval, [model_name_textbox, base_model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
         
 
-block.load(refresh, inputs=[], outputs=[leaderboard_table, eval_table])
+    block.load(refresh, inputs=[], outputs=[leaderboard_table, eval_table])
 block.launch()
