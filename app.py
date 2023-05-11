@@ -63,28 +63,29 @@ def get_leaderboard():
         
     all_data = get_eval_results_dicts(IS_PUBLIC)
     
-    gpt4_values = {
-        "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt4</a>', 
-        "Revision":"tech report", 
-        "8bit":None,
-        "Average ⬆️":84.3,
-        "ARC (25-shot) ⬆️":96.3,
-        "HellaSwag (10-shot) ⬆️":95.3,
-        "MMLU (5-shot) ⬆️":86.4,
-        "TruthQA (0-shot) ⬆️":59.0,
-    }
-    all_data.append(gpt4_values)
-    gpt35_values = {
-        "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>', 
-        "Revision":"tech report", 
-        "8bit":None,
-        "Average ⬆️":71.9,
-        "ARC (25-shot) ⬆️":85.2,
-        "HellaSwag (10-shot) ⬆️":85.5,
-        "MMLU (5-shot) ⬆️":70.0,
-        "TruthQA (0-shot) ⬆️":47.0,
-    }
-    all_data.append(gpt35_values)
+    if not IS_PUBLIC:
+        gpt4_values = {
+            "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt4</a>', 
+            "Revision":"tech report", 
+            "8bit":None,
+            "Average ⬆️":84.3,
+            "ARC (25-shot) ⬆️":96.3,
+            "HellaSwag (10-shot) ⬆️":95.3,
+            "MMLU (5-shot) ⬆️":86.4,
+            "TruthQA (0-shot) ⬆️":59.0,
+        }
+        all_data.append(gpt4_values)
+        gpt35_values = {
+            "Model":f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>', 
+            "Revision":"tech report", 
+            "8bit":None,
+            "Average ⬆️":71.9,
+            "ARC (25-shot) ⬆️":85.2,
+            "HellaSwag (10-shot) ⬆️":85.5,
+            "MMLU (5-shot) ⬆️":70.0,
+            "TruthQA (0-shot) ⬆️":47.0,
+        }
+        all_data.append(gpt35_values)
     
     dataframe = pd.DataFrame.from_records(all_data)
     dataframe = dataframe.sort_values(by=['Average ⬆️'], ascending=False)
@@ -200,7 +201,7 @@ block = gr.Blocks()
 with block: 
     with gr.Row():
         gr.Markdown(f"""
-# 🤗 Open Chatbot Leaderboard
+# 🤗 Open LLM Leaderboard
 <font size="4">With the plethora of chatbot LLMs being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which chatbot is the current state of the art. The 🤗 Open Chatbot Leaderboard aims to track, rank and evaluate chatbot models as they are released. We evaluate models of 4 key benchmarks from the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. A key advantage of this leaderboard is that anyone from the community can submit a model for automated evaluation on the 🤗 research cluster. As long as it is Transformers model with weights on the 🤗 hub. We also support delta-weights for non-commercial licensed models, such as llama.
 
 Evaluation is performed against 4 popular benchmarks:
@@ -220,7 +221,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
     
     with gr.Row():
         gr.Markdown(f"""
-    # Evaluation Queue for the LMEH benchmarks, these models will be automatically evaluated on the 🤗 cluster
+    # Evaluation Queue for the 🤗 Open LLM Leaderboard, these models will be automatically evaluated on the 🤗 cluster
     
     """)
     with gr.Accordion("Evaluation Queue", open=False):

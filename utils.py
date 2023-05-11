@@ -24,6 +24,19 @@ BENCH_TO_NAME = {
      "truthfulqa_mc":"TruthQA (0-shot) ⬆️",
 }
 def make_clickable_model(model_name):        
+    LLAMAS = ["huggingface/llama-7b", "huggingface/llama-13b", "huggingface/llama-30b", "huggingface/llama-65b"]
+    if model_name in LLAMAS:
+        model = model_name.split("/")[1]
+        return f'<a target="_blank" href="https://ai.facebook.com/blog/large-language-model-llama-meta-ai/" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">{model}</a>'
+    
+    if model_name == "HuggingFaceH4/stable-vicuna-13b-2904":
+        link = "https://huggingface.co/" + "CarperAI/stable-vicuna-13b-delta"
+        return f'<a target="_blank" href="{link}" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">stable-vicuna-13b</a>'
+    
+    if model_name == "HuggingFaceH4/llama-7b-ift-alpaca":
+        link = "https://crfm.stanford.edu/2023/03/13/alpaca.html"
+        return f'<a target="_blank" href="{link}" style="color: blue; text-decoration: underline;text-decoration-style: dotted;">alpaca-13b</a>'
+
     # remove user from model name
     #model_name_show = ' '.join(model_name.split('/')[1:])
 
