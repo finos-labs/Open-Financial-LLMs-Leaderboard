@@ -251,19 +251,6 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
             submit_button = gr.Button("Submit Eval")
             submit_button.click(add_new_eval, [model_name_textbox, base_model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
         
-        
-        
-    
 
-
-print("adding refresh leaderboard")
-def refresh_leaderboard():
-    leaderboard_table = get_leaderboard()
-    eval_table = get_eval_table()
-    print("refreshing leaderboard")
-
-scheduler = BackgroundScheduler()
-scheduler.add_job(func=refresh_leaderboard, trigger="interval", seconds=300) # refresh every 5 mins
-scheduler.start()
-
+block.load(refresh, inputs=[], outputs=[leaderboard_table, eval_table])
 block.launch()
