@@ -1,5 +1,5 @@
 ---
-title: LMEH Eval Leaderboard
+title: Open LLM Leaderboard
 emoji: 👀
 colorFrom: green
 colorTo: indigo
