@@ -21,7 +21,7 @@ BENCH_TO_NAME = {
     "arc_challenge":"ARC (25-shot) ⬆️",
      "hellaswag":"HellaSwag (10-shot) ⬆️",
      "hendrycks":"MMLU (5-shot) ⬆️",
-     "truthfulqa_mc":"TruthQA (0-shot) ⬆️",
+     "truthfulqa_mc":"TruthfulQA (0-shot) ⬆️",
 }
 def make_clickable_model(model_name):        
     LLAMAS = ["huggingface/llama-7b", "huggingface/llama-13b", "huggingface/llama-30b", "huggingface/llama-65b"]
