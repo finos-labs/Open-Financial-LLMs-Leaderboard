@@ -2,3 +2,5 @@ evals/
 venv/
 __pycache__/
 .env
+.ipynb_checkpoints
+*ipynb
