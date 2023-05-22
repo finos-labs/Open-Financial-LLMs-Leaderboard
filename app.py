@@ -145,27 +145,37 @@ def is_model_on_hub(model_name, revision) -> bool:
 
 
 
-def add_new_eval(model:str, base_model : str, revision:str, is_8_bit_eval: bool, private:bool, is_delta_weight:bool):
+def add_new_eval(
+    model: str,
+    base_model: str,
+    revision: str,
+    is_8_bit_eval: bool,
+    private: bool,
+    is_delta_weight: bool,
+):
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
     if is_delta_weight and not is_model_on_hub(base_model, revision):
-        print(base_model, "base model not found on hub")
-        return
+        error_message = f"Base model \"{base_model}\" was not found on hub!"
+        print(error_message)
+        return f"<p style='color: red; font-size: 18px; text-align: center;'>{error_message}</p>"
 
     if not is_model_on_hub(model, revision):
-        print(model, "not found on hub")
-        return
+        error_message = f"Model \"{model}\"was not found on hub!"
+        print(error_message)
+        return f"<p style='color: red; font-size: 18px; text-align: center;'>{error_message}</p>"
+    
     print("adding new eval")
 
     eval_entry = {
-        "model" : model,
-        "base_model" : base_model,
-        "revision" : revision,
-        "private" : private,
-        "8bit_eval" : is_8_bit_eval,
-        "is_delta_weight" : is_delta_weight,
-        "status" : "PENDING"
+        "model": model,
+        "base_model": base_model,
+        "revision": revision,
+        "private": private,
+        "8bit_eval": is_8_bit_eval,
+        "is_delta_weight": is_delta_weight,
+        "status": "PENDING",
     }
 
     user_name = ""
@@ -174,7 +184,7 @@ def add_new_eval(model:str, base_model : str, revision:str, is_8_bit_eval: bool,
         user_name = model.split("/")[0]
         model_path = model.split("/")[1]
 
-    OUT_DIR=f"eval_requests/{user_name}"
+    OUT_DIR = f"eval_requests/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
 
@@ -190,6 +200,9 @@ def add_new_eval(model:str, base_model : str, revision:str, is_8_bit_eval: bool,
         token=H4_TOKEN,
         repo_type="dataset",
     )
+    
+    success_message = "Your request has been submitted to the evaluation queue!"
+    return f"<p style='color: green; font-size: 18px; text-align: center;'>{success_message}</p>"
 
 
 def refresh():
@@ -247,7 +260,20 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 
         with gr.Row():
             submit_button = gr.Button("Submit Eval")
-            submit_button.click(add_new_eval, [model_name_textbox, base_model_name_textbox, revision_name_textbox, is_8bit_toggle, private, is_delta_weight])
+        with gr.Row():
+            submission_result = gr.Markdown()
+            submit_button.click(
+                            add_new_eval,
+                            [
+                                model_name_textbox,
+                                base_model_name_textbox,
+                                revision_name_textbox,
+                                is_8bit_toggle,
+                                private,
+                                is_delta_weight,
+                            ],
+                            submission_result
+                        )
 
 
     block.load(refresh, inputs=[], outputs=[leaderboard_table, eval_table])
