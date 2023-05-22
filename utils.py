@@ -133,4 +133,4 @@ def get_eval_results_dicts(is_public=True) -> List[Dict]:
     return [e.to_dict() for e in eval_results]
 
 eval_results_dict = get_eval_results_dicts()
-print(eval_results_dict)
+# print(eval_results_dict)

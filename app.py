@@ -15,7 +15,21 @@ H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
+
+def get_all_requested_models(requested_models_dir):
+    depth = 1
+    file_names = []
+
+    for root, dirs, files in os.walk(requested_models_dir):
+        current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
+        if current_depth == depth:
+            file_names.extend([os.path.join(root, file) for file in files])
+
+    return set([file_name.lower().split("./evals/")[1] for file_name in file_names])
+
+
 repo = None
+requested_models = None
 if H4_TOKEN:
     print("pulling repo")
     # try:
@@ -30,6 +44,9 @@ if H4_TOKEN:
         repo_type="dataset",
     )
     repo.git_pull()
+
+    requested_models_dir = "./evals/eval_requests"
+    requested_models = get_all_requested_models(requested_models_dir)
 
 
 # parse the results
@@ -110,7 +127,7 @@ def get_leaderboard():
 
     dataframe = pd.DataFrame.from_records(all_data)
     dataframe = dataframe.sort_values(by=["Average ⬆️"], ascending=False)
-    print(dataframe)
+    # print(dataframe)
     dataframe = dataframe[COLS]
     return dataframe
 
@@ -187,12 +204,12 @@ def add_new_eval(
     if is_delta_weight and not is_model_on_hub(base_model, revision):
         error_message = f'Base model "{base_model}" was not found on hub!'
         print(error_message)
-        return f"<p style='color: red; font-size: 18px; text-align: center;'>{error_message}</p>"
+        return f"<p style='color: red; font-size: 20px; text-align: center;'>{error_message}</p>"
 
     if not is_model_on_hub(model, revision):
         error_message = f'Model "{model}"was not found on hub!'
         print(error_message)
-        return f"<p style='color: red; font-size: 18px; text-align: center;'>{error_message}</p>"
+        return f"<p style='color: red; font-size: 20px; text-align: center;'>{error_message}</p>"
 
     print("adding new eval")
 
@@ -216,6 +233,11 @@ def add_new_eval(
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
 
+    # Check for duplicate submission
+    if out_path.lower() in requested_models:
+        duplicate_request_message = "This model has been already submitted."
+        return f"<p style='color: orange; font-size: 20px; text-align: center;'>{duplicate_request_message}</p>"
+    
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
     LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
@@ -230,7 +252,7 @@ def add_new_eval(
     )
 
     success_message = "Your request has been submitted to the evaluation queue!"
-    return f"<p style='color: green; font-size: 18px; text-align: center;'>{success_message}</p>"
+    return f"<p style='color: green; font-size: 20px; text-align: center;'>{success_message}</p>"
 
 
 def refresh():
