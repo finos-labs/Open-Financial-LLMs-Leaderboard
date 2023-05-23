@@ -340,7 +340,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 max_rows=5,
             )
 
-    with gr.Accordion("Running & Pending Evaluation Queue", open=False):
+    with gr.Accordion("Pending Evaluation Queue", open=False):
         with gr.Row():
             pending_eval_table = gr.components.Dataframe(
                 value=pending_eval_queue,
