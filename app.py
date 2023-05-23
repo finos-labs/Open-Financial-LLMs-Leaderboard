@@ -93,6 +93,21 @@ if not IS_PUBLIC:
 EVAL_COLS = ["model", "revision", "private", "8bit_eval", "is_delta_weight", "status"]
 EVAL_TYPES = ["markdown", "str", "bool", "bool", "bool", "str"]
 
+BENCHMARK_COLS = [
+    "ARC (25-shot) ⬆️",
+    "HellaSwag (10-shot) ⬆️",
+    "MMLU (5-shot) ⬆️",
+    "TruthfulQA (0-shot) ⬆️",
+]
+
+
+def has_no_nan_values(df, columns):
+    return df[columns].notna().all(axis=1)
+
+
+def has_nan_values(df, columns):
+    return df[columns].isna().any(axis=1)
+
 
 def get_leaderboard():
     if repo:
@@ -125,11 +140,22 @@ def get_leaderboard():
         }
         all_data.append(gpt35_values)
 
-    dataframe = pd.DataFrame.from_records(all_data)
-    dataframe = dataframe.sort_values(by=["Average ⬆️"], ascending=False)
-    # print(dataframe)
-    dataframe = dataframe[COLS]
-    return dataframe
+    df = pd.DataFrame.from_records(all_data)
+    df = df.sort_values(by=["Average ⬆️"], ascending=False)
+    df = df[COLS]
+
+    # get incomplete models
+    incomplete_models = df[has_nan_values(df, BENCHMARK_COLS)]["Model"].tolist()
+    print(
+        [
+            model.split(" style")[0].split("https://huggingface.co/")[1]
+            for model in incomplete_models
+        ]
+    )
+
+    # filter out if any of the benchmarks have not been produced
+    df = df[has_no_nan_values(df, BENCHMARK_COLS)]
+    return df
 
 
 def get_eval_table():
@@ -144,7 +170,7 @@ def get_eval_table():
     all_evals = []
 
     for entry in entries:
-        print(entry)
+        # print(entry)
         if ".json" in entry:
             file_path = os.path.join("evals/eval_requests", entry)
             with open(file_path) as fp:
@@ -171,12 +197,17 @@ def get_eval_table():
                 data["model"] = make_clickable_model(data["model"])
                 all_evals.append(data)
 
-    dataframe = pd.DataFrame.from_records(all_evals)
-    return dataframe[EVAL_COLS]
+    pending_list = [e for e in all_evals if e["status"] == "PENDING"]
+    running_list = [e for e in all_evals if e["status"] == "RUNNING"]
+    finished_list = [e for e in all_evals if e["status"] == "FINISHED"]
+    df_pending = pd.DataFrame.from_records(pending_list)
+    df_running = pd.DataFrame.from_records(running_list)
+    df_finished = pd.DataFrame.from_records(finished_list)
+    return df_finished[EVAL_COLS], df_running[EVAL_COLS], df_pending[EVAL_COLS]
 
 
 leaderboard = get_leaderboard()
-eval_queue = get_eval_table()
+finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
 
 
 def is_model_on_hub(model_name, revision) -> bool:
@@ -237,7 +268,7 @@ def add_new_eval(
     if out_path.lower() in requested_models:
         duplicate_request_message = "This model has been already submitted."
         return f"<p style='color: orange; font-size: 20px; text-align: center;'>{duplicate_request_message}</p>"
-    
+
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
     LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
@@ -256,7 +287,10 @@ def add_new_eval(
 
 
 def refresh():
-    return get_leaderboard(), get_eval_table()
+    leaderboard = get_leaderboard()
+    finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
+    get_leaderboard(), get_eval_table()
+    return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
 
 
 block = gr.Blocks()
@@ -289,16 +323,43 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 
     """
         )
-    with gr.Accordion("Evaluation Queue", open=False):
+    with gr.Accordion("Finished Evaluations", open=False):
         with gr.Row():
-            eval_table = gr.components.Dataframe(
-                value=eval_queue, headers=EVAL_COLS, datatype=EVAL_TYPES, max_rows=5
+            finished_eval_table = gr.components.Dataframe(
+                value=finished_eval_queue,
+                headers=EVAL_COLS,
+                datatype=EVAL_TYPES,
+                max_rows=5,
+            )
+    with gr.Accordion("Running Evaluation Queue", open=False):
+        with gr.Row():
+            running_eval_table = gr.components.Dataframe(
+                value=running_eval_queue,
+                headers=EVAL_COLS,
+                datatype=EVAL_TYPES,
+                max_rows=5,
+            )
+
+    with gr.Accordion("Running & Pending Evaluation Queue", open=False):
+        with gr.Row():
+            pending_eval_table = gr.components.Dataframe(
+                value=pending_eval_queue,
+                headers=EVAL_COLS,
+                datatype=EVAL_TYPES,
+                max_rows=5,
             )
 
     with gr.Row():
         refresh_button = gr.Button("Refresh")
         refresh_button.click(
-            refresh, inputs=[], outputs=[leaderboard_table, eval_table]
+            refresh,
+            inputs=[],
+            outputs=[
+                leaderboard_table,
+                finished_eval_table,
+                running_eval_table,
+                pending_eval_table,
+            ],
         )
 
     with gr.Accordion("Submit a new model for evaluation"):
@@ -332,5 +393,14 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 submission_result,
             )
 
-    block.load(refresh, inputs=[], outputs=[leaderboard_table, eval_table])
+    block.load(
+        refresh,
+        inputs=[],
+        outputs=[
+            leaderboard_table,
+            finished_eval_table,
+            running_eval_table,
+            pending_eval_table,
+        ],
+    )
 block.launch()
