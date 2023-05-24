@@ -1,13 +1,11 @@
 import os
-import shutil
 import numpy as np
 import gradio as gr
 from huggingface_hub import Repository, HfApi
 from transformers import AutoConfig
 import json
-from apscheduler.schedulers.background import BackgroundScheduler
 import pandas as pd
-import datetime
+from content import CHANGELOG_TEXT
 from utils import get_eval_results_dicts, make_clickable_model
 
 # clone / pull the lmeh eval data
@@ -140,6 +138,19 @@ def get_leaderboard():
         }
         all_data.append(gpt35_values)
 
+    base_line = {
+            "Model": '<p>Baseline</p>',
+            "Revision": "N/A",
+            "8bit": None,
+            "Average ⬆️": 25.0,
+            "ARC (25-shot) ⬆️": 25.0,
+            "HellaSwag (10-shot) ⬆️": 25.0,
+            "MMLU (5-shot) ⬆️": 25.0,
+            "TruthfulQA (0-shot) ⬆️": 25.0,
+        }
+    
+    all_data.append(base_line)
+    
     df = pd.DataFrame.from_records(all_data)
     df = df.sort_values(by=["Average ⬆️"], ascending=False)
     df = df[COLS]
@@ -323,7 +334,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 
     """
         )
-    with gr.Accordion("Finished Evaluations", open=False):
+    with gr.Accordion("✅ Finished Evaluations", open=False):
         with gr.Row():
             finished_eval_table = gr.components.Dataframe(
                 value=finished_eval_queue,
@@ -331,7 +342,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 datatype=EVAL_TYPES,
                 max_rows=5,
             )
-    with gr.Accordion("Running Evaluation Queue", open=False):
+    with gr.Accordion("🔄 Running Evaluation Queue", open=False):
         with gr.Row():
             running_eval_table = gr.components.Dataframe(
                 value=running_eval_queue,
@@ -340,7 +351,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 max_rows=5,
             )
 
-    with gr.Accordion("Pending Evaluation Queue", open=False):
+    with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
         with gr.Row():
             pending_eval_table = gr.components.Dataframe(
                 value=pending_eval_queue,
@@ -378,6 +389,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 
         with gr.Row():
             submit_button = gr.Button("Submit Eval")
+
         with gr.Row():
             submission_result = gr.Markdown()
             submit_button.click(
