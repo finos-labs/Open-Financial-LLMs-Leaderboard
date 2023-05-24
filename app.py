@@ -303,8 +303,13 @@ def refresh():
     get_leaderboard(), get_eval_table()
     return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
 
+custom_css = """
+#changelog-text {
+    font-size: 18px !important;
+}
+"""
 
-block = gr.Blocks()
+block = gr.Blocks(css=custom_css)
 with block:
     with gr.Row():
         gr.Markdown(
@@ -322,6 +327,9 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
         """
         )
 
+    with gr.Accordion("CHANGELOG", open=False):
+        changelog = gr.Markdown(CHANGELOG_TEXT,elem_id="changelog-text")
+   
     with gr.Row():
         leaderboard_table = gr.components.Dataframe(
             value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5
@@ -404,10 +412,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 ],
                 submission_result,
             )
-            
-        with gr.Row():
-            changelog = gr.Markdown(CHANGELOG_TEXT)
-            
+                     
             
             
 
