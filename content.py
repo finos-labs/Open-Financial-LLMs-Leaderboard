@@ -1,6 +1,7 @@
 CHANGELOG_TEXT = f"""
 ## [2023-05-24] 
-- Add a baseline that has 25.0 for all values.
+- Added a baseline that has 25.0 for all values.
+- Added CHANGELOG
 
 ## [2023-05-23] 
 - Fixed a CSS issue that made the leaderboard hard to read in dark mode.
