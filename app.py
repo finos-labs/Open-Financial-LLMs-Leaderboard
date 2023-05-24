@@ -118,7 +118,7 @@ def get_leaderboard():
 
     if not IS_PUBLIC:
         gpt4_values = {
-            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt4</a>',
+            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">gpt4</a>',
             "Revision": "tech report",
             "8bit": None,
             "Average ⬆️": 84.3,
@@ -129,7 +129,7 @@ def get_leaderboard():
         }
         all_data.append(gpt4_values)
         gpt35_values = {
-            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: blue; text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>',
+            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>',
             "Revision": "tech report",
             "8bit": None,
             "Average ⬆️": 71.9,
