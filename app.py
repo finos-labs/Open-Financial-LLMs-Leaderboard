@@ -404,6 +404,12 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 ],
                 submission_result,
             )
+            
+        with gr.Row():
+            changelog = gr.Markdown(CHANGELOG_TEXT)
+            
+            
+            
 
     block.load(
         refresh,
