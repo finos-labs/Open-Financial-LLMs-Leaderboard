@@ -1,6 +1,6 @@
 ---
 title: Open LLM Leaderboard
-emoji: 👀
+emoji: 🏆
 colorFrom: green
 colorTo: indigo
 sdk: gradio
