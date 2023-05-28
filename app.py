@@ -432,6 +432,6 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
     # )
     
 scheduler = BackgroundScheduler()
-scheduler.add_job(restart_space, 'interval', seconds=3600)
+scheduler.add_job(restart_space, 'interval', seconds=1200)
 scheduler.start()
 demo.launch()
