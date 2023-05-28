@@ -16,10 +16,9 @@ H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
-api = HfApi(token=H4_TOKEN)
-
+api = HfApi()
 def restart_space():
-    api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard")
+    api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
 
 
 def get_all_requested_models(requested_models_dir):
@@ -292,7 +291,6 @@ def add_new_eval(
         f.write(json.dumps(eval_entry))
     LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 
-    # api = HfApi()
     api.upload_file(
         path_or_fileobj=out_path,
         path_in_repo=out_path,
