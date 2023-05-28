@@ -16,6 +16,11 @@ H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
+api = HfApi(token=H4_TOKEN)
+
+def restart_space():
+    api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard")
+
 
 def get_all_requested_models(requested_models_dir):
     depth = 1
@@ -142,18 +147,18 @@ def get_leaderboard():
         all_data.append(gpt35_values)
 
     base_line = {
-            "Model": '<p>Baseline</p>',
-            "Revision": "N/A",
-            "8bit": None,
-            "Average ⬆️": 25.0,
-            "ARC (25-shot) ⬆️": 25.0,
-            "HellaSwag (10-shot) ⬆️": 25.0,
-            "MMLU (5-shot) ⬆️": 25.0,
-            "TruthfulQA (0-shot) ⬆️": 25.0,
-        }
-    
+        "Model": "<p>Baseline</p>",
+        "Revision": "N/A",
+        "8bit": None,
+        "Average ⬆️": 25.0,
+        "ARC (25-shot) ⬆️": 25.0,
+        "HellaSwag (10-shot) ⬆️": 25.0,
+        "MMLU (5-shot) ⬆️": 25.0,
+        "TruthfulQA (0-shot) ⬆️": 25.0,
+    }
+
     all_data.append(base_line)
-    
+
     df = pd.DataFrame.from_records(all_data)
     df = df.sort_values(by=["Average ⬆️"], ascending=False)
     df = df[COLS]
@@ -287,7 +292,7 @@ def add_new_eval(
         f.write(json.dumps(eval_entry))
     LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 
-    api = HfApi()
+    # api = HfApi()
     api.upload_file(
         path_or_fileobj=out_path,
         path_in_repo=out_path,
@@ -305,6 +310,7 @@ def refresh():
     finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
     get_leaderboard(), get_eval_table()
     return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
+
 
 custom_css = """
 #changelog-text {
@@ -331,8 +337,8 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
         )
 
     with gr.Accordion("CHANGELOG", open=False):
-        changelog = gr.Markdown(CHANGELOG_TEXT,elem_id="changelog-text")
-   
+        changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
+
     with gr.Row():
         leaderboard_table = gr.components.Dataframe(
             value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5
@@ -415,4 +421,19 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 ],
                 submission_result,
             )
+
+    # demo.load(
+    #     refresh,
+    #     inputs=[],
+    #     outputs=[
+    #         leaderboard_table,
+    #         finished_eval_table,
+    #         running_eval_table,
+    #         pending_eval_table,
+    #     ],
+    # )
+    
+scheduler = BackgroundScheduler()
+scheduler.add_job(restart_space, 'interval', seconds=3600)
+scheduler.start()
 demo.launch()
