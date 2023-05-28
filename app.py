@@ -312,8 +312,8 @@ custom_css = """
 }
 """
 
-block = gr.Blocks(css=custom_css)
-with block:
+demo = gr.Blocks(css=custom_css)
+with demo:
     with gr.Row():
         gr.Markdown(
             f"""
@@ -415,18 +415,4 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 ],
                 submission_result,
             )
-                     
-            
-            
-
-    block.load(
-        refresh,
-        inputs=[],
-        outputs=[
-            leaderboard_table,
-            finished_eval_table,
-            running_eval_table,
-            pending_eval_table,
-        ],
-    )
-block.launch()
+demo.launch()
