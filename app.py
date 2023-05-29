@@ -306,7 +306,6 @@ def add_new_eval(
 def refresh():
     leaderboard = get_leaderboard()
     finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
-    get_leaderboard(), get_eval_table()
     return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
 
 
@@ -420,18 +419,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
                 submission_result,
             )
 
-    # demo.load(
-    #     refresh,
-    #     inputs=[],
-    #     outputs=[
-    #         leaderboard_table,
-    #         finished_eval_table,
-    #         running_eval_table,
-    #         pending_eval_table,
-    #     ],
-    # )
-    
 scheduler = BackgroundScheduler()
-scheduler.add_job(restart_space, 'interval', seconds=1200)
+scheduler.add_job(restart_space, 'interval', seconds=3600)
 scheduler.start()
 demo.launch()

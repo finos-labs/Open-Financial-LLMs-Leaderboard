@@ -1,4 +1,7 @@
 CHANGELOG_TEXT = f"""
+## [2023-05-29] 
+- Auto-restart every hour 
+
 ## [2023-05-24] 
 - Added a baseline that has 25.0 for all values.
 - Added CHANGELOG
