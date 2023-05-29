@@ -6,7 +6,7 @@ import gradio as gr
 import pandas as pd
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from content import CHANGELOG_TEXT
+from content import *
 from huggingface_hub import Repository, HfApi
 from transformers import AutoConfig
 from utils import get_eval_results_dicts, make_clickable_model
@@ -32,7 +32,6 @@ def get_all_requested_models(requested_models_dir):
 
     return set([file_name.lower().split("./evals/")[1] for file_name in file_names])
 
-
 repo = None
 requested_models = None
 if H4_TOKEN:
@@ -56,7 +55,6 @@ if H4_TOKEN:
 
 # parse the results
 BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
-
 METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
 
 
@@ -112,7 +110,6 @@ def has_no_nan_values(df, columns):
 
 def has_nan_values(df, columns):
     return df[columns].isna().any(axis=1)
-
 
 def get_leaderboard():
     if repo:
@@ -188,7 +185,6 @@ def get_eval_table():
     all_evals = []
 
     for entry in entries:
-        # print(entry)
         if ".json" in entry:
             file_path = os.path.join("evals/eval_requests", entry)
             with open(file_path) as fp:
@@ -257,7 +253,6 @@ def add_new_eval(
 
     if not is_model_on_hub(model, revision):
         error_message = f'Model "{model}"was not found on hub!'
-        print(error_message)
         return f"<p style='color: red; font-size: 20px; text-align: center;'>{error_message}</p>"
 
     print("adding new eval")
@@ -308,30 +303,21 @@ def refresh():
     finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
     return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
 
-
 custom_css = """
 #changelog-text {
     font-size: 18px !important;
+}
+
+.markdown-text {
+    font-size: 16px !important;
 }
 """
 
 demo = gr.Blocks(css=custom_css)
 with demo:
+    gr.HTML(TITLE)
     with gr.Row():
-        gr.Markdown(
-            f"""
-# 🤗 Open LLM Leaderboard
-<font size="4">With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art. The 🤗 Open LLM Leaderboard aims to track, rank and evaluate LLMs and chatbots as they are released. We evaluate models on 4 key benchmarks from the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. A key advantage of this leaderboard is that anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as LLaMa.
-
-Evaluation is performed against 4 popular benchmarks:
-- <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
-- <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
-- <a href="https://arxiv.org/abs/2009.03300" target="_blank">  MMLU </a>  (5-shot) - a test to measure a text model's multitask accuracy. The test covers 57 tasks including elementary mathematics, US history, computer science, law, and more.
-- <a href="https://arxiv.org/abs/2109.07958" target="_blank">  TruthfulQA </a> (0-shot) - a benchmark to measure whether a language model is truthful in generating answers to questions.
-
-We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings. </font>
-        """
-        )
+        gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Accordion("CHANGELOG", open=False):
         changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
@@ -342,12 +328,8 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
         )
 
     with gr.Row():
-        gr.Markdown(
-            f"""
-    # Evaluation Queue for the 🤗 Open LLM Leaderboard, these models will be automatically evaluated on the 🤗 cluster
+        gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
-    """
-        )
     with gr.Accordion("✅ Finished Evaluations", open=False):
         with gr.Row():
             finished_eval_table = gr.components.Dataframe(
