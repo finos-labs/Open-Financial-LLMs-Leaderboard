@@ -159,15 +159,6 @@ def get_leaderboard():
     df = df.sort_values(by=["Average ⬆️"], ascending=False)
     df = df[COLS]
 
-    # get incomplete models
-    incomplete_models = df[has_nan_values(df, BENCHMARK_COLS)]["Model"].tolist()
-    print(
-        [
-            model.split(" style")[0].split("https://huggingface.co/")[1]
-            for model in incomplete_models
-        ]
-    )
-
     # filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, BENCHMARK_COLS)]
     return df
@@ -284,7 +275,6 @@ def add_new_eval(
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
-    LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 
     api.upload_file(
         path_or_fileobj=out_path,
