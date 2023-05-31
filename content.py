@@ -58,6 +58,7 @@ CITATION_BUTTON_TEXT = r"""@misc{open-llm-leaderboard,
   title = {Open LLM Leaderboard},
   year = {2023},
   publisher = {Hugging Face},
-  howpublished = "{\url{https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard}"}
+  howpublished = "\url{https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard}"
+
 }"""
 
