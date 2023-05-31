@@ -17,6 +17,8 @@ LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
 api = HfApi()
+
+
 def restart_space():
     api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
 
@@ -32,10 +34,11 @@ def get_all_requested_models(requested_models_dir):
 
     return set([file_name.lower().split("./evals/")[1] for file_name in file_names])
 
+
 repo = None
 requested_models = None
 if H4_TOKEN:
-    print("pulling repo")
+    print("Pulling evaluation requests and results.")
     # try:
     #     shutil.rmtree("./evals/")
     # except:
@@ -111,9 +114,10 @@ def has_no_nan_values(df, columns):
 def has_nan_values(df, columns):
     return df[columns].isna().any(axis=1)
 
+
 def get_leaderboard():
     if repo:
-        print("pulling changes")
+        print("Pulling evaluation results for the leaderboard.")
         repo.git_pull()
 
     all_data = get_eval_results_dicts(IS_PUBLIC)
@@ -166,8 +170,9 @@ def get_leaderboard():
 
 def get_eval_table():
     if repo:
-        print("pulling changes for eval")
+        print("Pulling changes for the evaluation queue.")
         repo.git_pull()
+
     entries = [
         entry
         for entry in os.listdir("evals/eval_requests")
@@ -221,7 +226,7 @@ def is_model_on_hub(model_name, revision) -> bool:
         return True
 
     except Exception as e:
-        print("Could not get the model config from the hub")
+        print("Could not get the model config from the hub.")
         print(e)
         return False
 
@@ -293,24 +298,50 @@ def refresh():
     finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
     return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
 
+
 custom_css = """
 #changelog-text {
+    font-size: 16px !important;
+}
+
+#changelog-text h2 {
     font-size: 18px !important;
 }
 
 .markdown-text {
     font-size: 16px !important;
 }
+
+#citation-button span {
+    font-size: 16px !important;
+}
+
+#citation-button textarea {
+    font-size: 16px !important;
+}
+
+#citation-button > label > button {
+    margin: 6px;
+    transform: scale(1.3);
+}
 """
 
 demo = gr.Blocks(css=custom_css)
 with demo:
     gr.HTML(TITLE)
-    with gr.Row():
-        gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
+    gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
-    with gr.Accordion("CHANGELOG", open=False):
-        changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
+    with gr.Row():
+        with gr.Column():
+            with gr.Accordion("📙 Citation", open=False):
+                citation_button = gr.Textbox(
+                    value=CITATION_BUTTON_TEXT,
+                    label=CITATION_BUTTON_LABEL,
+                    elem_id="citation-button",
+                ).style(show_copy_button=True)
+        with gr.Column():
+            with gr.Accordion("✨ CHANGELOG", open=False):
+                changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
     leaderboard_table = gr.components.Dataframe(
         value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5

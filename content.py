@@ -1,29 +1,33 @@
 CHANGELOG_TEXT = f"""
+## [2023-05-30] 
+- Add a citation button
+- Simplify Gradio layout
+
 ## [2023-05-29] 
-- Auto-restart every hour 
+- Auto-restart every hour for the latest results
 - Sync with the internal version (minor style changes)
 
 ## [2023-05-24] 
-- Added a baseline that has 25.0 for all values.
-- Added CHANGELOG
+- Add a baseline that has 25.0 for all values
+- Add CHANGELOG
 
 ## [2023-05-23] 
-- Fixed a CSS issue that made the leaderboard hard to read in dark mode.
+- Fix a CSS issue that made the leaderboard hard to read in dark mode
 
 ## [2023-05-22] 
-- Display a success/error message after submitting evaluation requests.
-- Reject duplicate submission.
-- Do not display results that have incomplete results. 
-- Display different queues for jobs that are RUNNING, PENDING, FINISHED status. 
+- Display a success/error message after submitting evaluation requests
+- Reject duplicate submission
+- Do not display results that have incomplete results 
+- Display different queues for jobs that are RUNNING, PENDING, FINISHED status 
 
 ## [2023-05-15] 
-- Fixed a typo: from "TruthQA" to "TruthfulQA"
+- Fix a typo: from "TruthQA" to "TruthfulQA"
 
 ## [2023-05-10] 
-- Fixed a bug that prevented auto-refresh.
+- Fix a bug that prevented auto-refresh
 
 ## [2023-05-10] 
-- Released the leaderboard to public.
+- Release the leaderboard to public
 """
 
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
@@ -47,3 +51,13 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 EVALUATION_QUEUE_TEXT = f"""
 # Evaluation Queue for the 🤗 Open LLM Leaderboard, these models will be automatically evaluated on the 🤗 cluster
 """
+
+CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
+CITATION_BUTTON_TEXT = r"""@misc{open-llm-leaderboard,
+  author = {Edward Beeching, Sheon Han, Nathan Lambert, Nazneen Rajani, Omar Sanseviero, Lewis Tunstall, Thomas Wolf},
+  title = {Open LLM Leaderboard},
+  year = {2023},
+  publisher = {Hugging Face},
+  howpublished = "{\url{https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard}"}
+}"""
+
