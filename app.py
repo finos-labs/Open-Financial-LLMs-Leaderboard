@@ -312,52 +312,46 @@ with demo:
     with gr.Accordion("CHANGELOG", open=False):
         changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
-    with gr.Row():
-        leaderboard_table = gr.components.Dataframe(
-            value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5
-        )
+    leaderboard_table = gr.components.Dataframe(
+        value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5
+    )
 
-    with gr.Row():
-        gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
+    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
     with gr.Accordion("✅ Finished Evaluations", open=False):
-        with gr.Row():
-            finished_eval_table = gr.components.Dataframe(
-                value=finished_eval_queue,
-                headers=EVAL_COLS,
-                datatype=EVAL_TYPES,
-                max_rows=5,
-            )
+        finished_eval_table = gr.components.Dataframe(
+            value=finished_eval_queue,
+            headers=EVAL_COLS,
+            datatype=EVAL_TYPES,
+            max_rows=5,
+        )
     with gr.Accordion("🔄 Running Evaluation Queue", open=False):
-        with gr.Row():
-            running_eval_table = gr.components.Dataframe(
-                value=running_eval_queue,
-                headers=EVAL_COLS,
-                datatype=EVAL_TYPES,
-                max_rows=5,
-            )
+        running_eval_table = gr.components.Dataframe(
+            value=running_eval_queue,
+            headers=EVAL_COLS,
+            datatype=EVAL_TYPES,
+            max_rows=5,
+        )
 
     with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
-        with gr.Row():
-            pending_eval_table = gr.components.Dataframe(
-                value=pending_eval_queue,
-                headers=EVAL_COLS,
-                datatype=EVAL_TYPES,
-                max_rows=5,
-            )
-
-    with gr.Row():
-        refresh_button = gr.Button("Refresh")
-        refresh_button.click(
-            refresh,
-            inputs=[],
-            outputs=[
-                leaderboard_table,
-                finished_eval_table,
-                running_eval_table,
-                pending_eval_table,
-            ],
+        pending_eval_table = gr.components.Dataframe(
+            value=pending_eval_queue,
+            headers=EVAL_COLS,
+            datatype=EVAL_TYPES,
+            max_rows=5,
         )
+
+    refresh_button = gr.Button("Refresh")
+    refresh_button.click(
+        refresh,
+        inputs=[],
+        outputs=[
+            leaderboard_table,
+            finished_eval_table,
+            running_eval_table,
+            pending_eval_table,
+        ],
+    )
 
     with gr.Accordion("Submit a new model for evaluation"):
         with gr.Row():
@@ -373,25 +367,22 @@ with demo:
                 is_delta_weight = gr.Checkbox(False, label="Delta weights")
                 base_model_name_textbox = gr.Textbox(label="base model (for delta)")
 
-        with gr.Row():
-            submit_button = gr.Button("Submit Eval")
-
-        with gr.Row():
-            submission_result = gr.Markdown()
-            submit_button.click(
-                add_new_eval,
-                [
-                    model_name_textbox,
-                    base_model_name_textbox,
-                    revision_name_textbox,
-                    is_8bit_toggle,
-                    private,
-                    is_delta_weight,
-                ],
-                submission_result,
-            )
+        submit_button = gr.Button("Submit Eval")
+        submission_result = gr.Markdown()
+        submit_button.click(
+            add_new_eval,
+            [
+                model_name_textbox,
+                base_model_name_textbox,
+                revision_name_textbox,
+                is_8bit_toggle,
+                private,
+                is_delta_weight,
+            ],
+            submission_result,
+        )
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(restart_space, 'interval', seconds=3600)
+scheduler.add_job(restart_space, "interval", seconds=3600)
 scheduler.start()
 demo.launch()
