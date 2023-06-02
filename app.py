@@ -309,6 +309,11 @@ def refresh():
     )
 
 
+def search_table(df, query):
+    filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
+    return filtered_df
+
+
 custom_css = """
 #changelog-text {
     font-size: 16px !important;
@@ -335,17 +340,28 @@ custom_css = """
     transform: scale(1.3);
 }
 
+#leaderboard-table {
+    margin-top: 15px
+}
+
+#search-bar {
+    padding: 0px;
+}
+
 /* Hides the final column */
 table td:last-child,
 table th:last-child {
     display: none;
 }
+
+table td:first-child,
+table th:first-child {
+    max-width: 400px;
+    overflow: auto;
+    white-space: nowrap;
+}
+
 """
-
-
-def search_table(df, query):
-    filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
-    return filtered_df
 
 
 demo = gr.Blocks(css=custom_css)
@@ -365,22 +381,29 @@ with demo:
             with gr.Accordion("✨ CHANGELOG", open=False):
                 changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
-    search_bar = gr.Textbox(label="Search bar")
+    with gr.Box():
+        search_bar = gr.Textbox(
+            placeholder="Search models...", show_label=False, elem_id="search-bar"
+        )
 
-    leaderboard_table = gr.components.Dataframe(
-        value=leaderboard_df, headers=COLS, datatype=TYPES, max_rows=5
-    )
-    
-    # Dummy leaderboard for handling the case when the user uses backspace key
-    hidden_leaderboard_table_for_search = gr.components.Dataframe(
-        value=original_df, headers=COLS, datatype=TYPES, max_rows=5, visible=False
-    )
+        leaderboard_table = gr.components.Dataframe(
+            value=leaderboard_df,
+            headers=COLS,
+            datatype=TYPES,
+            max_rows=5,
+            elem_id="leaderboard-table",
+        )
 
-    search_bar.change(
-        search_table,
-        [hidden_leaderboard_table_for_search, search_bar],
-        leaderboard_table,
-    )
+        # Dummy leaderboard for handling the case when the user uses backspace key
+        hidden_leaderboard_table_for_search = gr.components.Dataframe(
+            value=original_df, headers=COLS, datatype=TYPES, max_rows=5, visible=False
+        )
+
+        search_bar.change(
+            search_table,
+            [hidden_leaderboard_table_for_search, search_bar],
+            leaderboard_table,
+        )
 
     gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
