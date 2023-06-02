@@ -1,4 +1,10 @@
 CHANGELOG_TEXT = f"""
+## [2023-06-02] 
+- Add a typeahead search bar
+- Use webhooks to automatically spawn a new Space when someone opens a PR
+- Start recording `submitted_time` for eval requests
+- Limit column max-width
+
 ## [2023-05-30] 
 - Add a citation button
 - Simplify Gradio layout
