@@ -240,6 +240,8 @@ def add_new_eval(
     private: bool,
     is_delta_weight: bool,
 ):
+    current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
@@ -262,6 +264,7 @@ def add_new_eval(
         "8bit_eval": is_8_bit_eval,
         "is_delta_weight": is_delta_weight,
         "status": "PENDING",
+        "submitted_time": current_time,
     }
 
     user_name = ""
