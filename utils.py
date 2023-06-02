@@ -71,6 +71,8 @@ class EvalResult:
         data_dict["eval_name"] = self.eval_name
         data_dict["8bit"] = self.is_8bit
         data_dict["Model"] = make_clickable_model(base_model)
+        # dummy column to implement search bar (hidden by custom CSS)
+        data_dict["model_name_for_query"] = base_model
         data_dict["Revision"] = self.revision
         data_dict["Average ⬆️"] = round(
             sum([v for k, v in self.results.items()]) / 4.0, 1

@@ -81,16 +81,9 @@ COLS = [
     "HellaSwag (10-shot) ⬆️",
     "MMLU (5-shot) ⬆️",
     "TruthfulQA (0-shot) ⬆️",
+    "model_name_for_query",  # dummy column to implement search bar (hidden by custom CSS)
 ]
-TYPES = [
-    "markdown",
-    "str",
-    "number",
-    "number",
-    "number",
-    "number",
-    "number",
-]
+TYPES = ["markdown", "str", "number", "number", "number", "number", "number", "str"]
 
 if not IS_PUBLIC:
     COLS.insert(2, "8bit")
@@ -115,7 +108,7 @@ def has_nan_values(df, columns):
     return df[columns].isna().any(axis=1)
 
 
-def get_leaderboard():
+def get_leaderboard_df():
     if repo:
         print("Pulling evaluation results for the leaderboard.")
         repo.git_pull()
@@ -132,6 +125,7 @@ def get_leaderboard():
             "HellaSwag (10-shot) ⬆️": 95.3,
             "MMLU (5-shot) ⬆️": 86.4,
             "TruthfulQA (0-shot) ⬆️": 59.0,
+            "model_name_for_query": "GPT-4",
         }
         all_data.append(gpt4_values)
         gpt35_values = {
@@ -143,6 +137,7 @@ def get_leaderboard():
             "HellaSwag (10-shot) ⬆️": 85.5,
             "MMLU (5-shot) ⬆️": 70.0,
             "TruthfulQA (0-shot) ⬆️": 47.0,
+            "model_name_for_query": "GPT-3.5",
         }
         all_data.append(gpt35_values)
 
@@ -155,6 +150,7 @@ def get_leaderboard():
         "HellaSwag (10-shot) ⬆️": 25.0,
         "MMLU (5-shot) ⬆️": 25.0,
         "TruthfulQA (0-shot) ⬆️": 25.0,
+        "model_name_for_query": "baseline",
     }
 
     all_data.append(base_line)
@@ -168,7 +164,7 @@ def get_leaderboard():
     return df
 
 
-def get_eval_table():
+def get_evaluation_queue_df():
     if repo:
         print("Pulling changes for the evaluation queue.")
         repo.git_pull()
@@ -216,8 +212,13 @@ def get_eval_table():
     return df_finished[EVAL_COLS], df_running[EVAL_COLS], df_pending[EVAL_COLS]
 
 
-leaderboard = get_leaderboard()
-finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
+original_df = get_leaderboard_df()
+leaderboard_df = original_df.copy()
+(
+    finished_eval_queue_df,
+    running_eval_queue_df,
+    pending_eval_queue_df,
+) = get_evaluation_queue_df()
 
 
 def is_model_on_hub(model_name, revision) -> bool:
@@ -294,9 +295,18 @@ def add_new_eval(
 
 
 def refresh():
-    leaderboard = get_leaderboard()
-    finished_eval_queue, running_eval_queue, pending_eval_queue = get_eval_table()
-    return leaderboard, finished_eval_queue, running_eval_queue, pending_eval_queue
+    leaderboard_df = get_leaderboard_df()
+    (
+        finished_eval_queue_df,
+        running_eval_queue_df,
+        pending_eval_queue_df,
+    ) = get_evaluation_queue_df()
+    return (
+        leaderboard_df,
+        finished_eval_queue_df,
+        running_eval_queue_df,
+        pending_eval_queue_df,
+    )
 
 
 custom_css = """
@@ -324,7 +334,19 @@ custom_css = """
     margin: 6px;
     transform: scale(1.3);
 }
+
+/* Hides the final column */
+table td:last-child,
+table th:last-child {
+    display: none;
+}
 """
+
+
+def search_table(df, query):
+    filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
+    return filtered_df
+
 
 demo = gr.Blocks(css=custom_css)
 with demo:
@@ -343,22 +365,35 @@ with demo:
             with gr.Accordion("✨ CHANGELOG", open=False):
                 changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
+    search_bar = gr.Textbox(label="Search bar")
+
     leaderboard_table = gr.components.Dataframe(
-        value=leaderboard, headers=COLS, datatype=TYPES, max_rows=5
+        value=leaderboard_df, headers=COLS, datatype=TYPES, max_rows=5
+    )
+    
+    # Dummy leaderboard for handling the case when the user uses backspace key
+    hidden_leaderboard_table_for_search = gr.components.Dataframe(
+        value=original_df, headers=COLS, datatype=TYPES, max_rows=5, visible=False
+    )
+
+    search_bar.change(
+        search_table,
+        [hidden_leaderboard_table_for_search, search_bar],
+        leaderboard_table,
     )
 
     gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
     with gr.Accordion("✅ Finished Evaluations", open=False):
         finished_eval_table = gr.components.Dataframe(
-            value=finished_eval_queue,
+            value=finished_eval_queue_df,
             headers=EVAL_COLS,
             datatype=EVAL_TYPES,
             max_rows=5,
         )
     with gr.Accordion("🔄 Running Evaluation Queue", open=False):
         running_eval_table = gr.components.Dataframe(
-            value=running_eval_queue,
+            value=running_eval_queue_df,
             headers=EVAL_COLS,
             datatype=EVAL_TYPES,
             max_rows=5,
@@ -366,7 +401,7 @@ with demo:
 
     with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
         pending_eval_table = gr.components.Dataframe(
-            value=pending_eval_queue,
+            value=pending_eval_queue_df,
             headers=EVAL_COLS,
             datatype=EVAL_TYPES,
             max_rows=5,
