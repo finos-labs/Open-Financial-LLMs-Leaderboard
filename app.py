@@ -348,8 +348,14 @@ custom_css = """
     margin-top: 15px
 }
 
+#search-bar-table-box > div:first-child {
+    background: none;
+    border: none;
+}
+ 
 #search-bar {
     padding: 0px;
+    width: 30%;
 }
 
 /* Hides the final column */
@@ -358,6 +364,8 @@ table th:last-child {
     display: none;
 }
 
+
+/* Limit the width of the first column so that names don't expand too much */
 table td:first-child,
 table th:first-child {
     max-width: 400px;
@@ -385,9 +393,11 @@ with demo:
             with gr.Accordion("✨ CHANGELOG", open=False):
                 changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
-    with gr.Box():
+    with gr.Box(elem_id="search-bar-table-box"):
         search_bar = gr.Textbox(
-            placeholder="Search models...", show_label=False, elem_id="search-bar"
+            placeholder="Search your model and press ENTER...",
+            show_label=False,
+            elem_id="search-bar",
         )
 
         leaderboard_table = gr.components.Dataframe(
@@ -403,7 +413,7 @@ with demo:
             value=original_df, headers=COLS, datatype=TYPES, max_rows=5, visible=False
         )
 
-        search_bar.change(
+        search_bar.submit(
             search_table,
             [hidden_leaderboard_table_for_search, search_bar],
             leaderboard_table,
@@ -479,4 +489,3 @@ scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=3600)
 scheduler.start()
 demo.queue(concurrency_count=40).launch()
-
