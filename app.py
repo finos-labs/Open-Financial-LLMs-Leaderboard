@@ -395,7 +395,7 @@ with demo:
 
     with gr.Box(elem_id="search-bar-table-box"):
         search_bar = gr.Textbox(
-            placeholder="Search your model and press ENTER...",
+            placeholder="🔍 Search your model and press ENTER...",
             show_label=False,
             elem_id="search-bar",
         )
