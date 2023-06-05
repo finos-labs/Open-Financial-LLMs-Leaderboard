@@ -478,4 +478,5 @@ with demo:
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=3600)
 scheduler.start()
-demo.launch()
+demo.queue(concurrency_count=40).launch()
+
