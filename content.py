@@ -1,4 +1,8 @@
 CHANGELOG_TEXT = f"""
+## [2023-06-05] 
+- Increase concurrent thread count to 40
+- Search models on ENTER
+
 ## [2023-06-02] 
 - Add a typeahead search bar
 - Use webhooks to automatically spawn a new Space when someone opens a PR
