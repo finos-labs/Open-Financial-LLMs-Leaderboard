@@ -68,5 +68,63 @@ CITATION_BUTTON_TEXT = r"""@misc{open-llm-leaderboard,
   publisher = {Hugging Face},
   howpublished = "\url{https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard}"
 
+}
+@software{eval-harness,
+  author       = {Gao, Leo and
+                  Tow, Jonathan and
+                  Biderman, Stella and
+                  Black, Sid and
+                  DiPofi, Anthony and
+                  Foster, Charles and
+                  Golding, Laurence and
+                  Hsu, Jeffrey and
+                  McDonell, Kyle and
+                  Muennighoff, Niklas and
+                  Phang, Jason and
+                  Reynolds, Laria and
+                  Tang, Eric and
+                  Thite, Anish and
+                  Wang, Ben and
+                  Wang, Kevin and
+                  Zou, Andy},
+  title        = {A framework for few-shot language model evaluation},
+  month        = sep,
+  year         = 2021,
+  publisher    = {Zenodo},
+  version      = {v0.0.1},
+  doi          = {10.5281/zenodo.5371628},
+  url          = {https://doi.org/10.5281/zenodo.5371628}
+}
+@misc{clark2018think,
+      title={Think you have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge}, 
+      author={Peter Clark and Isaac Cowhey and Oren Etzioni and Tushar Khot and Ashish Sabharwal and Carissa Schoenick and Oyvind Tafjord},
+      year={2018},
+      eprint={1803.05457},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+@misc{zellers2019hellaswag,
+      title={HellaSwag: Can a Machine Really Finish Your Sentence?}, 
+      author={Rowan Zellers and Ari Holtzman and Yonatan Bisk and Ali Farhadi and Yejin Choi},
+      year={2019},
+      eprint={1905.07830},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+@misc{hendrycks2021measuring,
+      title={Measuring Massive Multitask Language Understanding}, 
+      author={Dan Hendrycks and Collin Burns and Steven Basart and Andy Zou and Mantas Mazeika and Dawn Song and Jacob Steinhardt},
+      year={2021},
+      eprint={2009.03300},
+      archivePrefix={arXiv},
+      primaryClass={cs.CY}
+}
+@misc{lin2022truthfulqa,
+      title={TruthfulQA: Measuring How Models Mimic Human Falsehoods}, 
+      author={Stephanie Lin and Jacob Hilton and Owain Evans},
+      year={2022},
+      eprint={2109.07958},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
 }"""
 
