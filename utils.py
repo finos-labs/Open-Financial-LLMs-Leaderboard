@@ -140,10 +140,11 @@ def get_eval_results_dicts(is_public=True) -> List[Dict]:
 
     return [e.to_dict() for e in eval_results]
 
+
 get_window_url_params = """
     function(url_params) {
         const params = new URLSearchParams(window.location.search);
         url_params = Object.fromEntries(params);
         return url_params;
-        }
+    }
     """

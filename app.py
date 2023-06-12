@@ -398,11 +398,20 @@ def search_table(df, query):
     filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
     return filtered_df
 
+
 def change_tab(query_param):
-    if query_param == "{'tab': 'evaluation'}":
+    query_param = query_param.replace("'", '"')
+    query_param = json.loads(query_param)
+
+    if (
+        isinstance(query_param, dict)
+        and "tab" in query_param
+        and query_param["tab"] == "evaluation"
+    ):
         return gr.Tabs.update(selected=1)
     else:
         return gr.Tabs.update(selected=0)
+
 
 custom_css = """
 #changelog-text {
@@ -486,7 +495,7 @@ with demo:
     gr.HTML(TITLE)
     with gr.Row():
         gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
-    
+
     with gr.Row():
         with gr.Column():
             with gr.Accordion("📙 Citation", open=False):
@@ -644,8 +653,6 @@ with demo:
                 elem_id="models-to-add-text",
             )
 
-            
-        
     dummy = gr.Textbox(visible=False)
     demo.load(
         change_tab,
@@ -653,22 +660,22 @@ with demo:
         tabs,
         _js=get_window_url_params,
     )
-        # with gr.Box():
-        #     visualization_title = gr.HTML(VISUALIZATION_TITLE)
-        #     with gr.Row():
-        #         with gr.Column():
-        #             gr.Markdown(f"#### Figure 1: {PLOT_1_TITLE}")
-        #             plot_1 = gr.Plot(plot_1, show_label=False)
-        #         with gr.Column():
-        #             gr.Markdown(f"#### Figure 2: {PLOT_2_TITLE}")
-        #             plot_2 = gr.Plot(plot_2, show_label=False)
-        #     with gr.Row():
-        #         with gr.Column():
-        #             gr.Markdown(f"#### Figure 3: {PLOT_3_TITLE}")
-        #             plot_3 = gr.Plot(plot_3, show_label=False)
-        #         with gr.Column():
-        #             gr.Markdown(f"#### Figure 4: {PLOT_4_TITLE}")
-        #             plot_4 = gr.Plot(plot_4, show_label=False)
+    # with gr.Box():
+    #     visualization_title = gr.HTML(VISUALIZATION_TITLE)
+    #     with gr.Row():
+    #         with gr.Column():
+    #             gr.Markdown(f"#### Figure 1: {PLOT_1_TITLE}")
+    #             plot_1 = gr.Plot(plot_1, show_label=False)
+    #         with gr.Column():
+    #             gr.Markdown(f"#### Figure 2: {PLOT_2_TITLE}")
+    #             plot_2 = gr.Plot(plot_2, show_label=False)
+    #     with gr.Row():
+    #         with gr.Column():
+    #             gr.Markdown(f"#### Figure 3: {PLOT_3_TITLE}")
+    #             plot_3 = gr.Plot(plot_3, show_label=False)
+    #         with gr.Column():
+    #             gr.Markdown(f"#### Figure 4: {PLOT_4_TITLE}")
+    #             plot_4 = gr.Plot(plot_4, show_label=False)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=3600)
