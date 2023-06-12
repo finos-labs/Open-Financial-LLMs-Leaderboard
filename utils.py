@@ -1,21 +1,11 @@
-import os
-import shutil
-import numpy as np
-import gradio as gr
-from huggingface_hub import Repository, HfApi
-from transformers import AutoConfig, AutoModel
-import json
-from apscheduler.schedulers.background import BackgroundScheduler
-import pandas as pd
-import datetime
 import glob
+import json
 from dataclasses import dataclass
-from typing import List, Tuple, Dict
+from typing import Dict, List, Tuple
+
+import numpy as np
 
 # clone / pull the lmeh eval data
-H4_TOKEN = os.environ.get("H4_TOKEN", None)
-LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
-
 METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
 BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
 BENCH_TO_NAME = {
@@ -71,13 +61,11 @@ class EvalResult:
         data_dict["eval_name"] = self.eval_name
         data_dict["8bit"] = self.is_8bit
         data_dict["Model"] = make_clickable_model(base_model)
-        # dummy column to implement search bar (hidden by custom CSS)
         data_dict["model_name_for_query"] = base_model
         data_dict["Revision"] = self.revision
         data_dict["Average ⬆️"] = round(
             sum([v for k, v in self.results.items()]) / 4.0, 1
         )
-        # data_dict["# params"] = get_n_params(base_model)
 
         for benchmark in BENCHMARKS:
             if not benchmark in self.results.keys():
@@ -151,7 +139,3 @@ def get_eval_results_dicts(is_public=True) -> List[Dict]:
     eval_results = get_eval_results(is_public)
 
     return [e.to_dict() for e in eval_results]
-
-
-eval_results_dict = get_eval_results_dicts()
-# print(eval_results_dict)

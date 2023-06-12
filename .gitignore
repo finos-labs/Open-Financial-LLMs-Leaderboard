@@ -4,3 +4,7 @@ __pycache__/
 .env
 .ipynb_checkpoints
 *ipynb
+
+gpt_4_evals/
+human_evals/
+model_counts.html

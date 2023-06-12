@@ -1,20 +1,24 @@
-import os
 import json
+import os
 from datetime import datetime, timezone
 
-import numpy as np
-import gradio as gr
-import pandas as pd
 
+import gradio as gr
+import numpy as np
+import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
-from content import *
-from huggingface_hub import Repository, HfApi
+from huggingface_hub import HfApi, Repository
 from transformers import AutoConfig
+
+from content import *
+from elo_utils import get_elo_plots, get_elo_results_dicts
 from utils import get_eval_results_dicts, make_clickable_model
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
+HUMAN_EVAL_REPO = "HuggingFaceH4/scale-human-eval"
+GPT_4_EVAL_REPO = "HuggingFaceH4/open_llm_leaderboard_oai_evals"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
 
 api = HfApi()
@@ -56,6 +60,27 @@ if H4_TOKEN:
     requested_models_dir = "./evals/eval_requests"
     requested_models = get_all_requested_models(requested_models_dir)
 
+human_eval_repo = None
+if H4_TOKEN and not os.path.isdir("./human_evals"):
+    print("Pulling human evaluation repo")
+    human_eval_repo = Repository(
+        local_dir="./human_evals/",
+        clone_from=HUMAN_EVAL_REPO,
+        use_auth_token=H4_TOKEN,
+        repo_type="dataset",
+    )
+    human_eval_repo.git_pull()
+
+gpt_4_eval_repo = None
+if H4_TOKEN and not os.path.isdir("./gpt_4_evals"):
+    print("Pulling GPT-4 evaluation repo")
+    gpt_4_eval_repo = Repository(
+        local_dir="./gpt_4_evals/",
+        clone_from=GPT_4_EVAL_REPO,
+        use_auth_token=H4_TOKEN,
+        repo_type="dataset",
+    )
+    gpt_4_eval_repo.git_pull()
 
 # parse the results
 BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
@@ -99,6 +124,16 @@ BENCHMARK_COLS = [
     "MMLU (5-shot) ⬆️",
     "TruthfulQA (0-shot) ⬆️",
 ]
+
+ELO_COLS = [
+    "Model",
+    "GPT-4 (all)",
+    "Human (all)",
+    "Human (instruct)",
+    "Human (code-instruct)",
+]
+ELO_TYPES = ["markdown", "number", "number", "number", "number"]
+ELO_SORT_COL = "GPT-4 (all)"
 
 
 def has_no_nan_values(df, columns):
@@ -213,6 +248,42 @@ def get_evaluation_queue_df():
     return df_finished[EVAL_COLS], df_running[EVAL_COLS], df_pending[EVAL_COLS]
 
 
+def get_elo_leaderboard(df_instruct, df_code_instruct, tie_allowed=False):
+    if human_eval_repo:
+        print("Pulling human_eval_repo changes")
+        human_eval_repo.git_pull()
+
+    all_data = get_elo_results_dicts(df_instruct, df_code_instruct, tie_allowed)
+    dataframe = pd.DataFrame.from_records(all_data)
+    dataframe = dataframe.sort_values(by=ELO_SORT_COL, ascending=False)
+    dataframe = dataframe[ELO_COLS]
+    return dataframe
+
+
+def get_elo_elements():
+    df_instruct = pd.read_json("human_evals/without_code.json")
+    df_code_instruct = pd.read_json("human_evals/with_code.json")
+
+    elo_leaderboard = get_elo_leaderboard(
+        df_instruct, df_code_instruct, tie_allowed=False
+    )
+    elo_leaderboard_with_tie_allowed = get_elo_leaderboard(
+        df_instruct, df_code_instruct, tie_allowed=True
+    )
+    plot_1, plot_2, plot_3, plot_4 = get_elo_plots(
+        df_instruct, df_code_instruct, tie_allowed=False
+    )
+
+    return (
+        elo_leaderboard,
+        elo_leaderboard_with_tie_allowed,
+        plot_1,
+        plot_2,
+        plot_3,
+        plot_4,
+    )
+
+
 original_df = get_leaderboard_df()
 leaderboard_df = original_df.copy()
 (
@@ -220,6 +291,14 @@ leaderboard_df = original_df.copy()
     running_eval_queue_df,
     pending_eval_queue_df,
 ) = get_evaluation_queue_df()
+(
+    elo_leaderboard,
+    elo_leaderboard_with_tie_allowed,
+    plot_1,
+    plot_2,
+    plot_3,
+    plot_4,
+) = get_elo_elements()
 
 
 def is_model_on_hub(model_name, revision) -> bool:
@@ -359,11 +438,10 @@ custom_css = """
 }
 
 /* Hides the final column */
-table td:last-child,
-table th:last-child {
+#llm-benchmark-tab-table table td:last-child,
+#llm-benchmark-tab-table table th:last-child {
     display: none;
 }
-
 
 /* Limit the width of the first column so that names don't expand too much */
 table td:first-child,
@@ -373,13 +451,30 @@ table th:first-child {
     white-space: nowrap;
 }
 
+.tab-buttons button {
+    font-size: 16px;
+}
+
+#scale-logo {
+    border-style: none !important;
+    box-shadow: none;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 600px;
+}
+
+#scale-logo .download {
+    display: none;
+}
 """
 
 
 demo = gr.Blocks(css=custom_css)
 with demo:
     gr.HTML(TITLE)
-    gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
+    with gr.Row():
+        gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
 
     with gr.Row():
         with gr.Column():
@@ -393,97 +488,158 @@ with demo:
             with gr.Accordion("✨ CHANGELOG", open=False):
                 changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
-    with gr.Box(elem_id="search-bar-table-box"):
-        search_bar = gr.Textbox(
-            placeholder="🔍 Search your model and press ENTER...",
-            show_label=False,
-            elem_id="search-bar",
-        )
-
-        leaderboard_table = gr.components.Dataframe(
-            value=leaderboard_df,
-            headers=COLS,
-            datatype=TYPES,
-            max_rows=5,
-            elem_id="leaderboard-table",
-        )
-
-        # Dummy leaderboard for handling the case when the user uses backspace key
-        hidden_leaderboard_table_for_search = gr.components.Dataframe(
-            value=original_df, headers=COLS, datatype=TYPES, max_rows=5, visible=False
-        )
-
-        search_bar.submit(
-            search_table,
-            [hidden_leaderboard_table_for_search, search_bar],
-            leaderboard_table,
-        )
-
-    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
-
-    with gr.Accordion("✅ Finished Evaluations", open=False):
-        finished_eval_table = gr.components.Dataframe(
-            value=finished_eval_queue_df,
-            headers=EVAL_COLS,
-            datatype=EVAL_TYPES,
-            max_rows=5,
-        )
-    with gr.Accordion("🔄 Running Evaluation Queue", open=False):
-        running_eval_table = gr.components.Dataframe(
-            value=running_eval_queue_df,
-            headers=EVAL_COLS,
-            datatype=EVAL_TYPES,
-            max_rows=5,
-        )
-
-    with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
-        pending_eval_table = gr.components.Dataframe(
-            value=pending_eval_queue_df,
-            headers=EVAL_COLS,
-            datatype=EVAL_TYPES,
-            max_rows=5,
-        )
-
-    refresh_button = gr.Button("Refresh")
-    refresh_button.click(
-        refresh,
-        inputs=[],
-        outputs=[
-            leaderboard_table,
-            finished_eval_table,
-            running_eval_table,
-            pending_eval_table,
-        ],
-    )
-
-    with gr.Accordion("Submit a new model for evaluation"):
-        with gr.Row():
+    with gr.Tabs(elem_classes="tab-buttons"):
+        with gr.TabItem("📊 LLM Benchmarks", elem_id="llm-benchmark-tab-table"):
             with gr.Column():
-                model_name_textbox = gr.Textbox(label="Model name")
-                revision_name_textbox = gr.Textbox(label="revision", placeholder="main")
+                gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
+                with gr.Box(elem_id="search-bar-table-box"):
+                    search_bar = gr.Textbox(
+                        placeholder="🔍 Search your model and press ENTER...",
+                        show_label=False,
+                        elem_id="search-bar",
+                    )
 
-            with gr.Column():
-                is_8bit_toggle = gr.Checkbox(
-                    False, label="8 bit eval", visible=not IS_PUBLIC
-                )
-                private = gr.Checkbox(False, label="Private", visible=not IS_PUBLIC)
-                is_delta_weight = gr.Checkbox(False, label="Delta weights")
-                base_model_name_textbox = gr.Textbox(label="base model (for delta)")
+                    leaderboard_table = gr.components.Dataframe(
+                        value=leaderboard_df,
+                        headers=COLS,
+                        datatype=TYPES,
+                        max_rows=5,
+                        elem_id="leaderboard-table",
+                    )
 
-        submit_button = gr.Button("Submit Eval")
-        submission_result = gr.Markdown()
-        submit_button.click(
-            add_new_eval,
-            [
-                model_name_textbox,
-                base_model_name_textbox,
-                revision_name_textbox,
-                is_8bit_toggle,
-                private,
-                is_delta_weight,
-            ],
-            submission_result,
-        )
+                    # Dummy leaderboard for handling the case when the user uses backspace key
+                    hidden_leaderboard_table_for_search = gr.components.Dataframe(
+                        value=original_df,
+                        headers=COLS,
+                        datatype=TYPES,
+                        max_rows=5,
+                        visible=False,
+                    )
+
+                    search_bar.submit(
+                        search_table,
+                        [hidden_leaderboard_table_for_search, search_bar],
+                        leaderboard_table,
+                    )
+
+                with gr.Row():
+                    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
+
+                with gr.Accordion("✅ Finished Evaluations", open=False):
+                    with gr.Row():
+                        finished_eval_table = gr.components.Dataframe(
+                            value=finished_eval_queue_df,
+                            headers=EVAL_COLS,
+                            datatype=EVAL_TYPES,
+                            max_rows=5,
+                        )
+                with gr.Accordion("🔄 Running Evaluation Queue", open=False):
+                    with gr.Row():
+                        running_eval_table = gr.components.Dataframe(
+                            value=running_eval_queue_df,
+                            headers=EVAL_COLS,
+                            datatype=EVAL_TYPES,
+                            max_rows=5,
+                        )
+
+                with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
+                    with gr.Row():
+                        pending_eval_table = gr.components.Dataframe(
+                            value=pending_eval_queue_df,
+                            headers=EVAL_COLS,
+                            datatype=EVAL_TYPES,
+                            max_rows=5,
+                        )
+
+                with gr.Row():
+                    refresh_button = gr.Button("Refresh")
+                    refresh_button.click(
+                        refresh,
+                        inputs=[],
+                        outputs=[
+                            leaderboard_table,
+                            finished_eval_table,
+                            running_eval_table,
+                            pending_eval_table,
+                        ],
+                    )
+                with gr.Accordion("Submit a new model for evaluation"):
+                    with gr.Row():
+                        with gr.Column():
+                            model_name_textbox = gr.Textbox(label="Model name")
+                            revision_name_textbox = gr.Textbox(
+                                label="revision", placeholder="main"
+                            )
+
+                        with gr.Column():
+                            is_8bit_toggle = gr.Checkbox(
+                                False, label="8 bit eval", visible=not IS_PUBLIC
+                            )
+                            private = gr.Checkbox(
+                                False, label="Private", visible=not IS_PUBLIC
+                            )
+                            is_delta_weight = gr.Checkbox(False, label="Delta weights")
+                            base_model_name_textbox = gr.Textbox(
+                                label="base model (for delta)"
+                            )
+
+                    submit_button = gr.Button("Submit Eval")
+                    submission_result = gr.Markdown()
+                    submit_button.click(
+                        add_new_eval,
+                        [
+                            model_name_textbox,
+                            base_model_name_textbox,
+                            revision_name_textbox,
+                            is_8bit_toggle,
+                            private,
+                            is_delta_weight,
+                        ],
+                        submission_result,
+                    )
+        with gr.TabItem(
+            "🧑‍⚖️ Human & GPT-4 Evaluations 🤖", elem_id="human-gpt-tab-table"
+        ):
+            with gr.Row():
+                with gr.Column(scale=2):
+                    gr.Markdown(HUMAN_GPT_EVAL_TEXT, elem_classes="markdown-text")
+                with gr.Column(scale=1):
+                    gr.Image(
+                        "scale-hf-logo.png", elem_id="scale-logo", show_label=False
+                    )
+            gr.Markdown("## No tie")
+            elo_leaderboard_table = gr.components.Dataframe(
+                value=elo_leaderboard,
+                headers=ELO_COLS,
+                datatype=ELO_TYPES,
+                max_rows=5,
+            )
+
+            gr.Markdown("## Tie allowed*")
+            elo_leaderboard_table_with_tie_allowed = gr.components.Dataframe(
+                value=elo_leaderboard_with_tie_allowed,
+                headers=ELO_COLS,
+                datatype=ELO_TYPES,
+                max_rows=5,
+            )
+
+            gr.Markdown("\* Results when the scores of 4 and 5 were treated as ties.", elem_classes="markdown-text")
+        # with gr.Box():
+        #     visualization_title = gr.HTML(VISUALIZATION_TITLE)
+        #     with gr.Row():
+        #         with gr.Column():
+        #             gr.Markdown(f"#### Figure 1: {PLOT_1_TITLE}")
+        #             plot_1 = gr.Plot(plot_1, show_label=False)
+        #         with gr.Column():
+        #             gr.Markdown(f"#### Figure 2: {PLOT_2_TITLE}")
+        #             plot_2 = gr.Plot(plot_2, show_label=False)
+        #     with gr.Row():
+        #         with gr.Column():
+        #             gr.Markdown(f"#### Figure 3: {PLOT_3_TITLE}")
+        #             plot_3 = gr.Plot(plot_3, show_label=False)
+        #         with gr.Column():
+        #             gr.Markdown(f"#### Figure 4: {PLOT_4_TITLE}")
+        #             plot_4 = gr.Plot(plot_4, show_label=False)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=3600)
