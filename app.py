@@ -452,7 +452,7 @@ table th:first-child {
 }
 
 .tab-buttons button {
-    font-size: 16px;
+    font-size: 24px;
 }
 
 #scale-logo {
