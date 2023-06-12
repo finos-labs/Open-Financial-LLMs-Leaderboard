@@ -12,7 +12,7 @@ from transformers import AutoConfig
 
 from content import *
 from elo_utils import get_elo_plots, get_elo_results_dicts
-from utils import get_eval_results_dicts, make_clickable_model
+from utils import get_eval_results_dicts, make_clickable_model, get_window_url_params
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
@@ -25,7 +25,9 @@ api = HfApi()
 
 
 def restart_space():
-    api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
+    api.restart_space(
+        repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN
+    )
 
 
 def get_all_requested_models(requested_models_dir):
@@ -203,7 +205,7 @@ def get_leaderboard_df():
 def get_evaluation_queue_df():
     if repo:
         print("Pulling changes for the evaluation queue.")
-        repo.git_pull()
+        # repo.git_pull()
 
     entries = [
         entry
@@ -396,6 +398,9 @@ def search_table(df, query):
     filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
     return filtered_df
 
+def change_tab(query_param):
+    if query_param == "{'tab': 'evaluation'}":
+        return gr.Tabs.update(selected=1)
 
 custom_css = """
 #changelog-text {
@@ -408,6 +413,10 @@ custom_css = """
 
 .markdown-text {
     font-size: 16px !important;
+}
+
+#models-to-add-text {
+    font-size: 18px !important;
 }
 
 #citation-button span {
@@ -452,7 +461,7 @@ table th:first-child {
 }
 
 .tab-buttons button {
-    font-size: 16px;
+    font-size: 20px;
 }
 
 #scale-logo {
@@ -475,7 +484,7 @@ with demo:
     gr.HTML(TITLE)
     with gr.Row():
         gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
-
+    
     with gr.Row():
         with gr.Column():
             with gr.Accordion("📙 Citation", open=False):
@@ -488,8 +497,8 @@ with demo:
             with gr.Accordion("✨ CHANGELOG", open=False):
                 changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
-    with gr.Tabs(elem_classes="tab-buttons"):
-        with gr.TabItem("📊 LLM Benchmarks", elem_id="llm-benchmark-tab-table"):
+    with gr.Tabs(elem_classes="tab-buttons") as tabs:
+        with gr.TabItem("📊 LLM Benchmarks", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Column():
                 gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
                 with gr.Box(elem_id="search-bar-table-box"):
@@ -598,7 +607,7 @@ with demo:
                         submission_result,
                     )
         with gr.TabItem(
-            "🧑‍⚖️ Human & GPT-4 Evaluations 🤖", elem_id="human-gpt-tab-table"
+            "🧑‍⚖️ Human & GPT-4 Evaluations 🤖", elem_id="human-gpt-tab-table", id=1
         ):
             with gr.Row():
                 with gr.Column(scale=2):
@@ -623,7 +632,25 @@ with demo:
                 max_rows=5,
             )
 
-            gr.Markdown("\* Results when the scores of 4 and 5 were treated as ties.", elem_classes="markdown-text")
+            gr.Markdown(
+                "\* Results when the scores of 4 and 5 were treated as ties.",
+                elem_classes="markdown-text",
+            )
+
+            gr.Markdown(
+                "Let us know in [this discussion](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/65) which models we should add!",
+                elem_id="models-to-add-text",
+            )
+
+            
+        
+    dummy = gr.Textbox(visible=False)
+    demo.load(
+        change_tab,
+        dummy,
+        tabs,
+        _js=get_window_url_params,
+    )
         # with gr.Box():
         #     visualization_title = gr.HTML(VISUALIZATION_TITLE)
         #     with gr.Row():
