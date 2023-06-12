@@ -401,6 +401,8 @@ def search_table(df, query):
 def change_tab(query_param):
     if query_param == "{'tab': 'evaluation'}":
         return gr.Tabs.update(selected=1)
+    else:
+        return gr.Tabs.update(selected=0)
 
 custom_css = """
 #changelog-text {
