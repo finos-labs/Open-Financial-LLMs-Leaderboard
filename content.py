@@ -1,4 +1,7 @@
 CHANGELOG_TEXT = f"""
+## [2023-06-13] 
+- Adjust description for TruthfulQA
+
 ## [2023-06-12] 
 - Add Human & GPT-4 Evaluations
 
@@ -34,7 +37,8 @@ CHANGELOG_TEXT = f"""
 - Display different queues for jobs that are RUNNING, PENDING, FINISHED status 
 
 ## [2023-05-15] 
-- Fix a typo: from "TruthQA" to "TruthfulQA"
+- Fix a typo: from "TruthQA" to "
+QA"
 
 ## [2023-05-10] 
 - Fix a bug that prevented auto-refresh
@@ -58,7 +62,7 @@ Evaluation is performed against 4 popular benchmarks:
 - <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
 - <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
 - <a href="https://arxiv.org/abs/2009.03300" target="_blank">  MMLU </a>  (5-shot) - a test to measure a text model's multitask accuracy. The test covers 57 tasks including elementary mathematics, US history, computer science, law, and more.
-- <a href="https://arxiv.org/abs/2109.07958" target="_blank">  TruthfulQA </a> (0-shot) - a benchmark to measure whether a language model is truthful in generating answers to questions.
+- <a href="https://arxiv.org/abs/2109.07958" target="_blank">  TruthfulQA </a> (0-shot) - a test to measure a model’s propensity to reproduce falsehoods commonly found online.
 
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings.
 """
