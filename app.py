@@ -627,7 +627,7 @@ with demo:
                     gr.Image(
                         "scale-hf-logo.png", elem_id="scale-logo", show_label=False
                     )
-            gr.Markdown("## No tie")
+            gr.Markdown("## No tie allowed")
             elo_leaderboard_table = gr.components.Dataframe(
                 value=elo_leaderboard,
                 headers=ELO_COLS,
