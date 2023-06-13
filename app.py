@@ -205,7 +205,7 @@ def get_leaderboard_df():
 def get_evaluation_queue_df():
     if repo:
         print("Pulling changes for the evaluation queue.")
-        # repo.git_pull()
+        repo.git_pull()
 
     entries = [
         entry

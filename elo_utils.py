@@ -8,10 +8,37 @@ from datasets import load_dataset
 
 from content import PLOT_1_TITLE, PLOT_2_TITLE, PLOT_3_TITLE, PLOT_4_TITLE
 from utils import make_clickable_model
-from visualizations import (get_bootstrap_result, switch_model_a_b,
-                            visualize_battle_count, visualize_bootstrap_scores,
-                            visualize_pairwise_win_fraction,
-                            visualize_rating_count)
+from visualizations import (
+    get_bootstrap_result,
+    switch_model_a_b,
+    visualize_battle_count,
+    visualize_bootstrap_scores,
+    visualize_pairwise_win_fraction,
+    visualize_rating_count,
+)
+
+
+KOALA_LINK = "https://huggingface.co/TheBloke/koala-13B-HF"
+VICUNA_LINK = "https://huggingface.co/HuggingFaceH4/stable-vicuna-13b-2904"
+OASST_LINK = "https://huggingface.co/OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5"
+DOLLY_LINK = "https://huggingface.co/databricks/dolly-v2-12b"
+MODEL_PAGE = "https://huggingface.co/models"
+
+
+def make_clickable_model_elo(model_name):
+    link = ""
+    if model_name == "dolly-12b":
+        link = DOLLY_LINK
+    elif model_name == "vicuna-13b":
+        link = VICUNA_LINK
+    elif model_name == "koala-13b":
+        link = KOALA_LINK
+    elif model_name == "oasst-12b":
+        link = OASST_LINK
+    else:
+        link = MODEL_PAGE
+
+    return f'<a target="_blank" href="{link}" style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
 
 
 @dataclass
@@ -26,7 +53,7 @@ class EloEvalResult:
     def to_dict(self):
         base_model = f"{self.model}"
         data_dict = {}
-        data_dict["Model"] = make_clickable_model(base_model)
+        data_dict["Model"] = make_clickable_model_elo(base_model)
         data_dict["GPT-4 (all)"] = self.gpt_4_all
         data_dict["Human (all)"] = self.human_all
         data_dict["Human (instruct)"] = self.human_instruct
@@ -61,7 +88,13 @@ def create_eval_df(df, tie_allowed):
         }
 
         if tie_allowed:
-            response["win"] = "model_a" if response["rating"] < 4 else "model_b" if response["rating"] > 5 else "tie"
+            response["win"] = (
+                "model_a"
+                if response["rating"] < 4
+                else "model_b"
+                if response["rating"] > 5
+                else "tie"
+            )
         else:
             response["win"] = "model_a" if response["rating"] < 5 else "model_b"
 
@@ -84,7 +117,13 @@ def create_eval_df_for_gpt(df, tie_allowed):
         }
 
         if tie_allowed:
-            response["win"] = "model_a" if response["rating"] < 4 else "model_b" if response["rating"] > 5 else "tie"
+            response["win"] = (
+                "model_a"
+                if response["rating"] < 4
+                else "model_b"
+                if response["rating"] > 5
+                else "tie"
+            )
         else:
             response["win"] = "model_a" if response["rating"] < 5 else "model_b"
 
@@ -124,13 +163,20 @@ def get_elo_results(df_instruct, df_code_instruct, tie_allowed):
     df_all = pd.concat([df_instruct, df_code_instruct])
 
     df_gpt_4 = load_dataset(
-        "gpt_4_evals/data/", split="train", revision="e007baaf6e505731c08a0bc1a833a1f8f8cb8846"
+        "gpt_4_evals/data/",
+        split="train",
+        revision="e007baaf6e505731c08a0bc1a833a1f8f8cb8846",
     ).to_pandas()
 
     dfs = [df_instruct, df_code_instruct, df_all]
-    elo_ratings = [convert_rating_from_float_to_int(create_eval_df(df, tie_allowed=tie_allowed)) for df in dfs]
+    elo_ratings = [
+        convert_rating_from_float_to_int(create_eval_df(df, tie_allowed=tie_allowed))
+        for df in dfs
+    ]
 
-    gpt_4_elo_ratings = convert_rating_from_float_to_int(create_eval_df_for_gpt(df_gpt_4, tie_allowed=tie_allowed))
+    gpt_4_elo_ratings = convert_rating_from_float_to_int(
+        create_eval_df_for_gpt(df_gpt_4, tie_allowed=tie_allowed)
+    )
     elo_ratings.append(gpt_4_elo_ratings)
 
     results = [
@@ -166,7 +212,9 @@ def get_elo_plots(df_instruct, df_code_instruct, tie_allowed):
 
     BOOTSTRAP_ROUNDS = 1000
     if "bootstrap_elo_lu" not in globals():
-        bootstrap_elo_lu = get_bootstrap_result(game_switch, compute_elo, BOOTSTRAP_ROUNDS)
+        bootstrap_elo_lu = get_bootstrap_result(
+            game_switch, compute_elo, BOOTSTRAP_ROUNDS
+        )
 
     plot_3 = visualize_bootstrap_scores(bootstrap_elo_lu, PLOT_3_TITLE)
 
