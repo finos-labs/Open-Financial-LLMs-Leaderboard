@@ -37,8 +37,7 @@ CHANGELOG_TEXT = f"""
 - Display different queues for jobs that are RUNNING, PENDING, FINISHED status 
 
 ## [2023-05-15] 
-- Fix a typo: from "TruthQA" to "
-QA"
+- Fix a typo: from "TruthQA" to "QA"
 
 ## [2023-05-10] 
 - Fix a bug that prevented auto-refresh

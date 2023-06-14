@@ -19,7 +19,7 @@ from visualizations import (
 
 
 KOALA_LINK = "https://huggingface.co/TheBloke/koala-13B-HF"
-VICUNA_LINK = "https://huggingface.co/HuggingFaceH4/stable-vicuna-13b-2904"
+VICUNA_LINK = "https://huggingface.co/lmsys/vicuna-13b-delta-v1.1"
 OASST_LINK = "https://huggingface.co/OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5"
 DOLLY_LINK = "https://huggingface.co/databricks/dolly-v2-12b"
 MODEL_PAGE = "https://huggingface.co/models"
