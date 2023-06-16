@@ -1,9 +1,10 @@
-evals/
+auto_evals/
 venv/
 __pycache__/
 .env
 .ipynb_checkpoints
 *ipynb
+.vscode/
 
 gpt_4_evals/
 human_evals/

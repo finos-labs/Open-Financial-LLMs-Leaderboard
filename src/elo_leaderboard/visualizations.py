@@ -133,5 +133,5 @@ def visualize_rating_count(df, title):
     fig.update_layout(xaxis_title="model", yaxis_title="Rating Count", showlegend=False)
     fig.update_yaxes(range=[y_begin, y_end])
     # save the plot for the blog:
-    fig.write_html("model_counts.html", full_html=False, include_plotlyjs="cdn")
+    fig.write_html("src/assets/model_counts.html", full_html=False, include_plotlyjs="cdn")
     return fig

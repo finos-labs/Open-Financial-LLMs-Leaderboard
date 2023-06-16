@@ -7,19 +7,25 @@ import gradio as gr
 import numpy as np
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
-from huggingface_hub import HfApi, Repository
+from huggingface_hub import HfApi
 from transformers import AutoConfig
 
-from content import *
-from elo_utils import get_elo_plots, get_elo_results_dicts
-from utils import get_eval_results_dicts, make_clickable_model, get_window_url_params
+from src.auto_leaderboard.get_model_metadata import apply_metadata
+from src.assets.text_content import *
+from src.elo_leaderboard.load_results import get_elo_plots, get_elo_results_dicts
+from src.auto_leaderboard.load_results import get_eval_results_dicts, make_clickable_model
+from src.assets.hardcoded_evals import gpt4_values, gpt35_values, baseline
+from src.assets.css_html_js import custom_css, get_window_url_params
+from src.utils_display import AutoEvalColumn, EvalQueueColumn, EloEvalColumn, fields, styled_error, styled_warning, styled_message
+from src.init import load_all_info_from_hub
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
 HUMAN_EVAL_REPO = "HuggingFaceH4/scale-human-eval"
 GPT_4_EVAL_REPO = "HuggingFaceH4/open_llm_leaderboard_oai_evals"
-IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", None))
+IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
+ADD_PLOTS = False
 
 api = HfApi()
 
@@ -29,113 +35,25 @@ def restart_space():
         repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN
     )
 
+auto_eval_repo, human_eval_repo, gpt_4_eval_repo, requested_models = load_all_info_from_hub(LMEH_REPO, HUMAN_EVAL_REPO, GPT_4_EVAL_REPO)
 
-def get_all_requested_models(requested_models_dir):
-    depth = 1
-    file_names = []
-
-    for root, dirs, files in os.walk(requested_models_dir):
-        current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
-        if current_depth == depth:
-            file_names.extend([os.path.join(root, file) for file in files])
-
-    return set([file_name.lower().split("./evals/")[1] for file_name in file_names])
-
-
-repo = None
-requested_models = None
-if H4_TOKEN:
-    print("Pulling evaluation requests and results.")
-    # try:
-    #     shutil.rmtree("./evals/")
-    # except:
-    #     pass
-
-    repo = Repository(
-        local_dir="./evals/",
-        clone_from=LMEH_REPO,
-        use_auth_token=H4_TOKEN,
-        repo_type="dataset",
-    )
-    repo.git_pull()
-
-    requested_models_dir = "./evals/eval_requests"
-    requested_models = get_all_requested_models(requested_models_dir)
-
-human_eval_repo = None
-if H4_TOKEN and not os.path.isdir("./human_evals"):
-    print("Pulling human evaluation repo")
-    human_eval_repo = Repository(
-        local_dir="./human_evals/",
-        clone_from=HUMAN_EVAL_REPO,
-        use_auth_token=H4_TOKEN,
-        repo_type="dataset",
-    )
-    human_eval_repo.git_pull()
-
-gpt_4_eval_repo = None
-if H4_TOKEN and not os.path.isdir("./gpt_4_evals"):
-    print("Pulling GPT-4 evaluation repo")
-    gpt_4_eval_repo = Repository(
-        local_dir="./gpt_4_evals/",
-        clone_from=GPT_4_EVAL_REPO,
-        use_auth_token=H4_TOKEN,
-        repo_type="dataset",
-    )
-    gpt_4_eval_repo.git_pull()
-
-# parse the results
-BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
-METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
-
-
-def load_results(model, benchmark, metric):
-    file_path = os.path.join("evals", model, f"{model}-eval_{benchmark}.json")
-    if not os.path.exists(file_path):
-        return 0.0, None
-
-    with open(file_path) as fp:
-        data = json.load(fp)
-    accs = np.array([v[metric] for k, v in data["results"].items()])
-    mean_acc = np.mean(accs)
-    return mean_acc, data["config"]["model_args"]
-
-
-COLS = [
-    "Model",
-    "Revision",
-    "Average ⬆️",
-    "ARC (25-shot) ⬆️",
-    "HellaSwag (10-shot) ⬆️",
-    "MMLU (5-shot) ⬆️",
-    "TruthfulQA (0-shot) ⬆️",
-    "model_name_for_query",  # dummy column to implement search bar (hidden by custom CSS)
-]
-TYPES = ["markdown", "str", "number", "number", "number", "number", "number", "str"]
+COLS = [c.name for c in fields(AutoEvalColumn)]
+TYPES = [c.type for c in fields(AutoEvalColumn)]
+COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default]
+TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default]
 
 if not IS_PUBLIC:
-    COLS.insert(2, "8bit")
-    TYPES.insert(2, "bool")
+    COLS.insert(2, AutoEvalColumn.is_8bit.name)
+    TYPES.insert(2, AutoEvalColumn.is_8bit.type)
 
-EVAL_COLS = ["model", "revision", "private", "8bit_eval", "is_delta_weight", "status"]
-EVAL_TYPES = ["markdown", "str", "bool", "bool", "bool", "str"]
+EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
+EVAL_TYPES = [c.type for c in fields(EvalQueueColumn)]
 
-BENCHMARK_COLS = [
-    "ARC (25-shot) ⬆️",
-    "HellaSwag (10-shot) ⬆️",
-    "MMLU (5-shot) ⬆️",
-    "TruthfulQA (0-shot) ⬆️",
-]
+BENCHMARK_COLS = [c.name for c in [AutoEvalColumn.arc, AutoEvalColumn.hellaswag, AutoEvalColumn.mmlu, AutoEvalColumn.truthfulqa]]
 
-ELO_COLS = [
-    "Model",
-    "GPT-4 (all)",
-    "Human (all)",
-    "Human (instruct)",
-    "Human (code-instruct)",
-]
-ELO_TYPES = ["markdown", "number", "number", "number", "number"]
-ELO_SORT_COL = "GPT-4 (all)"
+ELO_COLS = [c.name for c in fields(EloEvalColumn)]
+ELO_TYPES = [c.type for c in fields(EloEvalColumn)]
+ELO_SORT_COL = EloEvalColumn.gpt4.name
 
 
 def has_no_nan_values(df, columns):
@@ -147,54 +65,21 @@ def has_nan_values(df, columns):
 
 
 def get_leaderboard_df():
-    if repo:
+    if auto_eval_repo:
         print("Pulling evaluation results for the leaderboard.")
-        repo.git_pull()
+        auto_eval_repo.git_pull()
 
     all_data = get_eval_results_dicts(IS_PUBLIC)
 
     if not IS_PUBLIC:
-        gpt4_values = {
-            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">gpt4</a>',
-            "Revision": "tech report",
-            "8bit": None,
-            "Average ⬆️": 84.3,
-            "ARC (25-shot) ⬆️": 96.3,
-            "HellaSwag (10-shot) ⬆️": 95.3,
-            "MMLU (5-shot) ⬆️": 86.4,
-            "TruthfulQA (0-shot) ⬆️": 59.0,
-            "model_name_for_query": "GPT-4",
-        }
         all_data.append(gpt4_values)
-        gpt35_values = {
-            "Model": f'<a target="_blank" href=https://arxiv.org/abs/2303.08774 style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">gpt3.5</a>',
-            "Revision": "tech report",
-            "8bit": None,
-            "Average ⬆️": 71.9,
-            "ARC (25-shot) ⬆️": 85.2,
-            "HellaSwag (10-shot) ⬆️": 85.5,
-            "MMLU (5-shot) ⬆️": 70.0,
-            "TruthfulQA (0-shot) ⬆️": 47.0,
-            "model_name_for_query": "GPT-3.5",
-        }
         all_data.append(gpt35_values)
 
-    base_line = {
-        "Model": "<p>Baseline</p>",
-        "Revision": "N/A",
-        "8bit": None,
-        "Average ⬆️": 25.0,
-        "ARC (25-shot) ⬆️": 25.0,
-        "HellaSwag (10-shot) ⬆️": 25.0,
-        "MMLU (5-shot) ⬆️": 25.0,
-        "TruthfulQA (0-shot) ⬆️": 25.0,
-        "model_name_for_query": "baseline",
-    }
-
-    all_data.append(base_line)
+    all_data.append(baseline)
+    apply_metadata(all_data)  # Populate model type based on known hardcoded values in `metadata.py`
 
     df = pd.DataFrame.from_records(all_data)
-    df = df.sort_values(by=["Average ⬆️"], ascending=False)
+    df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
     df = df[COLS]
 
     # filter out if any of the benchmarks have not been produced
@@ -203,20 +88,21 @@ def get_leaderboard_df():
 
 
 def get_evaluation_queue_df():
-    if repo:
+    # todo @saylortwift: replace the repo by the one you created for the eval queue
+    if auto_eval_repo:
         print("Pulling changes for the evaluation queue.")
-        repo.git_pull()
+        auto_eval_repo.git_pull()
 
     entries = [
         entry
-        for entry in os.listdir("evals/eval_requests")
+        for entry in os.listdir("auto_evals/eval_requests")
         if not entry.startswith(".")
     ]
     all_evals = []
 
     for entry in entries:
         if ".json" in entry:
-            file_path = os.path.join("evals/eval_requests", entry)
+            file_path = os.path.join("auto_evals/eval_requests", entry)
             with open(file_path) as fp:
                 data = json.load(fp)
 
@@ -229,11 +115,11 @@ def get_evaluation_queue_df():
             # this is a folder
             sub_entries = [
                 e
-                for e in os.listdir(f"evals/eval_requests/{entry}")
+                for e in os.listdir(f"auto_evals/eval_requests/{entry}")
                 if not e.startswith(".")
             ]
             for sub_entry in sub_entries:
-                file_path = os.path.join("evals/eval_requests", entry, sub_entry)
+                file_path = os.path.join("auto_evals/eval_requests", entry, sub_entry)
                 with open(file_path) as fp:
                     data = json.load(fp)
 
@@ -305,13 +191,15 @@ leaderboard_df = original_df.copy()
 
 def is_model_on_hub(model_name, revision) -> bool:
     try:
-        config = AutoConfig.from_pretrained(model_name, revision=revision)
-        return True
+        AutoConfig.from_pretrained(model_name, revision=revision)
+        return True, None
+    
+    except ValueError as e:
+        return False, "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard."
 
     except Exception as e:
-        print("Could not get the model config from the hub.")
-        print(e)
-        return False
+        print("Could not get the model config from the hub.: \n", e)
+        return False, "was not found on hub!"
 
 
 def add_new_eval(
@@ -327,14 +215,15 @@ def add_new_eval(
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
-    if is_delta_weight and not is_model_on_hub(base_model, revision):
-        error_message = f'Base model "{base_model}" was not found on hub!'
-        print(error_message)
-        return f"<p style='color: red; font-size: 20px; text-align: center;'>{error_message}</p>"
 
-    if not is_model_on_hub(model, revision):
-        error_message = f'Model "{model}"was not found on hub!'
-        return f"<p style='color: red; font-size: 20px; text-align: center;'>{error_message}</p>"
+    if is_delta_weight: 
+        base_model_on_hub, error = is_model_on_hub(base_model, revision)
+        if not base_model_on_hub:
+            return styled_error(f'Base model "{base_model}" {error}')
+
+    model_on_hub, error = is_model_on_hub(model, revision)
+    if not model_on_hub:
+        return styled_error(f'Model "{model}" {error}')
 
     print("adding new eval")
 
@@ -355,14 +244,13 @@ def add_new_eval(
         user_name = model.split("/")[0]
         model_path = model.split("/")[1]
 
-    OUT_DIR = f"eval_requests/{user_name}"
+    OUT_DIR = f"auto_evals/eval_requests/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
 
     # Check for duplicate submission
-    if out_path.lower() in requested_models:
-        duplicate_request_message = "This model has been already submitted."
-        return f"<p style='color: orange; font-size: 20px; text-align: center;'>{duplicate_request_message}</p>"
+    if out_path.split("eval_requests/")[1].lower() in requested_models:
+        return styled_warning("This model has been already submitted.")
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
@@ -375,8 +263,7 @@ def add_new_eval(
         repo_type="dataset",
     )
 
-    success_message = "Your request has been submitted to the evaluation queue!"
-    return f"<p style='color: green; font-size: 20px; text-align: center;'>{success_message}</p>"
+    return styled_message("Your request has been submitted to the evaluation queue!")
 
 
 def refresh():
@@ -395,7 +282,7 @@ def refresh():
 
 
 def search_table(df, query):
-    filtered_df = df[df["model_name_for_query"].str.contains(query, case=False)]
+    filtered_df = df[df[AutoEvalColumn.dummy.name].str.contains(query, case=False)]
     return filtered_df
 
 
@@ -411,83 +298,6 @@ def change_tab(query_param):
         return gr.Tabs.update(selected=1)
     else:
         return gr.Tabs.update(selected=0)
-
-
-custom_css = """
-#changelog-text {
-    font-size: 16px !important;
-}
-
-#changelog-text h2 {
-    font-size: 18px !important;
-}
-
-.markdown-text {
-    font-size: 16px !important;
-}
-
-#models-to-add-text {
-    font-size: 18px !important;
-}
-
-#citation-button span {
-    font-size: 16px !important;
-}
-
-#citation-button textarea {
-    font-size: 16px !important;
-}
-
-#citation-button > label > button {
-    margin: 6px;
-    transform: scale(1.3);
-}
-
-#leaderboard-table {
-    margin-top: 15px
-}
-
-#search-bar-table-box > div:first-child {
-    background: none;
-    border: none;
-}
- 
-#search-bar {
-    padding: 0px;
-    width: 30%;
-}
-
-/* Hides the final column */
-#llm-benchmark-tab-table table td:last-child,
-#llm-benchmark-tab-table table th:last-child {
-    display: none;
-}
-
-/* Limit the width of the first column so that names don't expand too much */
-table td:first-child,
-table th:first-child {
-    max-width: 400px;
-    overflow: auto;
-    white-space: nowrap;
-}
-
-.tab-buttons button {
-    font-size: 20px;
-}
-
-#scale-logo {
-    border-style: none !important;
-    box-shadow: none;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    max-width: 600px;
-}
-
-#scale-logo .download {
-    display: none;
-}
-"""
 
 
 demo = gr.Blocks(css=custom_css)
@@ -518,28 +328,50 @@ with demo:
                         show_label=False,
                         elem_id="search-bar",
                     )
-
-                    leaderboard_table = gr.components.Dataframe(
-                        value=leaderboard_df,
-                        headers=COLS,
-                        datatype=TYPES,
-                        max_rows=5,
-                        elem_id="leaderboard-table",
-                    )
+                    with gr.Tabs(elem_classes="tab-buttons"):
+                        with gr.TabItem("Light View"):
+                            leaderboard_table_lite = gr.components.Dataframe(
+                                value=leaderboard_df[COLS_LITE],
+                                headers=COLS_LITE,
+                                datatype=TYPES_LITE,
+                                max_rows=None,
+                                elem_id="leaderboard-table-lite",
+                            )
+                        with gr.TabItem("Extended Model View"):
+                            leaderboard_table = gr.components.Dataframe(
+                                value=leaderboard_df,
+                                headers=COLS,
+                                datatype=TYPES,
+                                max_rows=None,
+                                elem_id="leaderboard-table",
+                            )
 
                     # Dummy leaderboard for handling the case when the user uses backspace key
                     hidden_leaderboard_table_for_search = gr.components.Dataframe(
                         value=original_df,
                         headers=COLS,
                         datatype=TYPES,
-                        max_rows=5,
+                        max_rows=None,
                         visible=False,
                     )
-
                     search_bar.submit(
                         search_table,
                         [hidden_leaderboard_table_for_search, search_bar],
                         leaderboard_table,
+                    )
+
+                    # Dummy leaderboard for handling the case when the user uses backspace key
+                    hidden_leaderboard_table_for_search_lite = gr.components.Dataframe(
+                        value=original_df[COLS_LITE],
+                        headers=COLS_LITE,
+                        datatype=TYPES_LITE,
+                        max_rows=None,
+                        visible=False,
+                    )
+                    search_bar.submit(
+                        search_table,
+                        [hidden_leaderboard_table_for_search_lite, search_bar],
+                        leaderboard_table_lite,
                     )
 
                 with gr.Row():
@@ -625,7 +457,7 @@ with demo:
                     gr.Markdown(HUMAN_GPT_EVAL_TEXT, elem_classes="markdown-text")
                 with gr.Column(scale=1):
                     gr.Image(
-                        "scale-hf-logo.png", elem_id="scale-logo", show_label=False
+                        "src/assets/scale-hf-logo.png", elem_id="scale-logo", show_label=False
                     )
             gr.Markdown("## No tie allowed")
             elo_leaderboard_table = gr.components.Dataframe(
@@ -660,22 +492,23 @@ with demo:
         tabs,
         _js=get_window_url_params,
     )
-    # with gr.Box():
-    #     visualization_title = gr.HTML(VISUALIZATION_TITLE)
-    #     with gr.Row():
-    #         with gr.Column():
-    #             gr.Markdown(f"#### Figure 1: {PLOT_1_TITLE}")
-    #             plot_1 = gr.Plot(plot_1, show_label=False)
-    #         with gr.Column():
-    #             gr.Markdown(f"#### Figure 2: {PLOT_2_TITLE}")
-    #             plot_2 = gr.Plot(plot_2, show_label=False)
-    #     with gr.Row():
-    #         with gr.Column():
-    #             gr.Markdown(f"#### Figure 3: {PLOT_3_TITLE}")
-    #             plot_3 = gr.Plot(plot_3, show_label=False)
-    #         with gr.Column():
-    #             gr.Markdown(f"#### Figure 4: {PLOT_4_TITLE}")
-    #             plot_4 = gr.Plot(plot_4, show_label=False)
+    if ADD_PLOTS:
+        with gr.Box():
+            visualization_title = gr.HTML(VISUALIZATION_TITLE)
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown(f"#### Figure 1: {PLOT_1_TITLE}")
+                    plot_1 = gr.Plot(plot_1, show_label=False)
+                with gr.Column():
+                    gr.Markdown(f"#### Figure 2: {PLOT_2_TITLE}")
+                    plot_2 = gr.Plot(plot_2, show_label=False)
+            with gr.Row():
+                with gr.Column():
+                    gr.Markdown(f"#### Figure 3: {PLOT_3_TITLE}")
+                    plot_3 = gr.Plot(plot_3, show_label=False)
+                with gr.Column():
+                    gr.Markdown(f"#### Figure 4: {PLOT_4_TITLE}")
+                    plot_4 = gr.Plot(plot_4, show_label=False)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=3600)

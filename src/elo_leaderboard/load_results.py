@@ -6,9 +6,9 @@ import numpy as np
 import pandas as pd
 from datasets import load_dataset
 
-from content import PLOT_1_TITLE, PLOT_2_TITLE, PLOT_3_TITLE, PLOT_4_TITLE
-from utils import make_clickable_model
-from visualizations import (
+from src.assets.text_content import PLOT_1_TITLE, PLOT_2_TITLE, PLOT_3_TITLE, PLOT_4_TITLE
+from src.utils_display import make_clickable_model, EloEvalColumn
+from .visualizations import (
     get_bootstrap_result,
     switch_model_a_b,
     visualize_battle_count,
@@ -16,29 +16,6 @@ from visualizations import (
     visualize_pairwise_win_fraction,
     visualize_rating_count,
 )
-
-
-KOALA_LINK = "https://huggingface.co/TheBloke/koala-13B-HF"
-VICUNA_LINK = "https://huggingface.co/lmsys/vicuna-13b-delta-v1.1"
-OASST_LINK = "https://huggingface.co/OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5"
-DOLLY_LINK = "https://huggingface.co/databricks/dolly-v2-12b"
-MODEL_PAGE = "https://huggingface.co/models"
-
-
-def make_clickable_model_elo(model_name):
-    link = ""
-    if model_name == "dolly-12b":
-        link = DOLLY_LINK
-    elif model_name == "vicuna-13b":
-        link = VICUNA_LINK
-    elif model_name == "koala-13b":
-        link = KOALA_LINK
-    elif model_name == "oasst-12b":
-        link = OASST_LINK
-    else:
-        link = MODEL_PAGE
-
-    return f'<a target="_blank" href="{link}" style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
 
 
 @dataclass
@@ -53,11 +30,11 @@ class EloEvalResult:
     def to_dict(self):
         base_model = f"{self.model}"
         data_dict = {}
-        data_dict["Model"] = make_clickable_model_elo(base_model)
-        data_dict["GPT-4 (all)"] = self.gpt_4_all
-        data_dict["Human (all)"] = self.human_all
-        data_dict["Human (instruct)"] = self.human_instruct
-        data_dict["Human (code-instruct)"] = self.human_code_instruct
+        data_dict[EloEvalColumn.model.name] = make_clickable_model(base_model)
+        data_dict[EloEvalColumn.gpt4.name] = self.gpt_4_all
+        data_dict[EloEvalColumn.human_all.name] = self.human_all
+        data_dict[EloEvalColumn.human_instruct.name] = self.human_instruct
+        data_dict[EloEvalColumn.human_code_instruct.name] = self.human_code_instruct
 
         return data_dict
 

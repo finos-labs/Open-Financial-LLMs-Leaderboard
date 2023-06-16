@@ -1,4 +1,8 @@
 CHANGELOG_TEXT = f"""
+## [2023-06-16]
+- Refactored code base
+- Added new columns: number of parameters, hub likes, license
+
 ## [2023-06-13] 
 - Adjust description for TruthfulQA
 
@@ -13,7 +17,7 @@ CHANGELOG_TEXT = f"""
 - Add a typeahead search bar
 - Use webhooks to automatically spawn a new Space when someone opens a PR
 - Start recording `submitted_time` for eval requests
-- Limit column max-width
+- Limit AutoEvalColumn max-width
 
 ## [2023-05-30] 
 - Add a citation button
