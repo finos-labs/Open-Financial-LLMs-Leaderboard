@@ -27,6 +27,8 @@ GPT_4_EVAL_REPO = "HuggingFaceH4/open_llm_leaderboard_oai_evals"
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 ADD_PLOTS = False
 
+EVAL_REQUESTS_PATH = "auto_evals/eval_requests"
+
 api = HfApi()
 
 
@@ -37,10 +39,10 @@ def restart_space():
 
 auto_eval_repo, human_eval_repo, gpt_4_eval_repo, requested_models = load_all_info_from_hub(LMEH_REPO, HUMAN_EVAL_REPO, GPT_4_EVAL_REPO)
 
-COLS = [c.name for c in fields(AutoEvalColumn)]
-TYPES = [c.type for c in fields(AutoEvalColumn)]
-COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default]
-TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default]
+COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]
+TYPES = [c.type for c in fields(AutoEvalColumn) if not c.hidden]
+COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
+TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
 
 if not IS_PUBLIC:
     COLS.insert(2, AutoEvalColumn.is_8bit.name)
@@ -95,14 +97,14 @@ def get_evaluation_queue_df():
 
     entries = [
         entry
-        for entry in os.listdir("auto_evals/eval_requests")
+        for entry in os.listdir(EVAL_REQUESTS_PATH)
         if not entry.startswith(".")
     ]
     all_evals = []
 
     for entry in entries:
         if ".json" in entry:
-            file_path = os.path.join("auto_evals/eval_requests", entry)
+            file_path = os.path.join(EVAL_REQUESTS_PATH, entry)
             with open(file_path) as fp:
                 data = json.load(fp)
 
@@ -115,11 +117,11 @@ def get_evaluation_queue_df():
             # this is a folder
             sub_entries = [
                 e
-                for e in os.listdir(f"auto_evals/eval_requests/{entry}")
+                for e in os.listdir(f"{EVAL_REQUESTS_PATH}/{entry}")
                 if not e.startswith(".")
             ]
             for sub_entry in sub_entries:
-                file_path = os.path.join("auto_evals/eval_requests", entry, sub_entry)
+                file_path = os.path.join(EVAL_REQUESTS_PATH, entry, sub_entry)
                 with open(file_path) as fp:
                     data = json.load(fp)
 
@@ -244,7 +246,7 @@ def add_new_eval(
         user_name = model.split("/")[0]
         model_path = model.split("/")[1]
 
-    OUT_DIR = f"auto_evals/eval_requests/{user_name}"
+    OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
 

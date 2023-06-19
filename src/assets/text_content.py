@@ -1,4 +1,8 @@
 CHANGELOG_TEXT = f"""
+## [2023-06-19]
+- Added model type column
+- Hid revision and 8bit columns since all models are the same atm
+
 ## [2023-06-16]
 - Refactored code base
 - Added new columns: number of parameters, hub likes, license

@@ -2,6 +2,7 @@ import re
 from typing import List
 
 from src.utils_display import AutoEvalColumn
+from src.auto_leaderboard.model_metadata_type import get_model_type
 
 from huggingface_hub import HfApi
 import huggingface_hub
@@ -38,17 +39,18 @@ size_pattern = re.compile(r"\d+(b|m)")
 def get_model_size(model_name, model_info):
     # In billions
     try:
-        return model_info.safetensors["total"] / 1e9
+        return round(model_info.safetensors["total"] / 1e9, 3) 
     except AttributeError:
         #print(f"Repository {model_id} does not have safetensors weights")
         pass
     try:
         size_match = re.search(size_pattern, model_name.lower())
         size = size_match.group(0)
-        return int(size[:-1]) if size[-1] == "b" else int(size[:-1]) / 1e3
+        return round(int(size[:-1]) if size[-1] == "b" else int(size[:-1]) / 1e3, 3)
     except AttributeError:
         return None
 
 
 def apply_metadata(leaderboard_data: List[dict]):
+    get_model_type(leaderboard_data)
     get_model_infos_from_hub(leaderboard_data)

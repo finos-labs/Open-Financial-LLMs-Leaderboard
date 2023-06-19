@@ -7,6 +7,7 @@ class ColumnContent:
     name: str
     type: str 
     displayed_by_default: bool 
+    hidden: bool = False
 
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
@@ -14,8 +15,9 @@ def fields(raw_class):
 @dataclass(frozen=True)
 class AutoEvalColumn: # Auto evals column
     model = ColumnContent("Model", "markdown", True)
-    revision = ColumnContent("Revision", "str", True)
-    is_8bit = ColumnContent("8bit", "bool", False)
+    revision = ColumnContent("Revision", "str", True, True)
+    model_type = ColumnContent("Type", "bool", False)
+    is_8bit = ColumnContent("8bit", "bool", False, True)
     license = ColumnContent("Hub License", "str", False)
     params = ColumnContent("#Params (B)", "number", False)
     likes = ColumnContent("Hub ❤️", "number", False)
