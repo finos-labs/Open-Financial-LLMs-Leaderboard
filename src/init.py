@@ -15,15 +15,11 @@ def get_all_requested_models(requested_models_dir):
 
     return set([file_name.lower().split("eval_requests/")[1] for file_name in file_names])
 
-def load_all_info_from_hub(LMEH_REPO, HUMAN_EVAL_REPO, GPT_4_EVAL_REPO):
+def load_all_info_from_hub(LMEH_REPO):
     auto_eval_repo = None
     requested_models = None
     if H4_TOKEN:
         print("Pulling evaluation requests and results.")
-        # try:
-        #     shutil.rmtree("./auto_evals/")
-        # except:
-        #     pass
 
         auto_eval_repo = Repository(
             local_dir="./auto_evals/",
@@ -36,29 +32,7 @@ def load_all_info_from_hub(LMEH_REPO, HUMAN_EVAL_REPO, GPT_4_EVAL_REPO):
         requested_models_dir = "./auto_evals/eval_requests"
         requested_models = get_all_requested_models(requested_models_dir)
 
-    human_eval_repo = None
-    if H4_TOKEN and not os.path.isdir("./human_evals"):
-        print("Pulling human evaluation repo")
-        human_eval_repo = Repository(
-            local_dir="./human_evals/",
-            clone_from=HUMAN_EVAL_REPO,
-            use_auth_token=H4_TOKEN,
-            repo_type="dataset",
-        )
-        human_eval_repo.git_pull()
-
-    gpt_4_eval_repo = None
-    if H4_TOKEN and not os.path.isdir("./gpt_4_evals"):
-        print("Pulling GPT-4 evaluation repo")
-        gpt_4_eval_repo = Repository(
-            local_dir="./gpt_4_evals/",
-            clone_from=GPT_4_EVAL_REPO,
-            use_auth_token=H4_TOKEN,
-            repo_type="dataset",
-        )
-        gpt_4_eval_repo.git_pull()
-
-    return auto_eval_repo, human_eval_repo, gpt_4_eval_repo, requested_models
+    return auto_eval_repo, requested_models
 
 
 #def load_results(model, benchmark, metric):
