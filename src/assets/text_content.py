@@ -60,9 +60,14 @@ INTRODUCTION_TEXT = f"""
 📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate LLMs and chatbots as they are released. 
 
 🤗 Anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as LLaMa.
+
+Other cool benchmarks for LLMs are developped at HuggingFace, go check them out!
+- 🙋🤖 [human and GPT4 evaluation](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard)
+- 🖥️ [performance benchmarking](https://huggingface.co/spaces/optimum)
 """
 
 LLM_BENCHMARKS_TEXT = f"""
+# Context
 With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art. 
 
 📈 We evaluate models on 4 key benchmarks from the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. 
@@ -73,6 +78,21 @@ With the plethora of large language models (LLMs) and chatbots being released we
 - <a href="https://arxiv.org/abs/2109.07958" target="_blank">  TruthfulQA </a> (0-shot) - a test to measure a model’s propensity to reproduce falsehoods commonly found online.
 
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings.
+
+
+# Reproduction
+To reproduce our results, here is the commands you can run, using [this version](https://github.com/EleutherAI/lm-evaluation-harness/tree/e47e01beea79cfe87421e2dac49e64d499c240b4) of the Eleuther AI Harness:
+`python main.py --model=hf-causal --model_args="pretrained=<your_model>,use_accelerate=True,revision=<your_model_revision>"`
+` --tasks=<task_list> --num_fewshot=<n_few_shot> --batch_size=2 --output_path=<output_path>`
+
+The total batch size we get for models which fit on one A100 node is 16 (8 GPUs * 2). If you don't use parallelism, adapt your batch size to fit. 
+*You can expect results to vary slightly for different batch sizes because of padding.*
+
+The tasks and few shots parameters are:
+- ARC: 25-shot, *arc-challenge*
+- HellaSwag: 10-shot, *hellaswag*
+- TruthfulQA: 0-shot, *truthfulqa-mc* (mc2 score)
+- MMLU: 5-shot, *hendrycksTest-abstract_algebra,hendrycksTest-anatomy,hendrycksTest-astronomy,hendrycksTest-business_ethics,hendrycksTest-clinical_knowledge,hendrycksTest-college_biology,hendrycksTest-college_chemistry,hendrycksTest-college_computer_science,hendrycksTest-college_mathematics,hendrycksTest-college_medicine,hendrycksTest-college_physics,hendrycksTest-computer_security,hendrycksTest-conceptual_physics,hendrycksTest-econometrics,hendrycksTest-electrical_engineering,hendrycksTest-elementary_mathematics,hendrycksTest-formal_logic,hendrycksTest-global_facts,hendrycksTest-high_school_biology,hendrycksTest-high_school_chemistry,hendrycksTest-high_school_computer_science,hendrycksTest-high_school_european_history,hendrycksTest-high_school_geography,hendrycksTest-high_school_government_and_politics,hendrycksTest-high_school_macroeconomics,hendrycksTest-high_school_mathematics,hendrycksTest-high_school_microeconomics,hendrycksTest-high_school_physics,hendrycksTest-high_school_psychology,hendrycksTest-high_school_statistics,hendrycksTest-high_school_us_history,hendrycksTest-high_school_world_history,hendrycksTest-human_aging,hendrycksTest-human_sexuality,hendrycksTest-international_law,hendrycksTest-jurisprudence,hendrycksTest-logical_fallacies,hendrycksTest-machine_learning,hendrycksTest-management,hendrycksTest-marketing,hendrycksTest-medical_genetics,hendrycksTest-miscellaneous,hendrycksTest-moral_disputes,hendrycksTest-moral_scenarios,hendrycksTest-nutrition,hendrycksTest-philosophy,hendrycksTest-prehistory,hendrycksTest-professional_accounting,hendrycksTest-professional_law,hendrycksTest-professional_medicine,hendrycksTest-professional_psychology,hendrycksTest-public_relations,hendrycksTest-security_studies,hendrycksTest-sociology,hendrycksTest-us_foreign_policy,hendrycksTest-virology,hendrycksTest-world_religions*
 """
 
 EVALUATION_QUEUE_TEXT = f"""
@@ -82,7 +102,7 @@ These models will be automatically evaluated on the 🤗 cluster.
 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""@misc{open-llm-leaderboard,
-  author = {Edward Beeching, Sheon Han, Nathan Lambert, Nazneen Rajani, Omar Sanseviero, Lewis Tunstall, Thomas Wolf},
+  author = {Edward Beeching, Clémentine Fourrier, Nathan Habib, Sheon Han, Nathan Lambert, Nazneen Rajani, Omar Sanseviero, Lewis Tunstall, Thomas Wolf},
   title = {Open LLM Leaderboard},
   year = {2023},
   publisher = {Hugging Face},

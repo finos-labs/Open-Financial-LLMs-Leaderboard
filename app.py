@@ -310,6 +310,13 @@ with demo:
             )
         with gr.TabItem("About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
+            with gr.Accordion("📙 Citation", open=False):
+                citation_button = gr.Textbox(
+                    value=CITATION_BUTTON_TEXT,
+                    label=CITATION_BUTTON_LABEL,
+                    elem_id="citation-button",
+                ).style(show_copy_button=True)
+
 
     with gr.Column():
         with gr.Row():
@@ -388,18 +395,6 @@ with demo:
                 ],
                 submission_result,
             )
-
-    with gr.Row():
-        with gr.Column():
-            with gr.Accordion("📙 Citation", open=False):
-                citation_button = gr.Textbox(
-                    value=CITATION_BUTTON_TEXT,
-                    label=CITATION_BUTTON_LABEL,
-                    elem_id="citation-button",
-                ).style(show_copy_button=True)
-        with gr.Column():
-            with gr.Accordion("✨ CHANGELOG", open=False):
-                changelog = gr.Markdown(CHANGELOG_TEXT, elem_id="changelog-text")
 
     dummy = gr.Textbox(visible=False)
     demo.load(
