@@ -7,14 +7,13 @@ from typing import Dict, List, Tuple
 from src.utils_display import AutoEvalColumn, make_clickable_model
 import numpy as np
 
-# clone / pull the lmeh eval data
-METRICS = ["acc_norm", "acc_norm", "acc_norm", "mc2"]
-BENCHMARKS = ["arc_challenge", "hellaswag", "hendrycks", "truthfulqa_mc"]
+METRICS = ["acc_norm", "acc_norm", "acc", "mc2"]
+BENCHMARKS = ["arc:challenge", "hellaswag", "hendrycksTest", "truthfulqa:mc"]
 BENCH_TO_NAME = {
-    "arc_challenge": AutoEvalColumn.arc.name,
+    "arc:challenge": AutoEvalColumn.arc.name,
     "hellaswag": AutoEvalColumn.hellaswag.name,
-    "hendrycks": AutoEvalColumn.mmlu.name,
-    "truthfulqa_mc": AutoEvalColumn.truthfulqa.name,
+    "hendrycksTest": AutoEvalColumn.mmlu.name,
+    "truthfulqa:mc": AutoEvalColumn.truthfulqa.name,
 }
 
 
@@ -24,8 +23,8 @@ class EvalResult:
     org: str
     model: str
     revision: str
-    is_8bit: bool
     results: dict
+    is_8bit: bool = False
 
     def to_dict(self):
         if self.org is not None:
@@ -44,7 +43,7 @@ class EvalResult:
         )
 
         for benchmark in BENCHMARKS:
-            if not benchmark in self.results.keys():
+            if benchmark not in self.results.keys():
                 self.results[benchmark] = None
 
         for k, v in BENCH_TO_NAME.items():
@@ -53,57 +52,61 @@ class EvalResult:
         return data_dict
 
 
-def parse_eval_result(json_filepath: str) -> Tuple[str, dict]:
+def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     with open(json_filepath) as fp:
         data = json.load(fp)
 
-    path_split = json_filepath.split("/")
-    org = None
-    model = path_split[-4]
-    is_8bit = path_split[-2] == "8bit"
-    revision = path_split[-3]
-    if len(path_split) == 7:
-        # handles gpt2 type models that don't have an org
-        result_key = f"{model}_{revision}_{is_8bit}"
+    config = data["config"]
+    model = config.get("model_name", None)
+    if model is None:
+        model = config.get("model_args", None)
+
+    model_sha = config.get("model_sha", "")
+    eval_sha = config.get("lighteval_sha", "")
+    model_split = model.split("/", 1)
+
+    model = model_split[-1]
+
+    if len(model_split) == 1:
+        org = None
+        model = model_split[0]
+        result_key = f"{model}_{model_sha}_{eval_sha}"
     else:
-        org = path_split[-5]
-        result_key =  f"{org}_{model}_{revision}_{is_8bit}"
+        org = model_split[0]
+        model = model_split[1]
+        result_key =  f"{org}_{model}_{model_sha}_{eval_sha}"
 
-    eval_result = None
+    eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
-        if benchmark in json_filepath:
-            accs = np.array([v[metric] for v in data["results"].values()])
-            mean_acc = round(np.mean(accs) * 100.0, 1)
-            eval_result = EvalResult(
-                result_key, org, model, revision, is_8bit, {benchmark: mean_acc}
-            )
+        accs = np.array([v[metric] for k, v in data["results"].items() if benchmark in k])
+        if accs.size == 0:
+            continue
+        mean_acc = round(np.mean(accs) * 100.0, 1)
+        eval_results.append(EvalResult(
+            result_key, org, model, model_sha, {benchmark: mean_acc}
+        ))
 
-    return result_key, eval_result
+    return result_key, eval_results
 
 
 def get_eval_results(is_public) -> List[EvalResult]:
     json_filepaths = glob.glob(
-        "auto_evals/eval_results/public/**/16bit/*.json", recursive=True
+        "eval-results/**/results*.json", recursive=True
     )
     if not is_public:
         json_filepaths += glob.glob(
-            "auto_evals/eval_results/private/**/*.json", recursive=True
+            "private-eval-results/**/results*.json", recursive=True
         )
-        json_filepaths += glob.glob(
-            "auto_evals/eval_results/private/**/*.json", recursive=True
-        )
-        # include the 8bit evals of public models
-        json_filepaths += glob.glob(
-            "auto_evals/eval_results/public/**/8bit/*.json", recursive=True
-        )  
+
     eval_results = {}
 
     for json_filepath in json_filepaths:
-        result_key, eval_result = parse_eval_result(json_filepath)
-        if result_key in eval_results.keys():
-            eval_results[result_key].results.update(eval_result.results)
-        else:
-            eval_results[result_key] = eval_result
+        result_key, results = parse_eval_result(json_filepath)
+        for eval_result in results:
+            if result_key in eval_results.keys():
+                eval_results[result_key].results.update(eval_result.results)
+            else:
+                eval_results[result_key] = eval_result
 
     eval_results = [v for v in eval_results.values()]
 

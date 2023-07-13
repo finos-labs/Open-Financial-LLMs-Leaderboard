@@ -13,26 +13,37 @@ def get_all_requested_models(requested_models_dir):
         if current_depth == depth:
             file_names.extend([os.path.join(root, file) for file in files])
 
-    return set([file_name.lower().split("eval_requests/")[1] for file_name in file_names])
+    return set([file_name.lower().split("eval-queue/")[1] for file_name in file_names])
 
-def load_all_info_from_hub(LMEH_REPO):
-    auto_eval_repo = None
+def load_all_info_from_hub(QUEUE_REPO, RESULTS_REPO, QUEUE_PATH, RESULTS_PATH):
+    eval_queue_repo = None
+    eval_results_repo = None
     requested_models = None
+
     if H4_TOKEN:
         print("Pulling evaluation requests and results.")
 
-        auto_eval_repo = Repository(
-            local_dir="./auto_evals/",
-            clone_from=LMEH_REPO,
+        eval_queue_repo = Repository(
+            local_dir=QUEUE_PATH,
+            clone_from=QUEUE_REPO,
             use_auth_token=H4_TOKEN,
             repo_type="dataset",
         )
-        auto_eval_repo.git_pull()
+        eval_queue_repo.git_pull()
 
-        requested_models_dir = "./auto_evals/eval_requests"
-        requested_models = get_all_requested_models(requested_models_dir)
+        eval_results_repo = Repository(
+            local_dir=RESULTS_PATH,
+            clone_from=RESULTS_REPO,
+            use_auth_token=H4_TOKEN,
+            repo_type="dataset",
+        )
+        eval_results_repo.git_pull()
 
-    return auto_eval_repo, requested_models
+        requested_models = get_all_requested_models("eval-queue")
+    else:
+        print("No HuggingFace token provided. Skipping evaluation requests and results.")
+
+    return eval_queue_repo, requested_models, eval_results_repo
 
 
 #def load_results(model, benchmark, metric):

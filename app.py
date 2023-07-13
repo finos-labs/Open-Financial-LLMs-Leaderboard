@@ -15,26 +15,40 @@ from src.assets.text_content import *
 from src.auto_leaderboard.load_results import get_eval_results_dicts, make_clickable_model
 from src.assets.hardcoded_evals import gpt4_values, gpt35_values, baseline
 from src.assets.css_html_js import custom_css, get_window_url_params
-from src.utils_display import AutoEvalColumn, EvalQueueColumn, EloEvalColumn, fields, styled_error, styled_warning, styled_message
-from src.init import load_all_info_from_hub
+from src.utils_display import AutoEvalColumn, EvalQueueColumn, fields, styled_error, styled_warning, styled_message
+from src.init import get_all_requested_models, load_all_info_from_hub
 
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
-LMEH_REPO = "HuggingFaceH4/lmeh_evaluations"
+
+QUEUE_REPO = "open-llm-leaderboard/requests"
+RESULTS_REPO = "open-llm-leaderboard/results"
+
+PRIVATE_QUEUE_REPO = "open-llm-leaderboard/private-requests"
+PRIVATE_RESULTS_REPO = "open-llm-leaderboard/private-results"
+
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 ADD_PLOTS = False
 
-EVAL_REQUESTS_PATH = "auto_evals/eval_requests"
+EVAL_REQUESTS_PATH = "eval-queue"
+EVAL_RESULTS_PATH = "eval-results"
+
+EVAL_REQUESTS_PATH_PRIVATE = "eval-queue-private"
+EVAL_RESULTS_PATH_PRIVATE = "eval-results-private"
 
 api = HfApi()
-
 
 def restart_space():
     api.restart_space(
         repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN
     )
 
-auto_eval_repo, requested_models = load_all_info_from_hub(LMEH_REPO)
+eval_queue, requested_models, eval_results = load_all_info_from_hub(QUEUE_REPO, RESULTS_REPO, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH)
+
+if not IS_PUBLIC:
+    eval_queue_private, requested_models_private, eval_results_private = load_all_info_from_hub(PRIVATE_QUEUE_REPO, PRIVATE_RESULTS_REPO, EVAL_REQUESTS_PATH_PRIVATE, EVAL_RESULTS_PATH_PRIVATE)
+else:
+    eval_queue_private, eval_results_private = None, None
 
 COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]
 TYPES = [c.type for c in fields(AutoEvalColumn) if not c.hidden]
@@ -60,9 +74,12 @@ def has_nan_values(df, columns):
 
 
 def get_leaderboard_df():
-    if auto_eval_repo:
+    if eval_results:
         print("Pulling evaluation results for the leaderboard.")
-        auto_eval_repo.git_pull()
+        eval_results.git_pull()
+    if eval_results_private:
+        print("Pulling evaluation results for the leaderboard.")
+        eval_results_private.git_pull()
 
     all_data = get_eval_results_dicts(IS_PUBLIC)
 
@@ -84,9 +101,12 @@ def get_leaderboard_df():
 
 def get_evaluation_queue_df():
     # todo @saylortwift: replace the repo by the one you created for the eval queue
-    if auto_eval_repo:
+    if eval_queue:
         print("Pulling changes for the evaluation queue.")
-        auto_eval_repo.git_pull()
+        eval_queue.git_pull()
+    if eval_queue_private:
+        print("Pulling changes for the evaluation queue.")
+        eval_queue_private.git_pull()
 
     entries = [
         entry
@@ -106,7 +126,7 @@ def get_evaluation_queue_df():
             data["revision"] = data.get("revision", "main")
 
             all_evals.append(data)
-        else:
+        elif ".md" not in entry:
             # this is a folder
             sub_entries = [
                 e
@@ -124,10 +144,10 @@ def get_evaluation_queue_df():
 
     pending_list = [e for e in all_evals if e["status"] == "PENDING"]
     running_list = [e for e in all_evals if e["status"] == "RUNNING"]
-    finished_list = [e for e in all_evals if e["status"] == "FINISHED"]
-    df_pending = pd.DataFrame.from_records(pending_list)
-    df_running = pd.DataFrame.from_records(running_list)
-    df_finished = pd.DataFrame.from_records(finished_list)
+    finished_list = [e for e in all_evals if e["status"].startswith("FINISHED")]
+    df_pending = pd.DataFrame.from_records(pending_list, columns=EVAL_COLS)
+    df_running = pd.DataFrame.from_records(running_list, columns=EVAL_COLS)
+    df_finished = pd.DataFrame.from_records(finished_list, columns=EVAL_COLS)
     return df_finished[EVAL_COLS], df_running[EVAL_COLS], df_pending[EVAL_COLS]
 
 
@@ -149,7 +169,7 @@ def is_model_on_hub(model_name, revision) -> bool:
         return False, "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard."
 
     except Exception as e:
-        print("Could not get the model config from the hub.: \n", e)
+        print(f"Could not get the model config from the hub.: {e}")
         return False, "was not found on hub!"
 
 
@@ -200,7 +220,7 @@ def add_new_eval(
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
 
     # Check for duplicate submission
-    if out_path.split("eval_requests/")[1].lower() in requested_models:
+    if out_path.split("eval-queue/")[1].lower() in requested_models:
         return styled_warning("This model has been already submitted.")
 
     with open(out_path, "w") as f:
@@ -208,13 +228,17 @@ def add_new_eval(
 
     api.upload_file(
         path_or_fileobj=out_path,
-        path_in_repo=out_path,
-        repo_id=LMEH_REPO,
+        path_in_repo=out_path.split("eval-queue/")[1],
+        repo_id=QUEUE_REPO,
         token=H4_TOKEN,
         repo_type="dataset",
+        commit_message=f"Add {model} to eval queue",
     )
 
-    return styled_message("Your request has been submitted to the evaluation queue!")
+    # remove the local file
+    os.remove(out_path)
+
+    return styled_message("Your request has been submitted to the evaluation queue!\nPlease wait for up to an hour for the model to show in the PENDING list.")
 
 
 def refresh():
@@ -310,13 +334,6 @@ with demo:
             )
         with gr.TabItem("About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
-            with gr.Accordion("📙 Citation", open=False):
-                citation_button = gr.Textbox(
-                    value=CITATION_BUTTON_TEXT,
-                    label=CITATION_BUTTON_LABEL,
-                    elem_id="citation-button",
-                ).style(show_copy_button=True)
-
 
     with gr.Column():
         with gr.Row():
@@ -395,6 +412,14 @@ with demo:
                 ],
                 submission_result,
             )
+
+    with gr.Row():
+        with gr.Accordion("📙 Citation", open=False):
+            citation_button = gr.Textbox(
+                value=CITATION_BUTTON_TEXT,
+                label=CITATION_BUTTON_LABEL,
+                elem_id="citation-button",
+            ).style(show_copy_button=True)
 
     dummy = gr.Textbox(visible=False)
     demo.load(
