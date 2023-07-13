@@ -77,10 +77,9 @@ With the plethora of large language models (LLMs) and chatbots being released we
 
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings.
 
-
 # Some good practices before submitting a model
 
-## 1) Make sure you can load your model and tokenizer using AutoClasses:
+### 1) Make sure you can load your model and tokenizer using AutoClasses:
 ```python
 from transformers import AutoConfig, AutoModel, AutoTokenizer
 config = AutoConfig.from_pretrained("your model name", revision=revision)
@@ -92,16 +91,24 @@ If this step fails, follow the error messages to debug your model before submitt
 Note: make sure your model is public!
 Note: if your model needs `use_remote_code=True`, we do not support this option yet but we are working on adding it, stay posted!
 
-## 2) Convert your model weights to [safetensors](https://huggingface.co/docs/safetensors/index)
+### 2) Convert your model weights to [safetensors](https://huggingface.co/docs/safetensors/index)
 It's a new format for storing weights which is safer and faster to load and use. It will also allow us to add the number of weights of your model to the `Extended Viewer`!
 
-## 3) Make sure your model has an open license!
+### 3) Make sure your model has an open license!
 This is a leaderboard for Open LLMs, and we'd love for as many people as possible to know they can use your model 🤗
 
-## 4) Fill up your model card
+### 4) Fill up your model card
 When we add extra information about models to the leaderboard, it will be automatically taken from the model card
 
-# Reproduction
+# Reproducibility and details
+
+### Details and logs
+You can find:
+- detailed numerical results in the `results` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/results
+- details on the input/outputs for the models in the `details` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/details
+- community queries and running status in the `requests` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/requests
+
+### Reproducibility
 To reproduce our results, here is the commands you can run, using [this version](https://github.com/EleutherAI/lm-evaluation-harness/tree/e47e01beea79cfe87421e2dac49e64d499c240b4) of the Eleuther AI Harness:
 `python main.py --model=hf-causal --model_args="pretrained=<your_model>,use_accelerate=True,revision=<your_model_revision>"`
 ` --tasks=<task_list> --num_fewshot=<n_few_shot> --batch_size=2 --output_path=<output_path>`
