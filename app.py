@@ -366,9 +366,10 @@ with demo:
                                 datatype=EVAL_TYPES,
                                 max_rows=5,
                             )
+            with gr.Row():
+                gr.Markdown("# ✉️✨ Submit your model here!", elem_classes="markdown-text")
 
             with gr.Row():
-                gr.Markdown("# SUBMIT HERE", elem_classes="markdown-text")
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")
                     revision_name_textbox = gr.Textbox(
