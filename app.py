@@ -335,51 +335,40 @@ with demo:
         with gr.TabItem("About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
-    with gr.Column():
-        with gr.Row():
-            gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
-
-        with gr.Column():
-            with gr.Accordion("✅ Finished Evaluations", open=False):
+        with gr.TabItem("✉️✨ Submit here! ", elem_id="llm-benchmark-tab-table", id=3):
+            with gr.Column():
                 with gr.Row():
-                    finished_eval_table = gr.components.Dataframe(
-                        value=finished_eval_queue_df,
-                        headers=EVAL_COLS,
-                        datatype=EVAL_TYPES,
-                        max_rows=5,
-                    )
-            with gr.Accordion("🔄 Running Evaluation Queue", open=False):
-                with gr.Row():
-                    running_eval_table = gr.components.Dataframe(
-                        value=running_eval_queue_df,
-                        headers=EVAL_COLS,
-                        datatype=EVAL_TYPES,
-                        max_rows=5,
-                    )
+                    gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
-            with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
-                with gr.Row():
-                    pending_eval_table = gr.components.Dataframe(
-                        value=pending_eval_queue_df,
-                        headers=EVAL_COLS,
-                        datatype=EVAL_TYPES,
-                        max_rows=5,
-                    )
+                with gr.Column():
+                    with gr.Accordion("✅ Finished Evaluations", open=False):
+                        with gr.Row():
+                            finished_eval_table = gr.components.Dataframe(
+                                value=finished_eval_queue_df,
+                                headers=EVAL_COLS,
+                                datatype=EVAL_TYPES,
+                                max_rows=5,
+                            )
+                    with gr.Accordion("🔄 Running Evaluation Queue", open=False):
+                        with gr.Row():
+                            running_eval_table = gr.components.Dataframe(
+                                value=running_eval_queue_df,
+                                headers=EVAL_COLS,
+                                datatype=EVAL_TYPES,
+                                max_rows=5,
+                            )
 
-        with gr.Row():
-            refresh_button = gr.Button("Refresh")
-            refresh_button.click(
-                refresh,
-                inputs=[],
-                outputs=[
-                    leaderboard_table,
-                    finished_eval_table,
-                    running_eval_table,
-                    pending_eval_table,
-                ],
-            )
-        with gr.Accordion("Submit a new model for evaluation"):
+                    with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
+                        with gr.Row():
+                            pending_eval_table = gr.components.Dataframe(
+                                value=pending_eval_queue_df,
+                                headers=EVAL_COLS,
+                                datatype=EVAL_TYPES,
+                                max_rows=5,
+                            )
+
             with gr.Row():
+                gr.Markdown("# SUBMIT HERE", elem_classes="markdown-text")
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")
                     revision_name_textbox = gr.Textbox(
@@ -411,6 +400,19 @@ with demo:
                     is_delta_weight,
                 ],
                 submission_result,
+            )
+
+        with gr.Row():
+            refresh_button = gr.Button("Refresh")
+            refresh_button.click(
+                refresh,
+                inputs=[],
+                outputs=[
+                    leaderboard_table,
+                    finished_eval_table,
+                    running_eval_table,
+                    pending_eval_table,
+                ],
             )
 
     with gr.Row():
