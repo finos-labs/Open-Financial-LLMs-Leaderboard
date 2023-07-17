@@ -55,6 +55,10 @@ class EvalResult:
 def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     with open(json_filepath) as fp:
         data = json.load(fp)
+    
+    for mmlu_k in ["harness|hendrycksTest-abstract_algebra|5", "hendrycksTest-abstract_algebra"]:
+        if mmlu_k in data["versions"] and data["versions"][mmlu_k] == 0:
+            return None, [] # we skip models with the wrong version 
 
     config = data["config"]
     model = config.get("model_name", None)
