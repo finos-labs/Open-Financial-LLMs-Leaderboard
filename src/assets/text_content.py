@@ -59,7 +59,7 @@ TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 INTRODUCTION_TEXT = f"""
 📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate LLMs and chatbots as they are released. 
 
-🤗 Anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as LLaMa.
+🤗 Anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as the original LLaMa release.
 
 Other cool benchmarks for LLMs are developped at HuggingFace, go check them out: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
 """
