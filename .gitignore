@@ -8,4 +8,8 @@ __pycache__/
 
 gpt_4_evals/
 human_evals/
-model_counts.html
+eval-queue/
+eval-results/
+auto_evals/
+
+src/assets/model_counts.html

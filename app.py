@@ -257,7 +257,13 @@ def refresh():
 
 
 def search_table(df, query):
-    filtered_df = df[df[AutoEvalColumn.dummy.name].str.contains(query, case=False)]
+    if AutoEvalColumn.model_type.name in df.columns:
+        filtered_df = df[
+            (df[AutoEvalColumn.dummy.name].str.contains(query, case=False))
+            | (df[AutoEvalColumn.model_type.name].str.contains(query, case=False))
+            ]
+    else:
+        filtered_df = df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
     return filtered_df
 
 
