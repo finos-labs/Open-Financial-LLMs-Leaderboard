@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import glob
 import json
+import os
 from typing import Dict, List, Tuple
 
 from src.utils_display import AutoEvalColumn, make_clickable_model
@@ -55,12 +56,16 @@ class EvalResult:
 def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     with open(json_filepath) as fp:
         data = json.load(fp)
+
     
     for mmlu_k in ["harness|hendrycksTest-abstract_algebra|5", "hendrycksTest-abstract_algebra"]:
         if mmlu_k in data["versions"] and data["versions"][mmlu_k] == 0:
             return None, [] # we skip models with the wrong version 
 
-    config = data["config"]
+    try:
+        config = data["config"]
+    except KeyError:
+        config = data["config_general"]
     model = config.get("model_name", None)
     if model is None:
         model = config.get("model_args", None)
