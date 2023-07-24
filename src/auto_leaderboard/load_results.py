@@ -24,7 +24,7 @@ class EvalResult:
     model: str
     revision: str
     results: dict
-    is_8bit: bool = False
+    precision: str = "16bit"
 
     def to_dict(self):
         if self.org is not None:
@@ -34,7 +34,7 @@ class EvalResult:
         data_dict = {}
 
         data_dict["eval_name"] = self.eval_name # not a column, just a save name
-        data_dict[AutoEvalColumn.is_8bit.name] = self.is_8bit
+        data_dict[AutoEvalColumn.precision.name] = self.precision
         data_dict[AutoEvalColumn.model.name] = make_clickable_model(base_model)
         data_dict[AutoEvalColumn.dummy.name] = base_model
         data_dict[AutoEvalColumn.revision.name] = self.revision

@@ -161,3 +161,12 @@ TYPE_METADATA: Dict[str, ModelType] = {
 def get_model_type(leaderboard_data: List[dict]):
     for model_data in leaderboard_data:
         model_data["Type"] = TYPE_METADATA.get(model_data["model_name_for_query"], "N/A")
+        if model_data["Type"] == "N/A":
+            if any([i in model_data["model_name_for_query"] for i in ["finetuned", "-ft-"]]):
+                model_data["Type"] = ModelType.SFT
+            elif any([i in model_data["model_name_for_query"] for i in ["pretrained"]]):
+                model_data["Type"] = ModelType.PT
+            elif any([i in model_data["model_name_for_query"] for i in ["-rl-", "-rlhf-"]]):
+                model_data["Type"] = ModelType.RL
+ 
+ 

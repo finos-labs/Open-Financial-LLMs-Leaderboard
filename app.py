@@ -28,7 +28,6 @@ PRIVATE_QUEUE_REPO = "open-llm-leaderboard/private-requests"
 PRIVATE_RESULTS_REPO = "open-llm-leaderboard/private-results"
 
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
-ADD_PLOTS = False
 
 EVAL_REQUESTS_PATH = "eval-queue"
 EVAL_RESULTS_PATH = "eval-results"
@@ -56,8 +55,8 @@ COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default an
 TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
 
 if not IS_PUBLIC:
-    COLS.insert(2, AutoEvalColumn.is_8bit.name)
-    TYPES.insert(2, AutoEvalColumn.is_8bit.type)
+    COLS.insert(2, AutoEvalColumn.precision.name)
+    TYPES.insert(2, AutoEvalColumn.precision.type)
 
 EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
 EVAL_TYPES = [c.type for c in fields(EvalQueueColumn)]
@@ -177,25 +176,27 @@ def add_new_eval(
     model: str,
     base_model: str,
     revision: str,
-    is_8_bit_eval: bool,
+    precision: str,
     private: bool,
-    is_delta_weight: bool,
+    weight_type: str,
 ):
+    precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
 
-    if is_delta_weight: 
+    if weight_type in ["Delta", "Adapter"]:
         base_model_on_hub, error = is_model_on_hub(base_model, revision)
         if not base_model_on_hub:
             return styled_error(f'Base model "{base_model}" {error}')
+        
 
     model_on_hub, error = is_model_on_hub(model, revision)
     if not model_on_hub:
         return styled_error(f'Model "{model}" {error}')
-
+    
     print("adding new eval")
 
     eval_entry = {
@@ -203,8 +204,8 @@ def add_new_eval(
         "base_model": base_model,
         "revision": revision,
         "private": private,
-        "8bit_eval": is_8_bit_eval,
-        "is_delta_weight": is_delta_weight,
+        "precision": precision,
+        "weight_type": weight_type,
         "status": "PENDING",
         "submitted_time": current_time,
     }
@@ -217,7 +218,7 @@ def add_new_eval(
 
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{is_8_bit_eval}_{is_delta_weight}.json"
+    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
 
     # Check for duplicate submission
     if out_path.split("eval-queue/")[1].lower() in requested_models:
@@ -381,17 +382,29 @@ with demo:
                     revision_name_textbox = gr.Textbox(
                         label="revision", placeholder="main"
                     )
-
-                with gr.Column():
-                    is_8bit_toggle = gr.Checkbox(
-                        False, label="8 bit eval", visible=not IS_PUBLIC
-                    )
                     private = gr.Checkbox(
                         False, label="Private", visible=not IS_PUBLIC
                     )
-                    is_delta_weight = gr.Checkbox(False, label="Delta weights")
+
+                with gr.Column():
+                    precision = gr.Dropdown(
+                        choices=["float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)"], 
+                        label="Precision", 
+                        multiselect=False,
+                        value="float16",
+                        max_choices=1,
+                        interactive=True,
+                    )
+                    weight_type = gr.Dropdown(
+                        choices=["Original", "Delta", "Adapter"],
+                        label="Weights type", 
+                        multiselect=False,
+                        value="Original",
+                        max_choices=1,
+                        interactive=True,
+                    )
                     base_model_name_textbox = gr.Textbox(
-                        label="base model (for delta)"
+                        label="Base model (for delta or adapter weights)"
                     )
 
             submit_button = gr.Button("Submit Eval")
@@ -402,9 +415,9 @@ with demo:
                     model_name_textbox,
                     base_model_name_textbox,
                     revision_name_textbox,
-                    is_8bit_toggle,
+                    precision,
                     private,
-                    is_delta_weight,
+                    weight_type,
                 ],
                 submission_result,
             )

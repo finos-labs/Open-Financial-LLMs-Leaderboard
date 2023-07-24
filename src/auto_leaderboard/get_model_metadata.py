@@ -36,7 +36,7 @@ def get_model_license(model_info):
 def get_model_likes(model_info):
     return model_info.likes
 
-size_pattern = re.compile(r"\d+(b|m)")
+size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
 
 def get_model_size(model_name, model_info):
     # In billions
@@ -46,7 +46,7 @@ def get_model_size(model_name, model_info):
         try:
             size_match = re.search(size_pattern, model_name.lower())
             size = size_match.group(0)
-            return round(int(size[:-1]) if size[-1] == "b" else int(size[:-1]) / 1e3, 3)
+            return round(float(size[:-1]) if size[-1] == "b" else float(size[:-1]) / 1e3, 3)
         except AttributeError:
             return None
 

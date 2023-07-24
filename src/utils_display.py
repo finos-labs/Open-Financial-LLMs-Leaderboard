@@ -20,8 +20,8 @@ class AutoEvalColumn: # Auto evals column
     hellaswag = ColumnContent("HellaSwag ⬆️", "number", True)
     mmlu = ColumnContent("MMLU ⬆️", "number", True)
     truthfulqa = ColumnContent("TruthfulQA (MC) ⬆️", "number", True)
-    model_type = ColumnContent("Type", "bool", False)
-    is_8bit = ColumnContent("8bit", "bool", False, True)
+    model_type = ColumnContent("Type", "str", False)
+    precision = ColumnContent("Precision", "str", False, True)
     license = ColumnContent("Hub License", "str", False)
     params = ColumnContent("#Params (B)", "number", False)
     likes = ColumnContent("Hub ❤️", "number", False)
@@ -42,8 +42,8 @@ class EvalQueueColumn: # Queue column
     model = ColumnContent("model", "markdown", True)
     revision = ColumnContent("revision", "str", True)
     private = ColumnContent("private", "bool", True)
-    is_8bit = ColumnContent("8bit_eval", "bool", True)
-    has_delta_weight = ColumnContent("is_delta_weight", "bool", True)
+    precision = ColumnContent("precision", "bool", True)
+    weight_type = ColumnContent("weight_type", "str", "Original")
     status = ColumnContent("status", "str", True)
 
 LLAMAS = ["huggingface/llama-7b", "huggingface/llama-13b", "huggingface/llama-30b", "huggingface/llama-65b"]
