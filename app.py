@@ -193,9 +193,10 @@ def add_new_eval(
             return styled_error(f'Base model "{base_model}" {error}')
         
 
-    model_on_hub, error = is_model_on_hub(model, revision)
-    if not model_on_hub:
-        return styled_error(f'Model "{model}" {error}')
+    if not weight_type == "Adapter":
+        model_on_hub, error = is_model_on_hub(model, revision)
+        if not model_on_hub:
+            return styled_error(f'Model "{model}" {error}')
     
     print("adding new eval")
 
