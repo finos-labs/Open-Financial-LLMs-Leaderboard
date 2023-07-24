@@ -26,6 +26,8 @@ class EvalResult:
     revision: str
     results: dict
     precision: str = "16bit"
+    model_type: str = ""
+    weight_type: str = ""
 
     def to_dict(self):
         if self.org is not None:
@@ -35,7 +37,9 @@ class EvalResult:
         data_dict = {}
 
         data_dict["eval_name"] = self.eval_name # not a column, just a save name
+        data_dict["weight_type"] = self.weight_type  # not a column, just a save name
         data_dict[AutoEvalColumn.precision.name] = self.precision
+        data_dict[AutoEvalColumn.model_type.name] = self.model_type
         data_dict[AutoEvalColumn.model.name] = make_clickable_model(base_model)
         data_dict[AutoEvalColumn.dummy.name] = base_model
         data_dict[AutoEvalColumn.revision.name] = self.revision
@@ -92,7 +96,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
             continue
         mean_acc = round(np.mean(accs) * 100.0, 1)
         eval_results.append(EvalResult(
-            result_key, org, model, model_sha, {benchmark: mean_acc}
+            eval_name=result_key, org=org, model=model, revision=model_sha, results={benchmark: mean_acc}, #todo model_type=, weight_type=
         ))
 
     return result_key, eval_results

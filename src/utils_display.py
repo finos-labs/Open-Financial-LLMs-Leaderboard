@@ -14,14 +14,14 @@ def fields(raw_class):
 
 @dataclass(frozen=True)
 class AutoEvalColumn: # Auto evals column
-    model_type_symbol = ColumnContent("Type", "str", True)
+    model_type_symbol = ColumnContent("T", "str", True)
     model = ColumnContent("Model", "markdown", True)
     average = ColumnContent("Average ⬆️", "number", True)
     arc = ColumnContent("ARC", "number", True)
     hellaswag = ColumnContent("HellaSwag", "number", True)
     mmlu = ColumnContent("MMLU", "number", True)
     truthfulqa = ColumnContent("TruthfulQA (MC) ⬆️", "number", True)
-    model_type = ColumnContent("Type name", "str", False)
+    model_type = ColumnContent("Type", "str", False)
     precision = ColumnContent("Precision", "str", False, True)
     license = ColumnContent("Hub License", "str", False)
     params = ColumnContent("#Params (B)", "number", False)

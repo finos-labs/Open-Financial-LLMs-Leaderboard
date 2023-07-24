@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List
 
+from ..utils_display import AutoEvalColumn
+
 @dataclass
 class ModelInfo:
     name: str
@@ -167,23 +169,24 @@ TYPE_METADATA: Dict[str, ModelType] = {
 
 def get_model_type(leaderboard_data: List[dict]):
     for model_data in leaderboard_data:
-        # Init
-        model_data["Type name"] = "N/A"
-        model_data["Type"] = ""
-
+        # Todo @clefourrier once requests are connected with results 
+        is_delta = False # (model_data["weight_type"] != "Original")
         # Stored information
         if model_data["model_name_for_query"] in TYPE_METADATA:
-            model_data["Type name"] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
-            model_data["Type"] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol
-        else: # Supposed from the name
-            if any([i in model_data["model_name_for_query"] for i in ["finetuned", "-ft-"]]):
-                model_data["Type name"] = ModelType.SFT.value.name
-                model_data["Type"] = ModelType.SFT.value.symbol
-            elif any([i in model_data["model_name_for_query"] for i in ["pretrained"]]):
-                model_data["Type name"] = ModelType.PT.value.name
-                model_data["Type"] = ModelType.PT.value.symbol
-            elif any([i in model_data["model_name_for_query"] for i in ["-rl-", "-rlhf-"]]):
-                model_data["Type name"] = ModelType.RL.value.name
-                model_data["Type"] = ModelType.RL.value.symbol
+            model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
+            model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
+        # Inferred from the name or the selected type 
+        elif model_data[AutoEvalColumn.model_type.name] == "pretrained" or  any([i in model_data["model_name_for_query"] for i in ["pretrained"]]):
+            model_data[AutoEvalColumn.model_type.name] = ModelType.PT.value.name
+            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.PT.value.symbol + ("🔺" if is_delta else "")
+        elif model_data[AutoEvalColumn.model_type.name] == "finetuned" or any([i in model_data["model_name_for_query"] for i in ["finetuned", "-ft-"]]):
+            model_data[AutoEvalColumn.model_type.name] = ModelType.SFT.value.name
+            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.SFT.value.symbol + ("🔺" if is_delta else "")
+        elif model_data[AutoEvalColumn.model_type.name] == "with RL" or any([i in model_data["model_name_for_query"] for i in ["-rl-", "-rlhf-"]]):
+            model_data[AutoEvalColumn.model_type.name] = ModelType.RL.value.name
+            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.RL.value.symbol + ("🔺" if is_delta else "")
+        else:
+            model_data[AutoEvalColumn.model_type.name] = "N/A"
+            model_data[AutoEvalColumn.model_type_symbol.name] = ("🔺" if is_delta else "")
  
  

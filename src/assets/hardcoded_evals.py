@@ -10,6 +10,7 @@ gpt4_values = {
     AutoEvalColumn.mmlu.name:  86.4,
     AutoEvalColumn.truthfulqa.name:  59.0,
     AutoEvalColumn.dummy.name: "GPT-4",
+    AutoEvalColumn.model_type.name: "",
 }
 
 gpt35_values = {
@@ -22,6 +23,7 @@ gpt35_values = {
     AutoEvalColumn.mmlu.name:  70.0,
     AutoEvalColumn.truthfulqa.name:  47.0,
     AutoEvalColumn.dummy.name: "GPT-3.5",
+    AutoEvalColumn.model_type.name: "",
 }
 
 baseline = {
@@ -34,5 +36,6 @@ baseline = {
     AutoEvalColumn.mmlu.name:  25.0,
     AutoEvalColumn.truthfulqa.name:  25.0,
     AutoEvalColumn.dummy.name: "baseline",
+    AutoEvalColumn.model_type.name: "",
 }
 

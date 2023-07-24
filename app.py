@@ -99,7 +99,6 @@ def get_leaderboard_df():
 
 
 def get_evaluation_queue_df():
-    # todo @saylortwift: replace the repo by the one you created for the eval queue
     if eval_queue:
         print("Pulling changes for the evaluation queue.")
         eval_queue.git_pull()
@@ -141,7 +140,7 @@ def get_evaluation_queue_df():
                 data["model"] = make_clickable_model(data["model"])
                 all_evals.append(data)
 
-    pending_list = [e for e in all_evals if e["status"] == "PENDING"]
+    pending_list = [e for e in all_evals if e["status"] in ["PENDING", "RERUN"]]
     running_list = [e for e in all_evals if e["status"] == "RUNNING"]
     finished_list = [e for e in all_evals if e["status"].startswith("FINISHED")]
     df_pending = pd.DataFrame.from_records(pending_list, columns=EVAL_COLS)
@@ -388,6 +387,14 @@ with demo:
                     private = gr.Checkbox(
                         False, label="Private", visible=not IS_PUBLIC
                     )
+                    model_type = gr.Dropdown(
+                        choices=["pretrained", "fine-tuned", "with RL"], 
+                        label="Model type", 
+                        multiselect=False,
+                        value="pretrained",
+                        max_choices=1,
+                        interactive=True,
+                    )
 
                 with gr.Column():
                     precision = gr.Dropdown(
@@ -395,14 +402,6 @@ with demo:
                         label="Precision", 
                         multiselect=False,
                         value="float16",
-                        max_choices=1,
-                        interactive=True,
-                    )
-                    model_type = gr.Dropdown(
-                        choices=["pretrained", "fine-tuned", "with RL"], 
-                        label="Model type", 
-                        multiselect=False,
-                        value="pretrained",
                         max_choices=1,
                         interactive=True,
                     )

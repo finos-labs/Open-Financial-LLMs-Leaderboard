@@ -128,6 +128,13 @@ To get more information about quantization, see:
 - 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
 - 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
 
+### Icons
+🟢 means that the model is pretrained
+🔶 that it is finetuned
+🟦 that is was trained with RL.
+If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
+
+
 # In case of model failure
 If your model is displayed in the `FAILED` category, its execution stopped. 
 Make sure you have followed the above steps first. 
