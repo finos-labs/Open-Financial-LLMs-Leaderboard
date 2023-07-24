@@ -1,10 +1,17 @@
+from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List
 
+@dataclass
+class ModelInfo:
+    name: str
+    symbol: str # emoji
+
+
 class ModelType(Enum):
-    PT = "pretrained"
-    SFT = "finetuned"
-    RL = "with RL"
+    PT = ModelInfo(name="pretrained", symbol="🟢")
+    SFT = ModelInfo(name="finetuned", symbol="🔶")
+    RL = ModelInfo(name="with RL", symbol="🟦")
 
 
 TYPE_METADATA: Dict[str, ModelType] = {
@@ -160,13 +167,23 @@ TYPE_METADATA: Dict[str, ModelType] = {
 
 def get_model_type(leaderboard_data: List[dict]):
     for model_data in leaderboard_data:
-        model_data["Type"] = TYPE_METADATA.get(model_data["model_name_for_query"], "N/A")
-        if model_data["Type"] == "N/A":
+        # Init
+        model_data["Type name"] = "N/A"
+        model_data["Type"] = ""
+
+        # Stored information
+        if model_data["model_name_for_query"] in TYPE_METADATA:
+            model_data["Type name"] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
+            model_data["Type"] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol
+        else: # Supposed from the name
             if any([i in model_data["model_name_for_query"] for i in ["finetuned", "-ft-"]]):
-                model_data["Type"] = ModelType.SFT
+                model_data["Type name"] = ModelType.SFT.value.name
+                model_data["Type"] = ModelType.SFT.value.symbol
             elif any([i in model_data["model_name_for_query"] for i in ["pretrained"]]):
-                model_data["Type"] = ModelType.PT
+                model_data["Type name"] = ModelType.PT.value.name
+                model_data["Type"] = ModelType.PT.value.symbol
             elif any([i in model_data["model_name_for_query"] for i in ["-rl-", "-rlhf-"]]):
-                model_data["Type"] = ModelType.RL
+                model_data["Type name"] = ModelType.RL.value.name
+                model_data["Type"] = ModelType.RL.value.symbol
  
  

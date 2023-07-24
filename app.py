@@ -179,6 +179,7 @@ def add_new_eval(
     precision: str,
     private: bool,
     weight_type: str,
+    model_type: str,
 ):
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -209,6 +210,7 @@ def add_new_eval(
         "weight_type": weight_type,
         "status": "PENDING",
         "submitted_time": current_time,
+        "model_type": model_type,
     }
 
     user_name = ""
@@ -396,6 +398,14 @@ with demo:
                         max_choices=1,
                         interactive=True,
                     )
+                    model_type = gr.Dropdown(
+                        choices=["pretrained", "fine-tuned", "with RL"], 
+                        label="Model type", 
+                        multiselect=False,
+                        value="pretrained",
+                        max_choices=1,
+                        interactive=True,
+                    )
                     weight_type = gr.Dropdown(
                         choices=["Original", "Delta", "Adapter"],
                         label="Weights type", 
@@ -419,6 +429,7 @@ with demo:
                     precision,
                     private,
                     weight_type,
+                    model_type
                 ],
                 submission_result,
             )
