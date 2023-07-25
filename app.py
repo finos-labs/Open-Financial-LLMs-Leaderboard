@@ -350,7 +350,7 @@ with demo:
                     gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
                 with gr.Column():
-                    with gr.Accordion("✅ Finished Evaluations", open=False):
+                    with gr.Accordion(f"✅ Finished Evaluations: {len(finished_eval_queue_df)}", open=False):
                         with gr.Row():
                             finished_eval_table = gr.components.Dataframe(
                                 value=finished_eval_queue_df,
@@ -358,7 +358,7 @@ with demo:
                                 datatype=EVAL_TYPES,
                                 max_rows=5,
                             )
-                    with gr.Accordion("🔄 Running Evaluation Queue", open=False):
+                    with gr.Accordion(f"🔄 Running Evaluation Queue: {len(running_eval_queue_df)}", open=False):
                         with gr.Row():
                             running_eval_table = gr.components.Dataframe(
                                 value=running_eval_queue_df,
@@ -367,7 +367,7 @@ with demo:
                                 max_rows=5,
                             )
 
-                    with gr.Accordion("⏳ Pending Evaluation Queue", open=False):
+                    with gr.Accordion(f"⏳ Pending Evaluation Queue: {len(pending_eval_queue_df)}", open=False):
                         with gr.Row():
                             pending_eval_table = gr.components.Dataframe(
                                 value=pending_eval_queue_df,
