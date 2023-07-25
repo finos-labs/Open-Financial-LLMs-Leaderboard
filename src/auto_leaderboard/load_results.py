@@ -4,6 +4,7 @@ import glob
 import json
 import os
 from typing import Dict, List, Tuple
+import dateutil
 
 from src.utils_display import AutoEvalColumn, make_clickable_model
 import numpy as np
@@ -103,16 +104,30 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
 
 
 def get_eval_results(is_public) -> List[EvalResult]:
-    json_filepaths = glob.glob(
-        "eval-results/**/results*.json", recursive=True
-    )
-    if not is_public:
-        json_filepaths += glob.glob(
-            "private-eval-results/**/results*.json", recursive=True
-        )
+    json_filepaths = []
+
+    for root, dir, files in os.walk("eval-results"):
+        # We should only have json files in model results
+        if len(files) == 0 or any([not f.endswith(".json") for f in files]):
+            continue
+
+        # Sort the files by date
+        try:
+            files.sort(key=lambda x:  dateutil.parser.parse(x.split("_", 1)[-1][:-5]))
+        except dateutil.parser._parser.ParserError:
+            up_to_date = files[-1]
+
+        up_to_date = files[-1]
+
+        if len(files) > 1:
+            print(root)
+            print(files)
+            print(up_to_date)
+            print("===")
+
+        json_filepaths.append(os.path.join(root, up_to_date))
 
     eval_results = {}
-
     for json_filepath in json_filepaths:
         result_key, results = parse_eval_result(json_filepath)
         for eval_result in results:
