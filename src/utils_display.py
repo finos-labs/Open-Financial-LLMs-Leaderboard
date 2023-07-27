@@ -20,7 +20,7 @@ class AutoEvalColumn: # Auto evals column
     arc = ColumnContent("ARC", "number", True)
     hellaswag = ColumnContent("HellaSwag", "number", True)
     mmlu = ColumnContent("MMLU", "number", True)
-    truthfulqa = ColumnContent("TruthfulQA (MC) ⬆️", "number", True)
+    truthfulqa = ColumnContent("TruthfulQA", "number", True)
     model_type = ColumnContent("Type", "str", False)
     precision = ColumnContent("Precision", "str", False, True)
     license = ColumnContent("Hub License", "str", False)

@@ -259,16 +259,22 @@ def refresh():
     )
 
 
-def search_table(df, query):
-    if AutoEvalColumn.model_type.name in df.columns:
+def search_table(df, leaderboard_table, query):
+    if AutoEvalColumn.model_type.name in leaderboard_table.columns:
         filtered_df = df[
             (df[AutoEvalColumn.dummy.name].str.contains(query, case=False))
             | (df[AutoEvalColumn.model_type.name].str.contains(query, case=False))
             ]
     else:
         filtered_df = df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
-    return filtered_df
+    return filtered_df[leaderboard_table.columns]
 
+
+def select_columns(df, columns):
+    always_here_cols = [AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name]
+    # We use COLS to maintain sorting 
+    filtered_df = df[always_here_cols + [c for c in COLS if c in df.columns and c in columns] + [AutoEvalColumn.dummy.name]]
+    return filtered_df
 
 def change_tab(query_param):
     query_param = query_param.replace("'", '"')
@@ -288,44 +294,30 @@ demo = gr.Blocks(css=custom_css)
 with demo:
     gr.HTML(TITLE)
     gr.Markdown(INTRODUCTION_TEXT, elem_classes="markdown-text")
-    with gr.Row():
-        with gr.Box(elem_id="search-bar-table-box"):
-            search_bar = gr.Textbox(
-                placeholder="🔍 Search your model and press ENTER...",
-                show_label=False,
-                elem_id="search-bar",
-            )
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
         with gr.TabItem("🏅 LLM Benchmark", elem_id="llm-benchmark-tab-table", id=0):
-            leaderboard_table_lite = gr.components.Dataframe(
-                value=leaderboard_df[COLS_LITE],
-                headers=COLS_LITE,
-                datatype=TYPES_LITE,
-                max_rows=None,
-                elem_id="leaderboard-table-lite",
-            )
-            # Dummy leaderboard for handling the case when the user uses backspace key
-            hidden_leaderboard_table_for_search_lite = gr.components.Dataframe(
-                value=original_df[COLS_LITE],
-                headers=COLS_LITE,
-                datatype=TYPES_LITE,
-                max_rows=None,
-                visible=False,
-            )
-            search_bar.submit(
-                search_table,
-                [hidden_leaderboard_table_for_search_lite, search_bar],
-                leaderboard_table_lite,
-            )
-
-        with gr.TabItem("🔍 Extended model view", elem_id="llm-benchmark-tab-table", id=1):
+            with gr.Row():
+                shown_columns = gr.CheckboxGroup(
+                    choices = [c for c in COLS if c not in [AutoEvalColumn.dummy.name, AutoEvalColumn.model.name, AutoEvalColumn.model_type_symbol.name]], 
+                    value = [c for c in COLS_LITE if c not in [AutoEvalColumn.dummy.name, AutoEvalColumn.model.name, AutoEvalColumn.model_type_symbol.name]],
+                    label="Select columns to show", 
+                    elem_id="column-select", 
+                    interactive=True,
+                )
+                search_bar = gr.Textbox(
+                    placeholder="🔍 Search for your model and press ENTER...",
+                    show_label=False,
+                    elem_id="search-bar",
+                )
             leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df,
-                headers=COLS,
+                value=leaderboard_df[[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value+ [AutoEvalColumn.dummy.name]],
+                headers=[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name],
                 datatype=TYPES,
                 max_rows=None,
                 elem_id="leaderboard-table",
+                interactive=False,
+                visible=True,
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
@@ -338,9 +330,10 @@ with demo:
             )
             search_bar.submit(
                 search_table,
-                [hidden_leaderboard_table_for_search, search_bar],
+                [hidden_leaderboard_table_for_search, leaderboard_table, search_bar],
                 leaderboard_table,
             )
+            shown_columns.change(select_columns, [hidden_leaderboard_table_for_search, shown_columns], leaderboard_table)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
@@ -392,7 +385,6 @@ with demo:
                         label="Model type", 
                         multiselect=False,
                         value="pretrained",
-                        max_choices=1,
                         interactive=True,
                     )
 
@@ -402,7 +394,6 @@ with demo:
                         label="Precision", 
                         multiselect=False,
                         value="float16",
-                        max_choices=1,
                         interactive=True,
                     )
                     weight_type = gr.Dropdown(
@@ -410,7 +401,6 @@ with demo:
                         label="Weights type", 
                         multiselect=False,
                         value="Original",
-                        max_choices=1,
                         interactive=True,
                     )
                     base_model_name_textbox = gr.Textbox(
