@@ -297,7 +297,7 @@ with demo:
             )
 
     with gr.Tabs(elem_classes="tab-buttons") as tabs:
-        with gr.TabItem("🏅 LLM Benchmark (lite)", elem_id="llm-benchmark-tab-table", id=0):
+        with gr.TabItem("🏅 LLM Benchmark", elem_id="llm-benchmark-tab-table", id=0):
             leaderboard_table_lite = gr.components.Dataframe(
                 value=leaderboard_df[COLS_LITE],
                 headers=COLS_LITE,
@@ -319,7 +319,7 @@ with demo:
                 leaderboard_table_lite,
             )
 
-        with gr.TabItem("📊 Extended view", elem_id="llm-benchmark-tab-table", id=1):
+        with gr.TabItem("🔍 Extended model view", elem_id="llm-benchmark-tab-table", id=1):
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df,
                 headers=COLS,
@@ -341,16 +341,16 @@ with demo:
                 [hidden_leaderboard_table_for_search, search_bar],
                 leaderboard_table,
             )
-        with gr.TabItem("About", elem_id="llm-benchmark-tab-table", id=2):
+        with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
-        with gr.TabItem("✉️✨ Submit here! ", elem_id="llm-benchmark-tab-table", id=3):
+        with gr.TabItem("🚀 Submit here! ", elem_id="llm-benchmark-tab-table", id=3):
             with gr.Column():
                 with gr.Row():
                     gr.Markdown(EVALUATION_QUEUE_TEXT, elem_classes="markdown-text")
 
                 with gr.Column():
-                    with gr.Accordion(f"✅ Finished Evaluations: {len(finished_eval_queue_df)}", open=False):
+                    with gr.Accordion(f"✅ Finished Evaluations ({len(finished_eval_queue_df)})", open=False):
                         with gr.Row():
                             finished_eval_table = gr.components.Dataframe(
                                 value=finished_eval_queue_df,
@@ -358,7 +358,7 @@ with demo:
                                 datatype=EVAL_TYPES,
                                 max_rows=5,
                             )
-                    with gr.Accordion(f"🔄 Running Evaluation Queue: {len(running_eval_queue_df)}", open=False):
+                    with gr.Accordion(f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})", open=False):
                         with gr.Row():
                             running_eval_table = gr.components.Dataframe(
                                 value=running_eval_queue_df,
@@ -367,7 +367,7 @@ with demo:
                                 max_rows=5,
                             )
 
-                    with gr.Accordion(f"⏳ Pending Evaluation Queue: {len(pending_eval_queue_df)}", open=False):
+                    with gr.Accordion(f"⏳ Pending Evaluation Queue ({len(pending_eval_queue_df)})", open=False):
                         with gr.Row():
                             pending_eval_table = gr.components.Dataframe(
                                 value=pending_eval_queue_df,
