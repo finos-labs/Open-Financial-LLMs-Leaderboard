@@ -276,6 +276,18 @@ def select_columns(df, columns):
     filtered_df = df[always_here_cols + [c for c in COLS if c in df.columns and c in columns] + [AutoEvalColumn.dummy.name]]
     return filtered_df
 
+#TODO allow this to filter by values of any columns
+def filter_items(df, leaderboard_table, query):
+    if query == "all":
+        return df[leaderboard_table.columns]
+    else:
+        query = query[0] #take only the emoji character
+    if AutoEvalColumn.model_type_symbol.name in leaderboard_table.columns:
+        filtered_df = df[(df[AutoEvalColumn.model_type_symbol.name] == query)]
+    else:
+        return leaderboard_table.columns
+    return filtered_df[leaderboard_table.columns]
+
 def change_tab(query_param):
     query_param = query_param.replace("'", '"')
     query_param = json.loads(query_param)
@@ -305,11 +317,18 @@ with demo:
                     elem_id="column-select", 
                     interactive=True,
                 )
-                search_bar = gr.Textbox(
-                    placeholder="🔍 Search for your model and press ENTER...",
-                    show_label=False,
-                    elem_id="search-bar",
-                )
+                with gr.Column(min_width=320):
+                    search_bar = gr.Textbox(
+                        placeholder="🔍 Search for your model and press ENTER...",
+                        show_label=False,
+                        elem_id="search-bar",
+                    )
+                    filter_columns = gr.Radio(
+                        label="⏚ Filter model types",
+                        choices = ["all", "🟢 base", "🔶 instruction-tuned", "🟦 RL-tuned"],
+                        value="all",
+                        elem_id="filter-columns"
+                    )
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df[[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value+ [AutoEvalColumn.dummy.name]],
                 headers=[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name],
@@ -334,6 +353,7 @@ with demo:
                 leaderboard_table,
             )
             shown_columns.change(select_columns, [hidden_leaderboard_table_for_search, shown_columns], leaderboard_table)
+            filter_columns.change(filter_items, [hidden_leaderboard_table_for_search, leaderboard_table, filter_columns], leaderboard_table)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 

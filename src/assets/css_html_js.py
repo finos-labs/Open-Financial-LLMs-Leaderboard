@@ -43,7 +43,6 @@ custom_css = """
  
 #search-bar {
     padding: 0px;
-    width: 30%;
 }
 
 /* Hides the final AutoEvalColumn */
