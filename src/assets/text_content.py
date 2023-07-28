@@ -95,7 +95,7 @@ Note: make sure your model is public!
 Note: if your model needs `use_remote_code=True`, we do not support this option yet but we are working on adding it, stay posted!
 
 ### 2) Convert your model weights to [safetensors](https://huggingface.co/docs/safetensors/index)
-It's a new format for storing weights which is safer and faster to load and use. It will also allow us to add the number of weights of your model to the `Extended Viewer`!
+It's a new format for storing weights which is safer and faster to load and use. It will also allow us to add the number of parameters of your model to the `Extended Viewer`!
 
 ### 3) Make sure your model has an open license!
 This is a leaderboard for Open LLMs, and we'd love for as many people as possible to know they can use your model 🤗
