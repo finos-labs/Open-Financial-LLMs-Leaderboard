@@ -30,6 +30,7 @@ TYPE_METADATA: Dict[str, ModelType] = {
     "aisquared/dlite-v2-355m": ModelType.SFT,
     "augtoma/qCammel-13": ModelType.SFT,
     "Aspik101/Llama-2-7b-hf-instruct-pl-lora_unload": ModelType.SFT,
+    "Aspik101/vicuna-7b-v1.3-instruct-pl-lora_unload": ModelType.SFT,
     "TheBloke/alpaca-lora-65B-HF": ModelType.SFT,
     "TheBloke/tulu-7B-fp16": ModelType.SFT,
     "TheBloke/guanaco-7B-HF": ModelType.SFT,
@@ -490,6 +491,7 @@ TYPE_METADATA: Dict[str, ModelType] = {
     "gywy/llama2-13b-chinese-v1": ModelType.SFT,
     "GOAT-AI/GOAT-7B-Community": ModelType.SFT,
     "psyche/kollama2-7b": ModelType.SFT,
+    "TheTravellingEngineer/llama2-7b-hf-guanaco": ModelType.SFT,
     "64bits/LexPodLM-13B": ModelType.SFT
 }
 
