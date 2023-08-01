@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
+import glob
+import json
+import os
 from typing import Dict, List
 
 from ..utils_display import AutoEvalColumn
@@ -9,6 +12,11 @@ class ModelInfo:
     name: str
     symbol: str # emoji
 
+model_type_symbols = {
+    "fine-tuned": "🔶",
+    "pretrained": "🟢",
+    "with RL": "🟦",
+}
 
 class ModelType(Enum):
     PT = ModelInfo(name="pretrained", symbol="🟢")
@@ -526,21 +534,19 @@ def get_model_type(leaderboard_data: List[dict]):
         # Todo @clefourrier once requests are connected with results 
         is_delta = False # (model_data["weight_type"] != "Original")
         # Stored information
-        if model_data["model_name_for_query"] in TYPE_METADATA:
-            model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
-        # Inferred from the name or the selected type 
-        elif model_data[AutoEvalColumn.model_type.name] == "pretrained" or  any([i in model_data["model_name_for_query"] for i in ["pretrained"]]):
-            model_data[AutoEvalColumn.model_type.name] = ModelType.PT.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.PT.value.symbol + ("🔺" if is_delta else "")
-        elif model_data[AutoEvalColumn.model_type.name] == "finetuned" or any([i in model_data["model_name_for_query"] for i in ["finetuned", "-ft-"]]):
-            model_data[AutoEvalColumn.model_type.name] = ModelType.SFT.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.SFT.value.symbol + ("🔺" if is_delta else "")
-        elif model_data[AutoEvalColumn.model_type.name] == "with RL" or any([i in model_data["model_name_for_query"] for i in ["-rl-", "-rlhf-"]]):
-            model_data[AutoEvalColumn.model_type.name] = ModelType.RL.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.RL.value.symbol + ("🔺" if is_delta else "")
-        else:
-            model_data[AutoEvalColumn.model_type.name] = "N/A"
-            model_data[AutoEvalColumn.model_type_symbol.name] = ("🔺" if is_delta else "")
- 
+        request_file = os.path.join("eval-queue", model_data["model_name_for_query"] + "_eval_request_*" + ".json")
+        request_file = glob.glob(request_file)
+
+        try:
+            request_file = request_file[0]
+            with open(request_file, "r") as f:
+                request = json.load(f)
+            model_type = request["model_type"]
+            is_delta = request["weight_type"] != "Original"
+            model_data[AutoEvalColumn.model_type.name] = model_type
+            model_data[AutoEvalColumn.model_type_symbol.name] = model_type_symbols[model_type] + ("🔺" if is_delta else "")
+        except Exception:
+            if model_data["model_name_for_query"] in TYPE_METADATA:
+                model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
+                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
  
