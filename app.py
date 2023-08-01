@@ -183,6 +183,9 @@ def add_new_eval(
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    if model_type is None or model_type == "":
+        return styled_error("Please select a model type.")
+
     # check the model actually exists before adding the eval
     if revision == "":
         revision = "main"
@@ -404,7 +407,7 @@ with demo:
                         choices=["pretrained", "fine-tuned", "with RL"], 
                         label="Model type", 
                         multiselect=False,
-                        value="pretrained",
+                        value=None,
                         interactive=True,
                     )
 
