@@ -201,7 +201,7 @@ TYPE_METADATA: Dict[str, ModelType] = {
     "dvruette/llama-13b-pretrained-sft-epoch-1": ModelType.PT,
     "dvruette/llama-13b-pretrained-sft-do2": ModelType.PT,
     "dvruette/oasst-gpt-neox-20b-3000-steps": ModelType.SFT,
-    "dvruette/oasst-pythia-12b-pretrained-sft": ModelType.PT,
+    "dvruette/oasst-pythia-12b-pretrained-sft": ModelType.SFT,
     "dvruette/oasst-pythia-6.9b-4000-steps": ModelType.SFT,
     "dvruette/gpt-neox-20b-full-precision": ModelType.SFT,
     "dvruette/oasst-llama-13b-1000-steps": ModelType.SFT,
