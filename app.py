@@ -328,7 +328,7 @@ with demo:
                     )
                     filter_columns = gr.Radio(
                         label="⏚ Filter model types",
-                        choices = ["all", "🟢 base", "🔶 instruction-tuned", "🟦 RL-tuned"],
+                        choices = ["all", "🟢 base", "🔶 finetuned", "🟦 RL-tuned"],
                         value="all",
                         elem_id="filter-columns"
                     )
@@ -404,7 +404,7 @@ with demo:
                         False, label="Private", visible=not IS_PUBLIC
                     )
                     model_type = gr.Dropdown(
-                        choices=["pretrained", "fine-tuned", "with RL"], 
+                        choices=["pretrained", "finetuned", "with RL"], 
                         label="Model type", 
                         multiselect=False,
                         value=None,

@@ -63,7 +63,7 @@ INTRODUCTION_TEXT = f"""
 
 Other cool benchmarks for LLMs are developed at HuggingFace, go check them out: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
 
-🟢: Base pretrained model – 🔶: Instruction finetuned model – 🟦: Model finetuned with RL  (read more details in "About" tab)
+🟢: Base pretrained model – 🔶: Finetuned model – 🟦: Model using RL  (read more details in "About" tab)
 """
 
 LLM_BENCHMARKS_TEXT = f"""
