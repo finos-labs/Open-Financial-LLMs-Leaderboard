@@ -1,3 +1,5 @@
+from ..auto_leaderboard.model_metadata_type import ModelType
+
 CHANGELOG_TEXT = f"""
 ## [2023-06-19]
 - Added model type column
@@ -62,8 +64,6 @@ INTRODUCTION_TEXT = f"""
 🤗 Anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as the original LLaMa release.
 
 Other cool benchmarks for LLMs are developed at HuggingFace, go check them out: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
-
-🟢: Base pretrained model – 🔶: Finetuned model – 🟦: Model using RL  (read more details in "About" tab)
 """
 
 LLM_BENCHMARKS_TEXT = f"""
@@ -131,9 +131,10 @@ To get more information about quantization, see:
 - 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
 
 ### Icons
-🟢 means that the model is pretrained
-🔶 that it is finetuned
-🟦 that is was trained with RL.
+{ModelType.PT.to_str(" : ")} model
+{ModelType.FT.to_str(" : ")} model
+{ModelType.IFT.to_str(" : ")} model
+{ModelType.RL.to_str(" : ")} model
 If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
 
 
