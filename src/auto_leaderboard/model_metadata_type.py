@@ -15,13 +15,13 @@ class ModelInfo:
 model_type_symbols = {
     "fine-tuned": "🔶",
     "pretrained": "🟢",
-    "with RL": "🟦",
+    "RL-tuned": "🟦",
 }
 
 class ModelType(Enum):
     PT = ModelInfo(name="pretrained", symbol="🟢")
-    SFT = ModelInfo(name="finetuned", symbol="🔶")
-    RL = ModelInfo(name="with RL", symbol="🟦")
+    SFT = ModelInfo(name="fine-tuned", symbol="🔶")
+    RL = ModelInfo(name="RL-tuned", symbol="🟦")
 
 
 TYPE_METADATA: Dict[str, ModelType] = {
@@ -532,21 +532,31 @@ TYPE_METADATA: Dict[str, ModelType] = {
 def get_model_type(leaderboard_data: List[dict]):
     for model_data in leaderboard_data:
         # Todo @clefourrier once requests are connected with results 
-        is_delta = False # (model_data["weight_type"] != "Original")
         # Stored information
         request_file = os.path.join("eval-queue", model_data["model_name_for_query"] + "_eval_request_*" + ".json")
         request_file = glob.glob(request_file)
 
+        if len(request_file) == 0:
+            model_data[AutoEvalColumn.model_type.name] = "Unknown"
+            model_data[AutoEvalColumn.model_type_symbol.name] = "No request file"
+            continue
+
+        request_file = request_file[0]
+
         try:
-            request_file = request_file[0]
+            with open(request_file, "r") as f:
+                request = json.load(f)
+            is_delta = request["weight_type"] != "Original"
+        except Exception:
+            is_delta = False
+
+        try:
             with open(request_file, "r") as f:
                 request = json.load(f)
             model_type = request["model_type"]
-            is_delta = request["weight_type"] != "Original"
             model_data[AutoEvalColumn.model_type.name] = model_type
             model_data[AutoEvalColumn.model_type_symbol.name] = model_type_symbols[model_type] + ("🔺" if is_delta else "")
         except Exception:
-            if model_data["model_name_for_query"] in TYPE_METADATA:
-                model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
-                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
+            model_data[AutoEvalColumn.model_type.name] = "Unknown"
+            model_data[AutoEvalColumn.model_type_symbol.name] = "Add type to request files"
  

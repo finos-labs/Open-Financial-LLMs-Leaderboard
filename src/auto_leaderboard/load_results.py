@@ -119,12 +119,6 @@ def get_eval_results(is_public) -> List[EvalResult]:
 
         up_to_date = files[-1]
 
-        if len(files) > 1:
-            print(root)
-            print(files)
-            print(up_to_date)
-            print("===")
-
         json_filepaths.append(os.path.join(root, up_to_date))
 
     eval_results = {}
