@@ -44,9 +44,7 @@ class EvalResult:
         data_dict[AutoEvalColumn.model.name] = make_clickable_model(base_model)
         data_dict[AutoEvalColumn.dummy.name] = base_model
         data_dict[AutoEvalColumn.revision.name] = self.revision
-        data_dict[AutoEvalColumn.average.name] = round(
-            sum([v for k, v in self.results.items()]) / 4.0, 1
-        )
+        data_dict[AutoEvalColumn.average.name] = sum([v for k, v in self.results.items()]) / 4.0
 
         for benchmark in BENCHMARKS:
             if benchmark not in self.results.keys():
@@ -95,7 +93,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
         accs = np.array([v[metric] for k, v in data["results"].items() if benchmark in k])
         if accs.size == 0:
             continue
-        mean_acc = round(np.mean(accs) * 100.0, 1)
+        mean_acc = np.mean(accs) * 100.0
         eval_results.append(EvalResult(
             eval_name=result_key, org=org, model=model, revision=model_sha, results={benchmark: mean_acc}, #todo model_type=, weight_type=
         ))

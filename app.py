@@ -18,6 +18,8 @@ from src.assets.css_html_js import custom_css, get_window_url_params
 from src.utils_display import AutoEvalColumn, EvalQueueColumn, fields, styled_error, styled_warning, styled_message
 from src.init import get_all_requested_models, load_all_info_from_hub
 
+pd.set_option('display.precision', 1)
+
 # clone / pull the lmeh eval data
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 
@@ -91,7 +93,7 @@ def get_leaderboard_df():
 
     df = pd.DataFrame.from_records(all_data)
     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
-    df = df[COLS]
+    df = df[COLS].round(decimals=2)
 
     # filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, BENCHMARK_COLS)]
