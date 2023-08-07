@@ -556,8 +556,8 @@ def get_model_type(leaderboard_data: List[dict]):
         request_file = glob.glob(request_file)
 
         if len(request_file) == 0:
-            model_data[AutoEvalColumn.model_type.name] = "Unknown"
-            model_data[AutoEvalColumn.model_type_symbol.name] = "No request file"
+            model_data[AutoEvalColumn.model_type.name] = ""
+            model_data[AutoEvalColumn.model_type_symbol.name] = ""
             continue
 
         request_file = request_file[0]
@@ -576,5 +576,5 @@ def get_model_type(leaderboard_data: List[dict]):
             model_data[AutoEvalColumn.model_type.name] = model_type
             model_data[AutoEvalColumn.model_type_symbol.name] = model_type_symbols[model_type] + ("🔺" if is_delta else "")
         except Exception:
-            model_data[AutoEvalColumn.model_type.name] = "Unknown"
-            model_data[AutoEvalColumn.model_type_symbol.name] = "Add type to request files"
+            model_data[AutoEvalColumn.model_type.name] = "Unknown, add type to request file!"
+            model_data[AutoEvalColumn.model_type_symbol.name] = "?"
