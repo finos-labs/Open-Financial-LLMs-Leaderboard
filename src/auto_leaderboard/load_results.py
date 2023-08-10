@@ -26,7 +26,7 @@ class EvalResult:
     model: str
     revision: str
     results: dict
-    precision: str = "16bit"
+    precision: str = ""
     model_type: str = ""
     weight_type: str = ""
 
@@ -77,16 +77,18 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     eval_sha = config.get("lighteval_sha", "")
     model_split = model.split("/", 1)
 
+    precision = config.get("model_dtype")
+
     model = model_split[-1]
 
     if len(model_split) == 1:
         org = None
         model = model_split[0]
-        result_key = f"{model}_{model_sha}_{eval_sha}"
+        result_key = f"{model}_{model_sha}_{eval_sha}_{precision}"
     else:
         org = model_split[0]
         model = model_split[1]
-        result_key =  f"{org}_{model}_{model_sha}_{eval_sha}"
+        result_key =  f"{org}_{model}_{model_sha}_{eval_sha}_{precision}"
 
     eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
@@ -95,7 +97,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
             continue
         mean_acc = np.mean(accs) * 100.0
         eval_results.append(EvalResult(
-            eval_name=result_key, org=org, model=model, revision=model_sha, results={benchmark: mean_acc}, #todo model_type=, weight_type=
+            eval_name=result_key, org=org, model=model, revision=model_sha, results={benchmark: mean_acc}, precision=precision, #todo model_type=, weight_type=
         ))
 
     return result_key, eval_results
@@ -110,14 +112,15 @@ def get_eval_results(is_public) -> List[EvalResult]:
             continue
 
         # Sort the files by date
+        # store results by precision maybe?
         try:
             files.sort(key=lambda x:  dateutil.parser.parse(x.split("_", 1)[-1][:-5]))
         except dateutil.parser._parser.ParserError:
-            up_to_date = files[-1]
+            files = [files[-1]]
 
-        up_to_date = files[-1]
-
-        json_filepaths.append(os.path.join(root, up_to_date))
+        #up_to_date = files[-1]
+        for file in files:
+            json_filepaths.append(os.path.join(root, file))
 
     eval_results = {}
     for json_filepath in json_filepaths:

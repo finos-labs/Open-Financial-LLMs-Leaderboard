@@ -22,7 +22,7 @@ class AutoEvalColumn: # Auto evals column
     mmlu = ColumnContent("MMLU", "number", True)
     truthfulqa = ColumnContent("TruthfulQA", "number", True)
     model_type = ColumnContent("Type", "str", False)
-    precision = ColumnContent("Precision", "str", False, True)
+    precision = ColumnContent("Precision", "str", False) #, True)
     license = ColumnContent("Hub License", "str", False)
     params = ColumnContent("#Params (B)", "number", False)
     likes = ColumnContent("Hub ❤️", "number", False)
@@ -43,7 +43,7 @@ class EvalQueueColumn: # Queue column
     model = ColumnContent("model", "markdown", True)
     revision = ColumnContent("revision", "str", True)
     private = ColumnContent("private", "bool", True)
-    precision = ColumnContent("precision", "bool", True)
+    precision = ColumnContent("precision", "str", True)
     weight_type = ColumnContent("weight_type", "str", "Original")
     status = ColumnContent("status", "str", True)
 
