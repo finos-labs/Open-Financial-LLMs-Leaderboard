@@ -74,7 +74,6 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
         model = config.get("model_args", None)
 
     model_sha = config.get("model_sha", "")
-    eval_sha = config.get("lighteval_sha", "")
     model_split = model.split("/", 1)
 
     precision = config.get("model_dtype")
@@ -84,11 +83,11 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     if len(model_split) == 1:
         org = None
         model = model_split[0]
-        result_key = f"{model}_{model_sha}_{eval_sha}_{precision}"
+        result_key = f"{model}_{model_sha}_{precision}"
     else:
         org = model_split[0]
         model = model_split[1]
-        result_key =  f"{org}_{model}_{model_sha}_{eval_sha}_{precision}"
+        result_key =  f"{org}_{model}_{model_sha}_{precision}"
 
     eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
