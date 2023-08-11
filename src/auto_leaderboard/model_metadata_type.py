@@ -434,7 +434,7 @@ TYPE_METADATA: Dict[str, ModelType] = {
     'huggingface/llama-7b': ModelType.PT,
     'huggingface/llama-65b': ModelType.PT,
     'huggingface/llama-30b': ModelType.PT,
-    'Henk717/chronoboros-33B': ModelType.FT,
+    'Henk717/chronoboros-33B': ModelType.IFT,
     'jondurbin/airoboros-13b-gpt4-1.4': ModelType.IFT,
     'jondurbin/airoboros-7b': ModelType.IFT,
     'jondurbin/airoboros-7b-gpt4': ModelType.IFT,
