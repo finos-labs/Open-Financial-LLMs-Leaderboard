@@ -543,7 +543,7 @@ TYPE_METADATA: Dict[str, ModelType] = {
     'augtoma/qCammel-70-x': ModelType.IFT,
     'Lajonbot/Llama-2-7b-chat-hf-instruct-pl-lora_unload': ModelType.IFT,
     'anhnv125/pygmalion-6b-roleplay': ModelType.FT,
-    '64bits/LexPodLM-13B': ModelType.FT'
+    '64bits/LexPodLM-13B': ModelType.FT,
 }
 
 
