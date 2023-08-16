@@ -12,18 +12,13 @@ class ModelInfo:
     name: str
     symbol: str # emoji
 
-model_type_symbols = {
-    "fine-tuned": "🔶",
-    "pretrained": "🟢",
-    "RL-tuned": "🟦",
-    "instruction-tuned": "⭕",
-}
 
 class ModelType(Enum):
     PT = ModelInfo(name="pretrained", symbol="🟢")
     FT = ModelInfo(name="fine-tuned", symbol="🔶")
     IFT = ModelInfo(name="instruction-tuned", symbol="⭕")
     RL = ModelInfo(name="RL-tuned", symbol="🟦")
+    Unknown = ModelInfo(name="Unknown, add type to request file!", symbol="?")
 
     def to_str(self, separator = " "):
         return f"{self.value.symbol}{separator}{self.value.name}" 
@@ -547,19 +542,38 @@ TYPE_METADATA: Dict[str, ModelType] = {
 }
 
 
+def model_type_from_str(type):
+    if "fine-tuned" in type or "🔶" in type:
+        return ModelType.FT
+    if "pretrained" in type or "🟢" in type:
+        return ModelType.PT
+    if "RL-tuned" in type or "🟦" in type:
+        return ModelType.RL
+    if "instruction-tuned" in type or "⭕" in type:
+        return ModelType.IFT
+    return ModelType.Unknown
+
+
 def get_model_type(leaderboard_data: List[dict]):
     for model_data in leaderboard_data:
-        # Todo @clefourrier once requests are connected with results 
-        # Stored information
-        request_file = os.path.join("eval-queue", model_data["model_name_for_query"] + "_eval_request_*" + ".json")
-        request_file = glob.glob(request_file)
+        request_files = os.path.join("eval-queue", model_data["model_name_for_query"] + "_eval_request_*" + ".json")
+        request_files = glob.glob(request_files)
 
-        if len(request_file) == 0:
+        request_file = ""
+        if len(request_files) == 1:
+            request_file = request_files[0]
+        elif len(request_files) > 1:
+            request_files = sorted(request_files, reverse=True)
+            for tmp_request_file in request_files:
+                with open(tmp_request_file, "r") as f:
+                    req_content = json.load(f)
+                    if req_content["status"] == "FINISHED" and req_content["precision"] == model_data["Precision"].split(".")[-1]: 
+                        request_file = tmp_request_file
+        
+        if request_file == "":
             model_data[AutoEvalColumn.model_type.name] = ""
             model_data[AutoEvalColumn.model_type_symbol.name] = ""
             continue
-
-        request_file = request_file[0]
 
         try:
             with open(request_file, "r") as f:
@@ -571,9 +585,13 @@ def get_model_type(leaderboard_data: List[dict]):
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
-            model_type = request["model_type"]
-            model_data[AutoEvalColumn.model_type.name] = model_type
-            model_data[AutoEvalColumn.model_type_symbol.name] = model_type_symbols[model_type] + ("🔺" if is_delta else "")
-        except Exception:
-            model_data[AutoEvalColumn.model_type.name] = "Unknown, add type to request file!"
-            model_data[AutoEvalColumn.model_type_symbol.name] = "?"
+            model_type = model_type_from_str(request["model_type"])
+            model_data[AutoEvalColumn.model_type.name] = model_type.value.name
+            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol + ("🔺" if is_delta else "")
+        except KeyError:
+            if model_data["model_name_for_query"] in TYPE_METADATA:
+                model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
+                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
+            else:
+                model_data[AutoEvalColumn.model_type.name] = ModelType.Unknown.value.name
+                model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.Unknown.value.symbol
