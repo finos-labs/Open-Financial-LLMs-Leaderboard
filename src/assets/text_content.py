@@ -59,18 +59,31 @@ CHANGELOG_TEXT = f"""
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 
 INTRODUCTION_TEXT = f"""
-📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate LLMs and chatbots as they are released. 
+📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate open LLMs and chatbots.
 
-🤗 Anyone from the community can submit a model for automated evaluation on the 🤗 GPU cluster, as long as it is a 🤗 Transformers model with weights on the Hub. We also support evaluation of models with delta-weights for non-commercial licensed models, such as the original LLaMa release.
+🤗 Submit a model for automated evaluation on the 🤗 GPU cluster on the "Submit" page!
 
-Other cool benchmarks for LLMs are developed at HuggingFace, go check them out: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
+The leaderboard's backend runs the great [Eleuther AI Language Model Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness) to compute numbers. Read more details and reproducibility on the "About" page!
+
+Other cool benchmarks for LLMs are developed at HuggingFace: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
+
+And also in other labs, check out the [AlpacaEval Leaderboard](https://tatsu-lab.github.io/alpaca_eval/) and [MT Bench](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard) among other great ressources.
 """
 
 LLM_BENCHMARKS_TEXT = f"""
 # Context
 With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art. 
 
-📈 We evaluate models on 4 key benchmarks from the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. 
+## Icons
+{ModelType.PT.to_str(" : ")} model
+{ModelType.FT.to_str(" : ")} model
+{ModelType.IFT.to_str(" : ")} model
+{ModelType.RL.to_str(" : ")} model
+If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
+
+## How it works
+
+📈 We evaluate models on 4 key benchmarks using the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. 
 
 - <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
 - <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
@@ -80,7 +93,39 @@ With the plethora of large language models (LLMs) and chatbots being released we
 For all these evaluations, a higher score is a better score. 
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings.
 
-# Some good practices before submitting a model
+## Details and logs
+You can find:
+- detailed numerical results in the `results` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/results
+- details on the input/outputs for the models in the `details` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/details
+- community queries and running status in the `requests` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/requests
+
+## Reproducibility
+To reproduce our results, here is the commands you can run, using [this version](https://github.com/EleutherAI/lm-evaluation-harness/tree/b281b0921b636bc36ad05c0b0b0763bd6dd43463) of the Eleuther AI Harness:
+`python main.py --model=hf-causal --model_args="pretrained=<your_model>,use_accelerate=True,revision=<your_model_revision>"`
+` --tasks=<task_list> --num_fewshot=<n_few_shot> --batch_size=2 --output_path=<output_path>`
+
+The total batch size we get for models which fit on one A100 node is 16 (8 GPUs * 2). If you don't use parallelism, adapt your batch size to fit. 
+*You can expect results to vary slightly for different batch sizes because of padding.*
+
+The tasks and few shots parameters are:
+- ARC: 25-shot, *arc-challenge* (`acc_norm`)
+- HellaSwag: 10-shot, *hellaswag* (`acc_norm`)
+- TruthfulQA: 0-shot, *truthfulqa-mc* (`mc2`)
+- MMLU: 5-shot, *hendrycksTest-abstract_algebra,hendrycksTest-anatomy,hendrycksTest-astronomy,hendrycksTest-business_ethics,hendrycksTest-clinical_knowledge,hendrycksTest-college_biology,hendrycksTest-college_chemistry,hendrycksTest-college_computer_science,hendrycksTest-college_mathematics,hendrycksTest-college_medicine,hendrycksTest-college_physics,hendrycksTest-computer_security,hendrycksTest-conceptual_physics,hendrycksTest-econometrics,hendrycksTest-electrical_engineering,hendrycksTest-elementary_mathematics,hendrycksTest-formal_logic,hendrycksTest-global_facts,hendrycksTest-high_school_biology,hendrycksTest-high_school_chemistry,hendrycksTest-high_school_computer_science,hendrycksTest-high_school_european_history,hendrycksTest-high_school_geography,hendrycksTest-high_school_government_and_politics,hendrycksTest-high_school_macroeconomics,hendrycksTest-high_school_mathematics,hendrycksTest-high_school_microeconomics,hendrycksTest-high_school_physics,hendrycksTest-high_school_psychology,hendrycksTest-high_school_statistics,hendrycksTest-high_school_us_history,hendrycksTest-high_school_world_history,hendrycksTest-human_aging,hendrycksTest-human_sexuality,hendrycksTest-international_law,hendrycksTest-jurisprudence,hendrycksTest-logical_fallacies,hendrycksTest-machine_learning,hendrycksTest-management,hendrycksTest-marketing,hendrycksTest-medical_genetics,hendrycksTest-miscellaneous,hendrycksTest-moral_disputes,hendrycksTest-moral_scenarios,hendrycksTest-nutrition,hendrycksTest-philosophy,hendrycksTest-prehistory,hendrycksTest-professional_accounting,hendrycksTest-professional_law,hendrycksTest-professional_medicine,hendrycksTest-professional_psychology,hendrycksTest-public_relations,hendrycksTest-security_studies,hendrycksTest-sociology,hendrycksTest-us_foreign_policy,hendrycksTest-virology,hendrycksTest-world_religions* (average of all the results `acc`)
+
+## Quantization
+To get more information about quantization, see:
+- 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
+- 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
+
+"""
+
+EVALUATION_QUEUE_TEXT = f"""
+# Evaluation Queue for the 🤗 Open LLM Leaderboard
+
+Models added here will be automatically evaluated on the 🤗 cluster.
+
+## Some good practices before submitting a model
 
 ### 1) Make sure you can load your model and tokenizer using AutoClasses:
 ```python
@@ -103,51 +148,10 @@ This is a leaderboard for Open LLMs, and we'd love for as many people as possibl
 ### 4) Fill up your model card
 When we add extra information about models to the leaderboard, it will be automatically taken from the model card
 
-# Reproducibility and details
-
-### Details and logs
-You can find:
-- detailed numerical results in the `results` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/results
-- details on the input/outputs for the models in the `details` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/details
-- community queries and running status in the `requests` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/requests
-
-### Reproducibility
-To reproduce our results, here is the commands you can run, using [this version](https://github.com/EleutherAI/lm-evaluation-harness/tree/b281b0921b636bc36ad05c0b0b0763bd6dd43463) of the Eleuther AI Harness:
-`python main.py --model=hf-causal --model_args="pretrained=<your_model>,use_accelerate=True,revision=<your_model_revision>"`
-` --tasks=<task_list> --num_fewshot=<n_few_shot> --batch_size=2 --output_path=<output_path>`
-
-The total batch size we get for models which fit on one A100 node is 16 (8 GPUs * 2). If you don't use parallelism, adapt your batch size to fit. 
-*You can expect results to vary slightly for different batch sizes because of padding.*
-
-The tasks and few shots parameters are:
-- ARC: 25-shot, *arc-challenge* (`acc_norm`)
-- HellaSwag: 10-shot, *hellaswag* (`acc_norm`)
-- TruthfulQA: 0-shot, *truthfulqa-mc* (`mc2`)
-- MMLU: 5-shot, *hendrycksTest-abstract_algebra,hendrycksTest-anatomy,hendrycksTest-astronomy,hendrycksTest-business_ethics,hendrycksTest-clinical_knowledge,hendrycksTest-college_biology,hendrycksTest-college_chemistry,hendrycksTest-college_computer_science,hendrycksTest-college_mathematics,hendrycksTest-college_medicine,hendrycksTest-college_physics,hendrycksTest-computer_security,hendrycksTest-conceptual_physics,hendrycksTest-econometrics,hendrycksTest-electrical_engineering,hendrycksTest-elementary_mathematics,hendrycksTest-formal_logic,hendrycksTest-global_facts,hendrycksTest-high_school_biology,hendrycksTest-high_school_chemistry,hendrycksTest-high_school_computer_science,hendrycksTest-high_school_european_history,hendrycksTest-high_school_geography,hendrycksTest-high_school_government_and_politics,hendrycksTest-high_school_macroeconomics,hendrycksTest-high_school_mathematics,hendrycksTest-high_school_microeconomics,hendrycksTest-high_school_physics,hendrycksTest-high_school_psychology,hendrycksTest-high_school_statistics,hendrycksTest-high_school_us_history,hendrycksTest-high_school_world_history,hendrycksTest-human_aging,hendrycksTest-human_sexuality,hendrycksTest-international_law,hendrycksTest-jurisprudence,hendrycksTest-logical_fallacies,hendrycksTest-machine_learning,hendrycksTest-management,hendrycksTest-marketing,hendrycksTest-medical_genetics,hendrycksTest-miscellaneous,hendrycksTest-moral_disputes,hendrycksTest-moral_scenarios,hendrycksTest-nutrition,hendrycksTest-philosophy,hendrycksTest-prehistory,hendrycksTest-professional_accounting,hendrycksTest-professional_law,hendrycksTest-professional_medicine,hendrycksTest-professional_psychology,hendrycksTest-public_relations,hendrycksTest-security_studies,hendrycksTest-sociology,hendrycksTest-us_foreign_policy,hendrycksTest-virology,hendrycksTest-world_religions* (average of all the results `acc`)
-
-### Quantization
-To get more information about quantization, see:
-- 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
-- 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
-
-### Icons
-{ModelType.PT.to_str(" : ")} model
-{ModelType.FT.to_str(" : ")} model
-{ModelType.IFT.to_str(" : ")} model
-{ModelType.RL.to_str(" : ")} model
-If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
-
-
-# In case of model failure
+## In case of model failure
 If your model is displayed in the `FAILED` category, its execution stopped. 
 Make sure you have followed the above steps first. 
 If everything is done, check you can launch the EleutherAIHarness on your model locally, using the above command without modifications (you can add `--limit` to limit the number of examples per task).
-
-"""
-
-EVALUATION_QUEUE_TEXT = f"""
-# Evaluation Queue for the 🤗 Open LLM Leaderboard
-These models will be automatically evaluated on the 🤗 cluster.
 """
 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
