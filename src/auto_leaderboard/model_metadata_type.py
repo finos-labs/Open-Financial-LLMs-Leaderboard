@@ -587,11 +587,11 @@ def get_model_type(leaderboard_data: List[dict]):
                 request = json.load(f)
             model_type = model_type_from_str(request["model_type"])
             model_data[AutoEvalColumn.model_type.name] = model_type.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol + ("🔺" if is_delta else "")
+            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol #+ ("🔺" if is_delta else "")
         except KeyError:
             if model_data["model_name_for_query"] in TYPE_METADATA:
                 model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
-                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol + ("🔺" if is_delta else "")
+                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol #+ ("🔺" if is_delta else "")
             else:
                 model_data[AutoEvalColumn.model_type.name] = ModelType.Unknown.value.name
                 model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.Unknown.value.symbol
