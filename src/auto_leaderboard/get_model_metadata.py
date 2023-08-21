@@ -1,6 +1,7 @@
 import re
 import os
 from typing import List
+from tqdm import tqdm
 
 from src.utils_display import AutoEvalColumn
 from src.auto_leaderboard.model_metadata_type import get_model_type
@@ -11,7 +12,7 @@ api = HfApi(token=os.environ.get("H4_TOKEN", None))
 
 
 def get_model_infos_from_hub(leaderboard_data: List[dict]):
-    for model_data in leaderboard_data:
+    for model_data in tqdm(leaderboard_data):
         model_name = model_data["model_name_for_query"]
         try:
             model_info = api.model_info(model_name)
