@@ -1,8 +1,6 @@
 import os 
 from huggingface_hub import Repository
 
-H4_TOKEN = os.environ.get("H4_TOKEN", None)
-
 
 def get_all_requested_models(requested_models_dir):
     depth = 1
@@ -20,28 +18,23 @@ def load_all_info_from_hub(QUEUE_REPO, RESULTS_REPO, QUEUE_PATH, RESULTS_PATH):
     eval_results_repo = None
     requested_models = None
 
-    if H4_TOKEN:
-        print("Pulling evaluation requests and results.")
+    print("Pulling evaluation requests and results.")
 
-        eval_queue_repo = Repository(
-            local_dir=QUEUE_PATH,
-            clone_from=QUEUE_REPO,
-            use_auth_token=H4_TOKEN,
-            repo_type="dataset",
-        )
-        eval_queue_repo.git_pull()
+    eval_queue_repo = Repository(
+        local_dir=QUEUE_PATH,
+        clone_from=QUEUE_REPO,
+        repo_type="dataset",
+    )
+    eval_queue_repo.git_pull()
 
-        eval_results_repo = Repository(
-            local_dir=RESULTS_PATH,
-            clone_from=RESULTS_REPO,
-            use_auth_token=H4_TOKEN,
-            repo_type="dataset",
-        )
-        eval_results_repo.git_pull()
+    eval_results_repo = Repository(
+        local_dir=RESULTS_PATH,
+        clone_from=RESULTS_REPO,
+        repo_type="dataset",
+    )
+    eval_results_repo.git_pull()
 
-        requested_models = get_all_requested_models("eval-queue")
-    else:
-        print("No HuggingFace token provided. Skipping evaluation requests and results.")
+    requested_models = get_all_requested_models("eval-queue")
 
     return eval_queue_repo, requested_models, eval_results_repo
 

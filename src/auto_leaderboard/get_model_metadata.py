@@ -100,13 +100,10 @@ def get_model_type(leaderboard_data: List[dict]):
                 model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.Unknown.value.symbol
 
 def flag_models(leaderboard_data:List[dict]):
-    flag_symbol = "💀"
     for model_data in leaderboard_data:
         if model_data["model_name_for_query"] in FLAGGED_MODELS:
             issue_num = FLAGGED_MODELS[model_data["model_name_for_query"]].split("/")[-1]
             issue_link = model_hyperlink(FLAGGED_MODELS[model_data["model_name_for_query"]], f"See discussion #{issue_num}")
-
-            model_data[AutoEvalColumn.model_type_symbol.name] = flag_symbol
             model_data[AutoEvalColumn.model.name] =  f"{model_data[AutoEvalColumn.model.name]} has been flagged! {issue_link}"
 
 def apply_metadata(leaderboard_data: List[dict]):
