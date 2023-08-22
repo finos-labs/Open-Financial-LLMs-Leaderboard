@@ -10,7 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import HfApi
 from transformers import AutoConfig
 
-from src.auto_leaderboard.get_model_metadata import apply_metadata
+from src.auto_leaderboard.get_model_metadata import apply_metadata, DO_NOT_SUBMIT_MODELS
 from src.assets.text_content import *
 from src.auto_leaderboard.load_results import get_eval_results_dicts, make_clickable_model
 from src.assets.hardcoded_evals import gpt4_values, gpt35_values, baseline
@@ -227,9 +227,13 @@ def add_new_eval(
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
 
+    # Check if the model has been forbidden:
+    if out_path.split("eval-queue/")[1] in DO_NOT_SUBMIT_MODELS:
+        return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
+
     # Check for duplicate submission
     if out_path.split("eval-queue/")[1].lower() in requested_models:
-        return styled_warning("This model has been already submitted.")
+        return styled_warning("This model has been already submitted.")    
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))

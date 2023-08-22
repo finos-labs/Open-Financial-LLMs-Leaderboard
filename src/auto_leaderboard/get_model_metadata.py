@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 from src.utils_display import AutoEvalColumn, model_hyperlink
 from src.auto_leaderboard.model_metadata_type import ModelType, model_type_from_str, MODEL_TYPE_METADATA
-from src.auto_leaderboard.model_metadata_flags import FLAGGED_MODELS
+from src.auto_leaderboard.model_metadata_flags import FLAGGED_MODELS, DO_NOT_SUBMIT_MODELS
 
 from huggingface_hub import HfApi
 import huggingface_hub
@@ -106,7 +106,18 @@ def flag_models(leaderboard_data:List[dict]):
             issue_link = model_hyperlink(FLAGGED_MODELS[model_data["model_name_for_query"]], f"See discussion #{issue_num}")
             model_data[AutoEvalColumn.model.name] =  f"{model_data[AutoEvalColumn.model.name]} has been flagged! {issue_link}"
 
+def remove_forbidden_models(leaderboard_data: List[dict]):
+    indices_to_remove = []
+    for ix, model in enumerate(leaderboard_data):
+        if model["model_name_for_query"] in DO_NOT_SUBMIT_MODELS:
+            indices_to_remove.append(ix)
+
+    for ix in reversed(indices_to_remove):
+        leaderboard_data.pop(ix)
+    return leaderboard_data
+
 def apply_metadata(leaderboard_data: List[dict]):
+    leaderboard_data = remove_forbidden_models(leaderboard_data)
     get_model_type(leaderboard_data)
     get_model_infos_from_hub(leaderboard_data)
     flag_models(leaderboard_data)
