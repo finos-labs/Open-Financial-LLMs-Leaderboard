@@ -5,13 +5,8 @@ TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 INTRODUCTION_TEXT = f"""
 📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate open LLMs and chatbots.
 
-🤗 Submit a model for automated evaluation on the 🤗 GPU cluster on the "Submit" page!
-
-The leaderboard's backend runs the great [Eleuther AI Language Model Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness) to compute numbers. Read more details and reproducibility on the "About" page!
-
-Other cool benchmarks for LLMs are developed at HuggingFace: 🙋🤖 [human and GPT4 evals](https://huggingface.co/spaces/HuggingFaceH4/human_eval_llm_leaderboard), 🖥️ [performance benchmarks](https://huggingface.co/spaces/optimum/llm-perf-leaderboard)
-
-And also in other labs, check out the [AlpacaEval Leaderboard](https://tatsu-lab.github.io/alpaca_eval/) and [MT Bench](https://huggingface.co/spaces/lmsys/chatbot-arena-leaderboard) among other great ressources.
+🤗 Submit a model for automated evaluation on the 🤗 GPU cluster on the "Submit" page! 
+The leaderboard's backend runs the great [Eleuther AI Language Model Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness) - read more details in the "About" page!
 """
 
 LLM_BENCHMARKS_TEXT = f"""
@@ -65,6 +60,9 @@ To get more information about quantization, see:
 - 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
 - 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
 
+## More resources
+If you still have questions, you can check our FAQ [here](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/179)!
+We also gather cool resources from the community, other teams, and other labs [here](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/174)!
 """
 
 EVALUATION_QUEUE_TEXT = f"""
