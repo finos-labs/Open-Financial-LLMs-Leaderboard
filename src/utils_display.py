@@ -89,20 +89,22 @@ def make_clickable_model(model_name):
         link = KOALA_LINK
     elif model_name == "oasst-12b":
         link = OASST_LINK
-    #else:
-    #    link = MODEL_PAGE
+
     details_model_name = model_name.replace('/', '__')
     details_link = f"https://huggingface.co/datasets/open-llm-leaderboard/details_{details_model_name}"
-    print(f"details_link: {details_link}")
-    try:
-        check_path = list(API.list_files_info(repo_id=f"open-llm-leaderboard/details_{details_model_name}",
-                                              paths="README.md",
-                                              repo_type="dataset"))
-        print(f"check_path: {check_path}")
-    except Exception as err:
-        # No details repo for this model
-        print(f"No details repo for this model: {err}")
-        return model_hyperlink(link, model_name)
+
+    if not bool(os.getenv("DEBUG", "False")):
+        # We only add these checks when not debugging, as they are extremely slow
+        print(f"details_link: {details_link}")
+        try:
+            check_path = list(API.list_files_info(repo_id=f"open-llm-leaderboard/details_{details_model_name}",
+                                                paths="README.md",
+                                                repo_type="dataset"))
+            print(f"check_path: {check_path}")
+        except Exception as err:
+            # No details repo for this model
+            print(f"No details repo for this model: {err}")
+            return model_hyperlink(link, model_name)
 
     return model_hyperlink(link, model_name) + '  ' + model_hyperlink(details_link, "📑")
 

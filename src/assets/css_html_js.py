@@ -1,11 +1,4 @@
 custom_css = """
-#changelog-text {
-    font-size: 16px !important;
-}
-
-#changelog-text h2 {
-    font-size: 18px !important;
-}
 
 .markdown-text {
     font-size: 16px !important;

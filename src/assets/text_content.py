@@ -1,61 +1,5 @@
 from ..auto_leaderboard.model_metadata_type import ModelType
 
-CHANGELOG_TEXT = f"""
-## [2023-06-19]
-- Added model type column
-- Hid revision and 8bit columns since all models are the same atm
-
-## [2023-06-16]
-- Refactored code base
-- Added new columns: number of parameters, hub likes, license
-
-## [2023-06-13] 
-- Adjust description for TruthfulQA
-
-## [2023-06-12] 
-- Add Human & GPT-4 Evaluations
-
-## [2023-06-05] 
-- Increase concurrent thread count to 40
-- Search models on ENTER
-
-## [2023-06-02] 
-- Add a typeahead search bar
-- Use webhooks to automatically spawn a new Space when someone opens a PR
-- Start recording `submitted_time` for eval requests
-- Limit AutoEvalColumn max-width
-
-## [2023-05-30] 
-- Add a citation button
-- Simplify Gradio layout
-
-## [2023-05-29] 
-- Auto-restart every hour for the latest results
-- Sync with the internal version (minor style changes)
-
-## [2023-05-24] 
-- Add a baseline that has 25.0 for all values
-- Add CHANGELOG
-
-## [2023-05-23] 
-- Fix a CSS issue that made the leaderboard hard to read in dark mode
-
-## [2023-05-22] 
-- Display a success/error message after submitting evaluation requests
-- Reject duplicate submission
-- Do not display results that have incomplete results 
-- Display different queues for jobs that are RUNNING, PENDING, FINISHED status 
-
-## [2023-05-15] 
-- Fix a typo: from "TruthQA" to "QA"
-
-## [2023-05-10] 
-- Fix a bug that prevented auto-refresh
-
-## [2023-05-10] 
-- Release the leaderboard to public
-"""
-
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 
 INTRODUCTION_TEXT = f"""
@@ -80,6 +24,9 @@ With the plethora of large language models (LLMs) and chatbots being released we
 {ModelType.IFT.to_str(" : ")} model
 {ModelType.RL.to_str(" : ")} model
 If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
+
+🏴‍☠️ indicates that this model has been flagged by the community, and should probably be ignored! Clicking the icon will redirect you to the discussion about the model.
+(For ex, the model was trained on the evaluation data, and is therefore cheating on the leaderboard.)
 
 ## How it works
 

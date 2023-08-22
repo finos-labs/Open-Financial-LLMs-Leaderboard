@@ -1,11 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-import glob
-import json
-import os
-from typing import Dict, List
+from typing import Dict
 
-from ..utils_display import AutoEvalColumn
 
 @dataclass
 class ModelInfo:
@@ -24,7 +20,7 @@ class ModelType(Enum):
         return f"{self.value.symbol}{separator}{self.value.name}" 
 
 
-TYPE_METADATA: Dict[str, ModelType] = {
+MODEL_TYPE_METADATA: Dict[str, ModelType] = {
     'notstoic/PygmalionCoT-7b': ModelType.IFT,
     'aisquared/dlite-v1-355m': ModelType.IFT,
     'aisquared/dlite-v1-1_5b': ModelType.IFT,
@@ -553,45 +549,3 @@ def model_type_from_str(type):
         return ModelType.IFT
     return ModelType.Unknown
 
-
-def get_model_type(leaderboard_data: List[dict]):
-    for model_data in leaderboard_data:
-        request_files = os.path.join("eval-queue", model_data["model_name_for_query"] + "_eval_request_*" + ".json")
-        request_files = glob.glob(request_files)
-
-        request_file = ""
-        if len(request_files) == 1:
-            request_file = request_files[0]
-        elif len(request_files) > 1:
-            request_files = sorted(request_files, reverse=True)
-            for tmp_request_file in request_files:
-                with open(tmp_request_file, "r") as f:
-                    req_content = json.load(f)
-                    if req_content["status"] == "FINISHED" and req_content["precision"] == model_data["Precision"].split(".")[-1]: 
-                        request_file = tmp_request_file
-        
-        if request_file == "":
-            model_data[AutoEvalColumn.model_type.name] = ""
-            model_data[AutoEvalColumn.model_type_symbol.name] = ""
-            continue
-
-        try:
-            with open(request_file, "r") as f:
-                request = json.load(f)
-            is_delta = request["weight_type"] != "Original"
-        except Exception:
-            is_delta = False
-
-        try:
-            with open(request_file, "r") as f:
-                request = json.load(f)
-            model_type = model_type_from_str(request["model_type"])
-            model_data[AutoEvalColumn.model_type.name] = model_type.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol #+ ("🔺" if is_delta else "")
-        except KeyError:
-            if model_data["model_name_for_query"] in TYPE_METADATA:
-                model_data[AutoEvalColumn.model_type.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.name
-                model_data[AutoEvalColumn.model_type_symbol.name] = TYPE_METADATA[model_data["model_name_for_query"]].value.symbol #+ ("🔺" if is_delta else "")
-            else:
-                model_data[AutoEvalColumn.model_type.name] = ModelType.Unknown.value.name
-                model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.Unknown.value.symbol

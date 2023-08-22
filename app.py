@@ -82,7 +82,7 @@ def get_leaderboard_df():
         print("Pulling evaluation results for the leaderboard.")
         eval_results_private.git_pull()
 
-    all_data = get_eval_results_dicts(IS_PUBLIC)
+    all_data = get_eval_results_dicts()
 
     if not IS_PUBLIC:
         all_data.append(gpt4_values)
@@ -341,7 +341,7 @@ with demo:
                         elem_id="filter-columns"
                     )
             leaderboard_table = gr.components.Dataframe(
-                value=leaderboard_df[[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value+ [AutoEvalColumn.dummy.name]],
+                value=leaderboard_df[[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name]],
                 headers=[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name],
                 datatype=TYPES,
                 max_rows=None,

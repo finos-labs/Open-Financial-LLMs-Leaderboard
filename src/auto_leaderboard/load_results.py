@@ -102,7 +102,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     return result_key, eval_results
 
 
-def get_eval_results(is_public) -> List[EvalResult]:
+def get_eval_results() -> List[EvalResult]:
     json_filepaths = []
 
     for root, dir, files in os.walk("eval-results"):
@@ -135,7 +135,7 @@ def get_eval_results(is_public) -> List[EvalResult]:
     return eval_results
 
 
-def get_eval_results_dicts(is_public=True) -> List[Dict]:
-    eval_results = get_eval_results(is_public)
+def get_eval_results_dicts() -> List[Dict]:
+    eval_results = get_eval_results()
 
     return [e.to_dict() for e in eval_results]
