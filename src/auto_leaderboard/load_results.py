@@ -91,7 +91,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
 
     eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
-        accs = np.array([v[metric] for k, v in data["results"].items() if benchmark in k])
+        accs = np.array([v.get(metric, 0) for k, v in data["results"].items() if benchmark in k])
         if accs.size == 0:
             continue
         mean_acc = np.mean(accs) * 100.0
