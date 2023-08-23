@@ -294,7 +294,30 @@ def filter_items(df, leaderboard_table, query):
     if AutoEvalColumn.model_type_symbol.name in leaderboard_table.columns:
         filtered_df = df[(df[AutoEvalColumn.model_type_symbol.name] == query)]
     else:
-        return leaderboard_table.columns
+        return filtered_df[leaderboard_table.columns]
+    return filtered_df[leaderboard_table.columns]
+
+def filter_items_size(df, leaderboard_table, query):
+    numeric_intervals = {
+        "all": None,
+        "< 1B": (0, 1),
+        "~3B": (1, 5),
+        "~7B": (6, 11),
+        "~13B": (12, 15),
+        "~35B": (16, 55),
+        "60B+": (55, 1000)
+    }
+
+    if query == "all":
+        return df[leaderboard_table.columns]
+
+    numeric_interval = numeric_intervals[query]
+
+    if AutoEvalColumn.params.name in leaderboard_table.columns:
+        params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors='coerce')
+        filtered_df = df[params_column.between(*numeric_interval)]
+    else:
+        return filtered_df[leaderboard_table.columns]
     return filtered_df[leaderboard_table.columns]
 
 def change_tab(query_param):
@@ -309,6 +332,10 @@ def change_tab(query_param):
         return gr.Tabs.update(selected=1)
     else:
         return gr.Tabs.update(selected=0)
+
+def update_filter_type(input_type, shown_columns):
+    shown_columns.append(AutoEvalColumn.params.name)
+    return gr.update(visible=(input_type == 'types')), gr.update(visible=(input_type == 'sizes')), shown_columns
 
 
 demo = gr.Blocks(css=custom_css)
@@ -332,18 +359,44 @@ with demo:
                         show_label=False,
                         elem_id="search-bar",
                     )
-                    filter_columns = gr.Radio(
-                        label="⏚ Filter model types",
-                        choices = [
-                            "all", 
-                            ModelType.PT.to_str(),
-                            ModelType.FT.to_str(),
-                            ModelType.IFT.to_str(),
-                            ModelType.RL.to_str(), 
-                        ],
-                        value="all",
-                        elem_id="filter-columns"
-                    )
+                    with gr.Box(elem_id="box-filter"):
+                        filter_type = gr.Dropdown(
+                                label="⏚ Filter model",
+                                choices=["types", "sizes"], value="types",
+                                interactive=True,
+                                elem_id="filter_type"
+                        )
+                        filter_columns = gr.Radio(
+                            label="⏚ Filter model types",
+                            show_label=False,
+                            choices = [
+                                "all", 
+                                ModelType.PT.to_str(),
+                                ModelType.FT.to_str(),
+                                ModelType.IFT.to_str(),
+                                ModelType.RL.to_str(), 
+                            ],
+                            value="all",
+                            elem_id="filter-columns"
+                        )
+                        filter_columns_size = gr.Radio(
+                            label="⏚ Filter model sizes",
+                            show_label=False,
+                            choices = [
+                                "all",
+                                "< 1B",
+                                "~3B",
+                                "~7B",
+                                "~13B",
+                                "~35B",
+                                "60B+"
+                            ],
+                            value="all",
+                            visible=False,
+                            interactive=True,
+                            elem_id="filter-columns-size"
+                        )
+            
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df[[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name]],
                 headers=[AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name] + shown_columns.value + [AutoEvalColumn.dummy.name],
@@ -367,8 +420,11 @@ with demo:
                 [hidden_leaderboard_table_for_search, leaderboard_table, search_bar],
                 leaderboard_table,
             )
-            shown_columns.change(select_columns, [hidden_leaderboard_table_for_search, shown_columns], leaderboard_table)
-            filter_columns.change(filter_items, [hidden_leaderboard_table_for_search, leaderboard_table, filter_columns], leaderboard_table)
+            
+            filter_type.change(update_filter_type,inputs=[filter_type, shown_columns],outputs=[filter_columns, filter_columns_size, shown_columns],queue=False).then(select_columns, [hidden_leaderboard_table_for_search, shown_columns], leaderboard_table, queue=False)
+            shown_columns.change(select_columns, [hidden_leaderboard_table_for_search, shown_columns], leaderboard_table, queue=False)
+            filter_columns.change(filter_items, [hidden_leaderboard_table_for_search, leaderboard_table, filter_columns], leaderboard_table, queue=False)
+            filter_columns_size.change(filter_items_size, [hidden_leaderboard_table_for_search, leaderboard_table, filter_columns_size], leaderboard_table, queue=False)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 

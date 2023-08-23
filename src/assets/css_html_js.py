@@ -68,6 +68,38 @@ table th:first-child {
 #scale-logo .download {
     display: none;
 }
+#filter_type{
+    border: 0;
+    padding-left: 0;
+    padding-top: 0;
+}
+#filter_type label {
+    display: flex;
+}
+#filter_type label > span{
+    margin-top: var(--spacing-lg);
+    margin-right: 0.5em;
+}
+#filter_type label > .wrap{
+    width: 103px;
+}
+#filter_type label > .wrap .wrap-inner{  
+    padding: 2px;
+}
+#filter_type label > .wrap .wrap-inner input{
+    width: 1px
+}
+#filter-columns{
+    border:0;
+    padding:0;
+}
+#filter-columns-size{
+    border:0;
+    padding:0;
+}
+#box-filter > .form{
+    border: 0
+}
 """
 
 get_window_url_params = """
