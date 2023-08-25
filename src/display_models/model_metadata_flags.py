@@ -8,5 +8,5 @@ FLAGGED_MODELS = {
 
 # Models which have been requested by orgs to not be submitted on the leaderboard
 DO_NOT_SUBMIT_MODELS = [
-    "Voicelab/trurl-2-13b", # trained on MMLU
+    "Voicelab/trurl-2-13b",  # trained on MMLU
 ]

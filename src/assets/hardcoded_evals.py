@@ -1,4 +1,4 @@
-from src.utils_display import AutoEvalColumn, model_hyperlink
+from src.display_models.utils import AutoEvalColumn, model_hyperlink
 
 gpt4_values = {
     AutoEvalColumn.model.name: model_hyperlink("https://arxiv.org/abs/2303.08774", "gpt4"),
@@ -6,9 +6,9 @@ gpt4_values = {
     AutoEvalColumn.precision.name: None,
     AutoEvalColumn.average.name: 84.3,
     AutoEvalColumn.arc.name: 96.3,
-    AutoEvalColumn.hellaswag.name:  95.3,
-    AutoEvalColumn.mmlu.name:  86.4,
-    AutoEvalColumn.truthfulqa.name:  59.0,
+    AutoEvalColumn.hellaswag.name: 95.3,
+    AutoEvalColumn.mmlu.name: 86.4,
+    AutoEvalColumn.truthfulqa.name: 59.0,
     AutoEvalColumn.dummy.name: "GPT-4",
     AutoEvalColumn.model_type.name: "",
 }
@@ -19,9 +19,9 @@ gpt35_values = {
     AutoEvalColumn.precision.name: None,
     AutoEvalColumn.average.name: 71.9,
     AutoEvalColumn.arc.name: 85.2,
-    AutoEvalColumn.hellaswag.name:  85.5,
-    AutoEvalColumn.mmlu.name:  70.0,
-    AutoEvalColumn.truthfulqa.name:  47.0,
+    AutoEvalColumn.hellaswag.name: 85.5,
+    AutoEvalColumn.mmlu.name: 70.0,
+    AutoEvalColumn.truthfulqa.name: 47.0,
     AutoEvalColumn.dummy.name: "GPT-3.5",
     AutoEvalColumn.model_type.name: "",
 }
@@ -32,10 +32,9 @@ baseline = {
     AutoEvalColumn.precision.name: None,
     AutoEvalColumn.average.name: 25.0,
     AutoEvalColumn.arc.name: 25.0,
-    AutoEvalColumn.hellaswag.name:  25.0,
-    AutoEvalColumn.mmlu.name:  25.0,
-    AutoEvalColumn.truthfulqa.name:  25.0,
+    AutoEvalColumn.hellaswag.name: 25.0,
+    AutoEvalColumn.mmlu.name: 25.0,
+    AutoEvalColumn.truthfulqa.name: 25.0,
     AutoEvalColumn.dummy.name: "baseline",
     AutoEvalColumn.model_type.name: "",
 }
-

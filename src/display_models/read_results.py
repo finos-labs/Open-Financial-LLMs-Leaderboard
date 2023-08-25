@@ -1,13 +1,12 @@
-from dataclasses import dataclass
-
-import glob
 import json
 import os
+from dataclasses import dataclass
 from typing import Dict, List, Tuple
-import dateutil
 
-from src.utils_display import AutoEvalColumn, make_clickable_model
+import dateutil
 import numpy as np
+
+from src.display_models.utils import AutoEvalColumn, make_clickable_model
 
 METRICS = ["acc_norm", "acc_norm", "acc", "mc2"]
 BENCHMARKS = ["arc:challenge", "hellaswag", "hendrycksTest", "truthfulqa:mc"]
@@ -31,13 +30,15 @@ class EvalResult:
     weight_type: str = ""
 
     def to_dict(self):
+        from src.load_from_hub import is_model_on_hub
+
         if self.org is not None:
             base_model = f"{self.org}/{self.model}"
         else:
             base_model = f"{self.model}"
         data_dict = {}
 
-        data_dict["eval_name"] = self.eval_name # not a column, just a save name
+        data_dict["eval_name"] = self.eval_name  # not a column, just a save name
         data_dict["weight_type"] = self.weight_type  # not a column, just a save name
         data_dict[AutoEvalColumn.precision.name] = self.precision
         data_dict[AutoEvalColumn.model_type.name] = self.model_type
@@ -45,6 +46,9 @@ class EvalResult:
         data_dict[AutoEvalColumn.dummy.name] = base_model
         data_dict[AutoEvalColumn.revision.name] = self.revision
         data_dict[AutoEvalColumn.average.name] = sum([v for k, v in self.results.items()]) / 4.0
+        data_dict[AutoEvalColumn.still_on_hub.name] = (
+            is_model_on_hub(base_model, self.revision)[0] or base_model == "baseline"
+        )
 
         for benchmark in BENCHMARKS:
             if benchmark not in self.results.keys():
@@ -60,10 +64,9 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     with open(json_filepath) as fp:
         data = json.load(fp)
 
-    
     for mmlu_k in ["harness|hendrycksTest-abstract_algebra|5", "hendrycksTest-abstract_algebra"]:
         if mmlu_k in data["versions"] and data["versions"][mmlu_k] == 0:
-            return None, [] # we skip models with the wrong version 
+            return None, []  # we skip models with the wrong version
 
     try:
         config = data["config"]
@@ -87,7 +90,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     else:
         org = model_split[0]
         model = model_split[1]
-        result_key =  f"{org}_{model}_{model_sha}_{precision}"
+        result_key = f"{org}_{model}_{model_sha}_{precision}"
 
     eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
@@ -95,9 +98,16 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
         if accs.size == 0 or any([acc is None for acc in accs]):
             continue
         mean_acc = np.mean(accs) * 100.0
-        eval_results.append(EvalResult(
-            eval_name=result_key, org=org, model=model, revision=model_sha, results={benchmark: mean_acc}, precision=precision, #todo model_type=, weight_type=
-        ))
+        eval_results.append(
+            EvalResult(
+                eval_name=result_key,
+                org=org,
+                model=model,
+                revision=model_sha,
+                results={benchmark: mean_acc},
+                precision=precision,  # todo model_type=, weight_type=
+            )
+        )
 
     return result_key, eval_results
 
@@ -113,11 +123,11 @@ def get_eval_results() -> List[EvalResult]:
         # Sort the files by date
         # store results by precision maybe?
         try:
-            files.sort(key=lambda x:  dateutil.parser.parse(x.split("_", 1)[-1][:-5]))
+            files.sort(key=lambda x: dateutil.parser.parse(x.split("_", 1)[-1][:-5]))
         except dateutil.parser._parser.ParserError:
             files = [files[-1]]
 
-        #up_to_date = files[-1]
+        # up_to_date = files[-1]
         for file in files:
             json_filepaths.append(os.path.join(root, file))
 

@@ -1,17 +1,17 @@
-from ..auto_leaderboard.model_metadata_type import ModelType
+from src.display_models.model_metadata_type import ModelType
 
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 
-INTRODUCTION_TEXT = f"""
+INTRODUCTION_TEXT = """
 📐 The 🤗 Open LLM Leaderboard aims to track, rank and evaluate open LLMs and chatbots.
 
-🤗 Submit a model for automated evaluation on the 🤗 GPU cluster on the "Submit" page! 
+🤗 Submit a model for automated evaluation on the 🤗 GPU cluster on the "Submit" page!
 The leaderboard's backend runs the great [Eleuther AI Language Model Evaluation Harness](https://github.com/EleutherAI/lm-evaluation-harness) - read more details in the "About" page!
 """
 
 LLM_BENCHMARKS_TEXT = f"""
 # Context
-With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art. 
+With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art.
 
 ## Icons
 {ModelType.PT.to_str(" : ")} model
@@ -25,14 +25,14 @@ If there is no icon, we have not uploaded the information on the model yet, feel
 
 ## How it works
 
-📈 We evaluate models on 4 key benchmarks using the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks. 
+📈 We evaluate models on 4 key benchmarks using the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks.
 
 - <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
 - <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
 - <a href="https://arxiv.org/abs/2009.03300" target="_blank">  MMLU </a>  (5-shot) - a test to measure a text model's multitask accuracy. The test covers 57 tasks including elementary mathematics, US history, computer science, law, and more.
 - <a href="https://arxiv.org/abs/2109.07958" target="_blank">  TruthfulQA </a> (0-shot) - a test to measure a model’s propensity to reproduce falsehoods commonly found online. Note: TruthfulQA in the Harness is actually a minima a 6-shots task, as it is prepended by 6 examples systematically, even when launched using 0 for the number of few-shot examples.
 
-For all these evaluations, a higher score is a better score. 
+For all these evaluations, a higher score is a better score.
 We chose these benchmarks as they test a variety of reasoning and general knowledge across a wide variety of fields in 0-shot and few-shot settings.
 
 ## Details and logs
@@ -46,7 +46,7 @@ To reproduce our results, here is the commands you can run, using [this version]
 `python main.py --model=hf-causal --model_args="pretrained=<your_model>,use_accelerate=True,revision=<your_model_revision>"`
 ` --tasks=<task_list> --num_fewshot=<n_few_shot> --batch_size=2 --output_path=<output_path>`
 
-The total batch size we get for models which fit on one A100 node is 16 (8 GPUs * 2). If you don't use parallelism, adapt your batch size to fit. 
+The total batch size we get for models which fit on one A100 node is 16 (8 GPUs * 2). If you don't use parallelism, adapt your batch size to fit.
 *You can expect results to vary slightly for different batch sizes because of padding.*
 
 The tasks and few shots parameters are:
@@ -65,7 +65,7 @@ If you still have questions, you can check our FAQ [here](https://huggingface.co
 We also gather cool resources from the community, other teams, and other labs [here](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/174)!
 """
 
-EVALUATION_QUEUE_TEXT = f"""
+EVALUATION_QUEUE_TEXT = """
 # Evaluation Queue for the 🤗 Open LLM Leaderboard
 
 Models added here will be automatically evaluated on the 🤗 cluster.
@@ -79,7 +79,7 @@ config = AutoConfig.from_pretrained("your model name", revision=revision)
 model = AutoModel.from_pretrained("your model name", revision=revision)
 tokenizer = AutoTokenizer.from_pretrained("your model name", revision=revision)
 ```
-If this step fails, follow the error messages to debug your model before submitting it. It's likely your model has been improperly uploaded. 
+If this step fails, follow the error messages to debug your model before submitting it. It's likely your model has been improperly uploaded.
 
 Note: make sure your model is public!
 Note: if your model needs `use_remote_code=True`, we do not support this option yet but we are working on adding it, stay posted!
@@ -94,8 +94,8 @@ This is a leaderboard for Open LLMs, and we'd love for as many people as possibl
 When we add extra information about models to the leaderboard, it will be automatically taken from the model card
 
 ## In case of model failure
-If your model is displayed in the `FAILED` category, its execution stopped. 
-Make sure you have followed the above steps first. 
+If your model is displayed in the `FAILED` category, its execution stopped.
+Make sure you have followed the above steps first.
 If everything is done, check you can launch the EleutherAIHarness on your model locally, using the above command without modifications (you can add `--limit` to limit the number of examples per task).
 """
 
@@ -135,7 +135,7 @@ CITATION_BUTTON_TEXT = r"""
   url          = {https://doi.org/10.5281/zenodo.5371628}
 }
 @misc{clark2018think,
-      title={Think you have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge}, 
+      title={Think you have Solved Question Answering? Try ARC, the AI2 Reasoning Challenge},
       author={Peter Clark and Isaac Cowhey and Oren Etzioni and Tushar Khot and Ashish Sabharwal and Carissa Schoenick and Oyvind Tafjord},
       year={2018},
       eprint={1803.05457},
@@ -143,7 +143,7 @@ CITATION_BUTTON_TEXT = r"""
       primaryClass={cs.AI}
 }
 @misc{zellers2019hellaswag,
-      title={HellaSwag: Can a Machine Really Finish Your Sentence?}, 
+      title={HellaSwag: Can a Machine Really Finish Your Sentence?},
       author={Rowan Zellers and Ari Holtzman and Yonatan Bisk and Ali Farhadi and Yejin Choi},
       year={2019},
       eprint={1905.07830},
@@ -151,7 +151,7 @@ CITATION_BUTTON_TEXT = r"""
       primaryClass={cs.CL}
 }
 @misc{hendrycks2021measuring,
-      title={Measuring Massive Multitask Language Understanding}, 
+      title={Measuring Massive Multitask Language Understanding},
       author={Dan Hendrycks and Collin Burns and Steven Basart and Andy Zou and Mantas Mazeika and Dawn Song and Jacob Steinhardt},
       year={2021},
       eprint={2009.03300},
@@ -159,7 +159,7 @@ CITATION_BUTTON_TEXT = r"""
       primaryClass={cs.CY}
 }
 @misc{lin2022truthfulqa,
-      title={TruthfulQA: Measuring How Models Mimic Human Falsehoods}, 
+      title={TruthfulQA: Measuring How Models Mimic Human Falsehoods},
       author={Stephanie Lin and Jacob Hilton and Owain Evans},
       year={2022},
       eprint={2109.07958},

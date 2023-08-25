@@ -1,24 +1,27 @@
 import os
 from dataclasses import dataclass
+
 from huggingface_hub import HfApi
 
 API = HfApi()
 
 
-# These classes are for user facing column names, to avoid having to change them 
-# all around the code when a modif is needed 
+# These classes are for user facing column names, to avoid having to change them
+# all around the code when a modif is needed
 @dataclass
 class ColumnContent:
     name: str
-    type: str 
-    displayed_by_default: bool 
+    type: str
+    displayed_by_default: bool
     hidden: bool = False
+
 
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
 
+
 @dataclass(frozen=True)
-class AutoEvalColumn: # Auto evals column
+class AutoEvalColumn:  # Auto evals column
     model_type_symbol = ColumnContent("T", "str", True)
     model = ColumnContent("Model", "markdown", True)
     average = ColumnContent("Average ⬆️", "number", True)
@@ -27,15 +30,19 @@ class AutoEvalColumn: # Auto evals column
     mmlu = ColumnContent("MMLU", "number", True)
     truthfulqa = ColumnContent("TruthfulQA", "number", True)
     model_type = ColumnContent("Type", "str", False)
-    precision = ColumnContent("Precision", "str", False) #, True)
+    precision = ColumnContent("Precision", "str", False)  # , True)
     license = ColumnContent("Hub License", "str", False)
     params = ColumnContent("#Params (B)", "number", False)
     likes = ColumnContent("Hub ❤️", "number", False)
+    still_on_hub = ColumnContent("Available on the hub", "bool", False)
     revision = ColumnContent("Model sha", "str", False, False)
-    dummy = ColumnContent("model_name_for_query", "str", True) # dummy col to implement search bar (hidden by custom CSS)
+    dummy = ColumnContent(
+        "model_name_for_query", "str", True
+    )  # dummy col to implement search bar (hidden by custom CSS)
+
 
 @dataclass(frozen=True)
-class EloEvalColumn: # Elo evals column
+class EloEvalColumn:  # Elo evals column
     model = ColumnContent("Model", "markdown", True)
     gpt4 = ColumnContent("GPT-4 (all)", "number", True)
     human_all = ColumnContent("Human (all)", "number", True)
@@ -44,7 +51,7 @@ class EloEvalColumn: # Elo evals column
 
 
 @dataclass(frozen=True)
-class EvalQueueColumn: # Queue column
+class EvalQueueColumn:  # Queue column
     model = ColumnContent("model", "markdown", True)
     revision = ColumnContent("revision", "str", True)
     private = ColumnContent("private", "bool", True)
@@ -52,7 +59,13 @@ class EvalQueueColumn: # Queue column
     weight_type = ColumnContent("weight_type", "str", "Original")
     status = ColumnContent("status", "str", True)
 
-LLAMAS = ["huggingface/llama-7b", "huggingface/llama-13b", "huggingface/llama-30b", "huggingface/llama-65b"]
+
+LLAMAS = [
+    "huggingface/llama-7b",
+    "huggingface/llama-13b",
+    "huggingface/llama-30b",
+    "huggingface/llama-65b",
+]
 
 
 KOALA_LINK = "https://huggingface.co/TheBloke/koala-13B-HF"
@@ -90,29 +103,44 @@ def make_clickable_model(model_name):
     elif model_name == "oasst-12b":
         link = OASST_LINK
 
-    details_model_name = model_name.replace('/', '__')
+    details_model_name = model_name.replace("/", "__")
     details_link = f"https://huggingface.co/datasets/open-llm-leaderboard/details_{details_model_name}"
 
     if not bool(os.getenv("DEBUG", "False")):
         # We only add these checks when not debugging, as they are extremely slow
         print(f"details_link: {details_link}")
         try:
-            check_path = list(API.list_files_info(repo_id=f"open-llm-leaderboard/details_{details_model_name}",
-                                                paths="README.md",
-                                                repo_type="dataset"))
+            check_path = list(
+                API.list_files_info(
+                    repo_id=f"open-llm-leaderboard/details_{details_model_name}",
+                    paths="README.md",
+                    repo_type="dataset",
+                )
+            )
             print(f"check_path: {check_path}")
         except Exception as err:
             # No details repo for this model
             print(f"No details repo for this model: {err}")
             return model_hyperlink(link, model_name)
 
-    return model_hyperlink(link, model_name) + '  ' + model_hyperlink(details_link, "📑")
+    return model_hyperlink(link, model_name) + "  " + model_hyperlink(details_link, "📑")
+
 
 def styled_error(error):
     return f"<p style='color: red; font-size: 20px; text-align: center;'>{error}</p>"
 
+
 def styled_warning(warn):
     return f"<p style='color: orange; font-size: 20px; text-align: center;'>{warn}</p>"
 
+
 def styled_message(message):
     return f"<p style='color: green; font-size: 20px; text-align: center;'>{message}</p>"
+
+
+def has_no_nan_values(df, columns):
+    return df[columns].notna().all(axis=1)
+
+
+def has_nan_values(df, columns):
+    return df[columns].isna().any(axis=1)

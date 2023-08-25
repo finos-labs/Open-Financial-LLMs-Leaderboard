@@ -89,13 +89,13 @@ table th:first-child {
 #filter_type label > .wrap .wrap-inner input{
     width: 1px
 }
-#filter-columns{
+#filter-columns-type{
     border:0;
-    padding:0;
+    padding:0.5;
 }
 #filter-columns-size{
     border:0;
-    padding:0;
+    padding:0.5;
 }
 #box-filter > .form{
     border: 0
