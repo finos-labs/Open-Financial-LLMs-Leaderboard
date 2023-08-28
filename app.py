@@ -231,9 +231,17 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     ]
     return filtered_df
 
+NUMERIC_INTERVALS = {
+    "< 1.5B": (0, 1.5),
+    "~3B": (1.5, 5),
+    "~7B": (6, 11),
+    "~13B": (12, 15),
+    "~35B": (16, 55),
+    "60B+": (55, 10000),
+}
 
 def filter_models(
-    df: pd.DataFrame, current_columns_df: pd.DataFrame, type_query: str, size_query: str, show_deleted: bool
+    df: pd.DataFrame, current_columns_df: pd.DataFrame, type_query: list, size_query: list, show_deleted: bool
 ) -> pd.DataFrame:
     current_columns = current_columns_df.columns
 
@@ -243,24 +251,12 @@ def filter_models(
     else:  # Show only still on the hub models
         filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True][current_columns]
 
-    if type_query != "all":
-        type_emoji = type_query[0]
-        filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name] == type_emoji]
+    type_emoji = [t[0] for t in type_query]
+    filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
 
-    if size_query != "all":
-        numeric_intervals = {
-            "all": (0, 10000),
-            "< 1B": (0, 1),
-            "~3B": (1, 5),
-            "~7B": (6, 11),
-            "~13B": (12, 15),
-            "~35B": (16, 55),
-            "60B+": (55, 10000),
-        }
-        numeric_interval = numeric_intervals[size_query]
-        params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-
-        filtered_df = filtered_df[params_column.between(*numeric_interval)]
+    numeric_interval = [NUMERIC_INTERVALS[s] for s in size_query]
+    params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
+    filtered_df = filtered_df[params_column.between(numeric_interval[0][0], numeric_interval[-1][-1])]
 
     return filtered_df
 
@@ -313,31 +309,27 @@ with demo:
                         elem_id="search-bar",
                     )
                     with gr.Box(elem_id="box-filter"):
-                        filter_columns_type = gr.Radio(
-                            label="⏚ Filter model types",
+                        filter_columns_type = gr.CheckboxGroup(
+                            label="Model types",
                             choices=[
-                                "all",
                                 ModelType.PT.to_str(),
                                 ModelType.FT.to_str(),
                                 ModelType.IFT.to_str(),
                                 ModelType.RL.to_str(),
                             ],
-                            value="all",
+                            value=[
+                                ModelType.PT.to_str(),
+                                ModelType.FT.to_str(),
+                                ModelType.IFT.to_str(),
+                                ModelType.RL.to_str(),
+                            ],
                             interactive=True,
                             elem_id="filter-columns-type",
                         )
-                        filter_columns_size = gr.Radio(
-                            label="⏚ Filter model sizes",
-                            choices=[
-                                "all",
-                                "< 1B",
-                                "~3B",
-                                "~7B",
-                                "~13B",
-                                "~35B",
-                                "60B+",
-                            ],
-                            value="all",
+                        filter_columns_size = gr.CheckboxGroup(
+                            label="Model sizes",
+                            choices=list(NUMERIC_INTERVALS.keys()),
+                            value=list(NUMERIC_INTERVALS.keys()),
                             interactive=True,
                             elem_id="filter-columns-size",
                         )
