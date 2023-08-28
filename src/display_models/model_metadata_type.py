@@ -21,6 +21,8 @@ class ModelType(Enum):
 
 
 MODEL_TYPE_METADATA: Dict[str, ModelType] = {
+    "Qwen/Qwen-7B": ModelType.PT,
+    "Qwen/Qwen-7B-Chat": ModelType.RL,
     "notstoic/PygmalionCoT-7b": ModelType.IFT,
     "aisquared/dlite-v1-355m": ModelType.IFT,
     "aisquared/dlite-v1-1_5b": ModelType.IFT,
