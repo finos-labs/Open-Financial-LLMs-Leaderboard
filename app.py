@@ -241,7 +241,7 @@ def filter_models(
     if show_deleted:
         filtered_df = df[current_columns]
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] is True][current_columns]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True][current_columns]
 
     if type_query != "all":
         type_emoji = type_query[0]
