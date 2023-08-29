@@ -483,6 +483,7 @@ with demo:
                             "bfloat16",
                             "8bit (LLM.int8)",
                             "4bit (QLoRA / FP4)",
+                            "GPTQ"
                         ],
                         label="Precision",
                         multiselect=False,
