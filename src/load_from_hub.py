@@ -20,9 +20,13 @@ def get_all_requested_models(requested_models_dir: str) -> set[str]:
     for root, _, files in os.walk(requested_models_dir):
         current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
         if current_depth == depth:
-            file_names.extend([os.path.join(root, file) for file in files])
+            for file in files:
+                if not file.endswith(".json"): continue
+                with open(os.path.join(root, file), "r") as f:
+                    info = json.load(f)
+                    file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}")
 
-    return set([file_name.lower().split("eval-queue/")[1] for file_name in file_names])
+    return set(file_names)
 
 
 def load_all_info_from_hub(QUEUE_REPO: str, RESULTS_REPO: str, QUEUE_PATH: str, RESULTS_PATH: str) -> list[Repository]:

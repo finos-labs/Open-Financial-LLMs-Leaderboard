@@ -159,7 +159,7 @@ def add_new_eval(
         return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
 
     # Check for duplicate submission
-    if out_path.split("eval-queue/")[1].lower() in requested_models:
+    if f"{model}_{revision}_{precision}" in requested_models:
         return styled_warning("This model has been already submitted.")
 
     with open(out_path, "w") as f:
@@ -256,7 +256,7 @@ def filter_models(
 
     numeric_interval = [NUMERIC_INTERVALS[s] for s in size_query]
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-    filtered_df = filtered_df[params_column.between(numeric_interval[0][0], numeric_interval[-1][-1])]
+    filtered_df = filtered_df[params_column.between(numeric_interval[0][0], numeric_interval[-1][1])]
 
     return filtered_df
 
