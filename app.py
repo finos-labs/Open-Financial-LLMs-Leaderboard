@@ -197,7 +197,7 @@ def refresh() -> list[pd.DataFrame]:
         finished_eval_queue_df,
         running_eval_queue_df,
         pending_eval_queue_df,
-    ) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, COLS)
+    ) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, EVAL_COLS)
     return (
         leaderboard_df,
         finished_eval_queue_df,
@@ -535,6 +535,7 @@ with demo:
                     running_eval_table,
                     pending_eval_table,
                 ],
+                api_name='refresh'
             )
 
     with gr.Row():
