@@ -92,6 +92,8 @@ else:
     eval_queue_private, eval_results_private = None, None
 
 original_df = get_leaderboard_df(eval_results, eval_results_private, COLS, BENCHMARK_COLS)
+models = original_df["model_name_for_query"].tolist()
+
 leaderboard_df = original_df.copy()
 (
     finished_eval_queue_df,
