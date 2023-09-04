@@ -94,6 +94,13 @@ else:
 original_df = get_leaderboard_df(eval_results, eval_results_private, COLS, BENCHMARK_COLS)
 models = original_df["model_name_for_query"].tolist() # needed for model backlinks in their to the leaderboard
 
+to_be_dumped = f"models = {repr(models)}\n"
+
+with open("models_backlinks.py", "w") as f:
+    f.write(to_be_dumped)
+
+print(to_be_dumped)
+
 leaderboard_df = original_df.copy()
 (
     finished_eval_queue_df,
