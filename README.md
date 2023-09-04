@@ -9,8 +9,6 @@ app_file: app.py
 pinned: true
 license: apache-2.0
 duplicated_from: HuggingFaceH4/open_llm_leaderboard
-models:
-- uni-tianyan/Uni-TianYan
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
