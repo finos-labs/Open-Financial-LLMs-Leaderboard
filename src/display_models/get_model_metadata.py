@@ -100,7 +100,7 @@ def get_model_type(leaderboard_data: List[dict]):
             model_type = model_type_from_str(request["model_type"])
             model_data[AutoEvalColumn.model_type.name] = model_type.value.name
             model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol  # + ("🔺" if is_delta else "")
-        except KeyError:
+        except Exception:
             if model_data["model_name_for_query"] in MODEL_TYPE_METADATA:
                 model_data[AutoEvalColumn.model_type.name] = MODEL_TYPE_METADATA[
                     model_data["model_name_for_query"]
