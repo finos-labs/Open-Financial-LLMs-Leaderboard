@@ -309,7 +309,7 @@ with demo:
                         )
                     with gr.Row():
                         deleted_models_visibility = gr.Checkbox(
-                            value=True, label="Show models removed from the hub", interactive=True
+                            value=True, label="Show gated/private/deleted models", interactive=True
                         )
                 with gr.Column(min_width=320):
                     search_bar = gr.Textbox(
