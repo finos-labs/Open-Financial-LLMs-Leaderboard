@@ -82,18 +82,6 @@ def get_model_type(leaderboard_data: List[dict]):
                     ):
                         request_file = tmp_request_file
 
-        if request_file == "":
-            model_data[AutoEvalColumn.model_type.name] = ""
-            model_data[AutoEvalColumn.model_type_symbol.name] = ""
-            continue
-
-        try:
-            with open(request_file, "r") as f:
-                request = json.load(f)
-            request["weight_type"] != "Original"
-        except Exception:
-            pass
-
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
