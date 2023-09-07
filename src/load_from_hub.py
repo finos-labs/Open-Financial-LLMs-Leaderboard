@@ -4,6 +4,7 @@ import os
 import pandas as pd
 from huggingface_hub import Repository
 from transformers import AutoConfig
+from collections import defaultdict
 
 from src.assets.hardcoded_evals import baseline, gpt4_values, gpt35_values
 from src.display_models.get_model_metadata import apply_metadata
@@ -16,6 +17,7 @@ IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 def get_all_requested_models(requested_models_dir: str) -> set[str]:
     depth = 1
     file_names = []
+    users_to_submission_dates = defaultdict(list)
 
     for root, _, files in os.walk(requested_models_dir):
         current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
@@ -26,7 +28,13 @@ def get_all_requested_models(requested_models_dir: str) -> set[str]:
                     info = json.load(f)
                     file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}")
 
-    return set(file_names)
+                    # Select organisation
+                    if info["model"].count("/") == 0 or "submitted_time" not in info:
+                        continue
+                    organisation, _ = info["model"].split("/")
+                    users_to_submission_dates[organisation].append(info["submitted_time"])
+
+    return set(file_names), users_to_submission_dates
 
 
 def load_all_info_from_hub(QUEUE_REPO: str, RESULTS_REPO: str, QUEUE_PATH: str, RESULTS_PATH: str) -> list[Repository]:
@@ -50,9 +58,9 @@ def load_all_info_from_hub(QUEUE_REPO: str, RESULTS_REPO: str, QUEUE_PATH: str, 
     )
     eval_results_repo.git_pull()
 
-    requested_models = get_all_requested_models("eval-queue")
+    requested_models, users_to_submission_dates = get_all_requested_models("eval-queue")
 
-    return eval_queue_repo, requested_models, eval_results_repo
+    return eval_queue_repo, requested_models, eval_results_repo, users_to_submission_dates
 
 
 def get_leaderboard_df(

@@ -26,6 +26,7 @@ from src.display_models.utils import (
     styled_warning,
 )
 from src.load_from_hub import get_evaluation_queue_df, get_leaderboard_df, is_model_on_hub, load_all_info_from_hub
+from src.rate_limiting import user_submission_permission
 
 pd.set_option("display.precision", 1)
 
@@ -52,6 +53,9 @@ api = HfApi(token=H4_TOKEN)
 def restart_space():
     api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
 
+# Rate limit variables
+RATE_LIMIT_PERIOD = 7
+RATE_LIMIT_QUOTA = 5
 
 # Column selection
 COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]
@@ -77,12 +81,12 @@ BENCHMARK_COLS = [
 ]
 
 ## LOAD INFO FROM HUB
-eval_queue, requested_models, eval_results = load_all_info_from_hub(
+eval_queue, requested_models, eval_results, users_to_submission_dates = load_all_info_from_hub(
     QUEUE_REPO, RESULTS_REPO, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH
 )
 
 if not IS_PUBLIC:
-    (eval_queue_private, requested_models_private, eval_results_private,) = load_all_info_from_hub(
+    (eval_queue_private, requested_models_private, eval_results_private, _) = load_all_info_from_hub(
         PRIVATE_QUEUE_REPO,
         PRIVATE_RESULTS_REPO,
         EVAL_REQUESTS_PATH_PRIVATE,
@@ -121,6 +125,14 @@ def add_new_eval(
 ):
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    num_models_submitted_in_period = user_submission_permission(model, users_to_submission_dates, RATE_LIMIT_PERIOD)
+    if num_models_submitted_in_period > RATE_LIMIT_QUOTA:
+        error_msg = f"Organisation or user `{model.split('/')[0]}`"
+        error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "
+        error_msg += f"in the last {RATE_LIMIT_PERIOD} days.\n"
+        error_msg += "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
+        return styled_error(error_msg)
 
     if model_type is None or model_type == "":
         return styled_error("Please select a model type.")
