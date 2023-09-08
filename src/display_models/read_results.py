@@ -28,6 +28,7 @@ class EvalResult:
     precision: str = ""
     model_type: str = ""
     weight_type: str = ""
+    date: str = ""
 
     def to_dict(self):
         from src.load_from_hub import is_model_on_hub
@@ -86,11 +87,11 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     if len(model_split) == 1:
         org = None
         model = model_split[0]
-        result_key = f"{model}_{model_sha}_{precision}"
+        result_key = f"{model}_{precision}"
     else:
         org = model_split[0]
         model = model_split[1]
-        result_key = f"{org}_{model}_{model_sha}_{precision}"
+        result_key = f"{org}_{model}_{precision}"
 
     eval_results = []
     for benchmark, metric in zip(BENCHMARKS, METRICS):
@@ -106,6 +107,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
                 revision=model_sha,
                 results={benchmark: mean_acc},
                 precision=precision,  # todo model_type=, weight_type=
+                date=config.get("submission_date")
             )
         )
 
@@ -123,7 +125,7 @@ def get_eval_results() -> List[EvalResult]:
         # Sort the files by date
         # store results by precision maybe?
         try:
-            files.sort(key=lambda x: dateutil.parser.parse(x.split("_", 1)[-1][:-5]))
+            files.sort(key=lambda x: x.removesuffix(".json").removeprefix("results_")[:-7])
         except dateutil.parser._parser.ParserError:
             files = [files[-1]]
 
