@@ -203,21 +203,6 @@ def add_new_eval(
 
 
 # Basics
-def refresh() -> list[pd.DataFrame]:
-    leaderboard_df = get_leaderboard_df(eval_results, eval_results_private, COLS, BENCHMARK_COLS)
-    (
-        finished_eval_queue_df,
-        running_eval_queue_df,
-        pending_eval_queue_df,
-    ) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, EVAL_COLS)
-    return (
-        leaderboard_df,
-        finished_eval_queue_df,
-        running_eval_queue_df,
-        pending_eval_queue_df,
-    )
-
-
 def change_tab(query_param: str):
     query_param = query_param.replace("'", '"')
     query_param = json.loads(query_param)
@@ -229,6 +214,13 @@ def change_tab(query_param: str):
 
 
 # Searching and filtering
+def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, columns: list, type_query: list, size_query: list, show_deleted: bool, query: str):
+    filtered_df = filter_models(hidden_df, type_query, size_query, show_deleted)
+    df = search_table(filtered_df, current_columns_df, query)
+    df = select_columns(df, columns)
+
+    return df
+
 def search_table(df: pd.DataFrame, current_columns_df: pd.DataFrame, query: str) -> pd.DataFrame:
     current_columns = current_columns_df.columns
     if AutoEvalColumn.model_type.name in current_columns:
@@ -238,8 +230,8 @@ def search_table(df: pd.DataFrame, current_columns_df: pd.DataFrame, query: str)
         ]
     else:
         filtered_df = df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
-    return filtered_df[current_columns]
 
+    return filtered_df
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     always_here_cols = [
@@ -262,22 +254,20 @@ NUMERIC_INTERVALS = {
 }
 
 def filter_models(
-    df: pd.DataFrame, current_columns_df: pd.DataFrame, type_query: list, size_query: list, show_deleted: bool
+    df: pd.DataFrame, type_query: list, size_query: list, show_deleted: bool
 ) -> pd.DataFrame:
-    current_columns = current_columns_df.columns
-
     # Show all models
     if show_deleted:
-        filtered_df = df[current_columns]
+        filtered_df = df
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True][current_columns]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
 
     numeric_interval = [NUMERIC_INTERVALS[s] for s in size_query]
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-    filtered_df = filtered_df[params_column.between(numeric_interval[0][0], numeric_interval[-1][1])]
+    filtered_df = filtered_df.loc[params_column.between(numeric_interval[0][0], numeric_interval[-1][1])]
 
     return filtered_df
 
@@ -383,55 +373,73 @@ with demo:
                 visible=False,
             )
             search_bar.submit(
-                search_table,
+                update_table,
                 [
                     hidden_leaderboard_table_for_search,
                     leaderboard_table,
+                    shown_columns,
+                    filter_columns_type,
+                    filter_columns_size,
+                    deleted_models_visibility,
                     search_bar,
                 ],
                 leaderboard_table,
             )
             shown_columns.change(
-                select_columns,
-                [hidden_leaderboard_table_for_search, shown_columns],
+                update_table,
+                [
+                    hidden_leaderboard_table_for_search,
+                    leaderboard_table,
+                    shown_columns,
+                    filter_columns_type,
+                    filter_columns_size,
+                    deleted_models_visibility,
+                    search_bar,
+                ],
                 leaderboard_table,
-                queue=False,
+                queue=True,
             )
             filter_columns_type.change(
-                filter_models,
+                update_table,
                 [
                     hidden_leaderboard_table_for_search,
                     leaderboard_table,
+                    shown_columns,
                     filter_columns_type,
                     filter_columns_size,
                     deleted_models_visibility,
+                    search_bar,
                 ],
                 leaderboard_table,
-                queue=False,
+                queue=True,
             )
             filter_columns_size.change(
-                filter_models,
+                update_table,
                 [
                     hidden_leaderboard_table_for_search,
                     leaderboard_table,
+                    shown_columns,
                     filter_columns_type,
                     filter_columns_size,
                     deleted_models_visibility,
+                    search_bar,
                 ],
                 leaderboard_table,
-                queue=False,
+                queue=True,
             )
             deleted_models_visibility.change(
-                filter_models,
+                update_table,
                 [
                     hidden_leaderboard_table_for_search,
                     leaderboard_table,
+                    shown_columns,
                     filter_columns_type,
                     filter_columns_size,
                     deleted_models_visibility,
+                    search_bar,
                 ],
                 leaderboard_table,
-                queue=False,
+                queue=True,
             )
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
@@ -536,20 +544,6 @@ with demo:
                 submission_result,
             )
 
-        with gr.Row():
-            refresh_button = gr.Button("Refresh")
-            refresh_button.click(
-                refresh,
-                inputs=[],
-                outputs=[
-                    leaderboard_table,
-                    finished_eval_table,
-                    running_eval_table,
-                    pending_eval_table,
-                ],
-                api_name='refresh'
-            )
-
     with gr.Row():
         with gr.Accordion("📙 Citation", open=False):
             citation_button = gr.Textbox(
@@ -567,6 +561,6 @@ with demo:
     )
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(restart_space, "interval", seconds=3600)
+scheduler.add_job(restart_space, "interval", seconds=1800)
 scheduler.start()
 demo.queue(concurrency_count=40).launch()
