@@ -128,7 +128,7 @@ def get_evaluation_queue_df(
 
     pending_list = [e for e in all_evals if e["status"] in ["PENDING", "RERUN"]]
     running_list = [e for e in all_evals if e["status"] == "RUNNING"]
-    finished_list = [e for e in all_evals if e["status"].startswith("FINISHED")]
+    finished_list = [e for e in all_evals if e["status"].startswith("FINISHED") or e["status"] == "PENDING_NEW_EVAL"]
     df_pending = pd.DataFrame.from_records(pending_list, columns=cols)
     df_running = pd.DataFrame.from_records(running_list, columns=cols)
     df_finished = pd.DataFrame.from_records(finished_list, columns=cols)

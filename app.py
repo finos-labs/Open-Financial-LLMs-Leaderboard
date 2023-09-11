@@ -100,10 +100,10 @@ models = original_df["model_name_for_query"].tolist() # needed for model backlin
 
 to_be_dumped = f"models = {repr(models)}\n"
 
-with open("models_backlinks.py", "w") as f:
-    f.write(to_be_dumped)
+# with open("models_backlinks.py", "w") as f:
+#     f.write(to_be_dumped)
 
-print(to_be_dumped)
+# print(to_be_dumped)
 
 leaderboard_df = original_df.copy()
 (
