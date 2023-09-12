@@ -216,22 +216,14 @@ def change_tab(query_param: str):
 # Searching and filtering
 def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, columns: list, type_query: list, size_query: list, show_deleted: bool, query: str):
     filtered_df = filter_models(hidden_df, type_query, size_query, show_deleted)
-    df = search_table(filtered_df, current_columns_df, query)
-    df = select_columns(df, columns)
+    if query != "":
+        filtered_df = search_table(filtered_df, query)
+    df = select_columns(filtered_df, columns)
 
     return df
 
-def search_table(df: pd.DataFrame, current_columns_df: pd.DataFrame, query: str) -> pd.DataFrame:
-    current_columns = current_columns_df.columns
-    if AutoEvalColumn.model_type.name in current_columns:
-        filtered_df = df[
-            (df[AutoEvalColumn.dummy.name].str.contains(query, case=False))
-            | (df[AutoEvalColumn.model_type.name].str.contains(query, case=False))
-        ]
-    else:
-        filtered_df = df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
-
-    return filtered_df
+def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
+    return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     always_here_cols = [
