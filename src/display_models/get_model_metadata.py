@@ -22,8 +22,8 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
             model_info = api.model_info(model_name)
         except huggingface_hub.utils._errors.RepositoryNotFoundError:
             print("Repo not found!", model_name)
-            model_data[AutoEvalColumn.license.name] = None
-            model_data[AutoEvalColumn.likes.name] = None
+            model_data[AutoEvalColumn.license.name] = "?"
+            model_data[AutoEvalColumn.likes.name] = 0
             model_data[AutoEvalColumn.params.name] = get_model_size(model_name, None)
             continue
 
@@ -36,7 +36,7 @@ def get_model_license(model_info):
     try:
         return model_info.cardData["license"]
     except Exception:
-        return None
+        return "?"
 
 
 def get_model_likes(model_info):
@@ -56,7 +56,7 @@ def get_model_size(model_name, model_info):
             size = size_match.group(0)
             return round(float(size[:-1]) if size[-1] == "b" else float(size[:-1]) / 1e3, 3)
         except AttributeError:
-            return None
+            return 0
 
 
 def get_model_type(leaderboard_data: List[dict]):
