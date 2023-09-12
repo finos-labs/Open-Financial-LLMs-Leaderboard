@@ -27,7 +27,7 @@ class EvalResult:
     results: dict
     precision: str = ""
     model_type: str = ""
-    weight_type: str = ""
+    weight_type: str = "Original"
     date: str = ""
 
     def to_dict(self):
