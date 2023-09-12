@@ -237,12 +237,12 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     return filtered_df
 
 NUMERIC_INTERVALS = {
-    "< 1.5B": (0, 1.5),
-    "~3B": (1.5, 5),
-    "~7B": (6, 11),
-    "~13B": (12, 15),
-    "~35B": (16, 55),
-    "60B+": (55, 10000),
+    "< 1.5B": pd.Interval(0, 1.5, closed="both"),
+    "~3B": pd.Interval(1.5, 5, closed="both"),
+    "~7B": pd.Interval(6, 11, closed="both"),
+    "~13B": pd.Interval(12, 15, closed="both"),
+    "~35B": pd.Interval(16, 55, closed="both"),
+    "60B+": pd.Interval(55, 10000, closed="both"),
 }
 
 def filter_models(
@@ -257,9 +257,10 @@ def filter_models(
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
 
-    numeric_interval = [NUMERIC_INTERVALS[s] for s in size_query]
+    numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
-    filtered_df = filtered_df.loc[params_column.between(numeric_interval[0][0], numeric_interval[-1][1])]
+    mask = params_column.apply(lambda x: any(numeric_interval.contains(x)))
+    filtered_df = filtered_df.loc[mask]
 
     return filtered_df
 
