@@ -2,6 +2,7 @@ import glob
 import json
 import os
 import re
+import pickle
 from typing import List
 
 import huggingface_hub
@@ -16,20 +17,36 @@ api = HfApi(token=os.environ.get("H4_TOKEN", None))
 
 
 def get_model_infos_from_hub(leaderboard_data: List[dict]):
+    # load cache from disk
+    try:
+        with open("model_info_cache.pkl", "rb") as f:
+            model_info_cache = pickle.load(f)
+    except EOFError:
+        model_info_cache = {}
+
     for model_data in tqdm(leaderboard_data):
         model_name = model_data["model_name_for_query"]
-        try:
-            model_info = api.model_info(model_name)
-        except huggingface_hub.utils._errors.RepositoryNotFoundError:
-            print("Repo not found!", model_name)
-            model_data[AutoEvalColumn.license.name] = None
-            model_data[AutoEvalColumn.likes.name] = None
-            model_data[AutoEvalColumn.params.name] = get_model_size(model_name, None)
-            continue
+
+        if model_name in model_info_cache:
+            model_info = model_info_cache[model_name]
+        else:
+            try:
+                model_info = api.model_info(model_name)
+                model_info_cache[model_name] = model_info
+            except huggingface_hub.utils._errors.RepositoryNotFoundError:
+                print("Repo not found!", model_name)
+                model_data[AutoEvalColumn.license.name] = None
+                model_data[AutoEvalColumn.likes.name] = None
+                model_data[AutoEvalColumn.params.name] = get_model_size(model_name, None)
+                continue
 
         model_data[AutoEvalColumn.license.name] = get_model_license(model_info)
         model_data[AutoEvalColumn.likes.name] = get_model_likes(model_info)
         model_data[AutoEvalColumn.params.name] = get_model_size(model_name, model_info)
+    
+    # save cache to disk in pickle format
+    with open("model_info_cache.pkl", "wb") as f:
+        pickle.dump(model_info_cache, f)
 
 
 def get_model_license(model_info):
