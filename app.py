@@ -237,12 +237,13 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     return filtered_df
 
 NUMERIC_INTERVALS = {
-    "< 1.5B": pd.Interval(0, 1.5, closed="both"),
-    "~3B": pd.Interval(1.5, 5, closed="both"),
-    "~7B": pd.Interval(6, 11, closed="both"),
-    "~13B": pd.Interval(12, 15, closed="both"),
-    "~35B": pd.Interval(16, 55, closed="both"),
-    "60B+": pd.Interval(55, 10000, closed="both"),
+    "Unknown": pd.Interval(-1, 0, closed="right"), 
+    "< 1.5B": pd.Interval(0, 1.5, closed="right"),
+    "~3B": pd.Interval(1.5, 5, closed="right"),
+    "~7B": pd.Interval(6, 11, closed="right"),
+    "~13B": pd.Interval(12, 15, closed="right"),
+    "~35B": pd.Interval(16, 55, closed="right"),
+    "60B+": pd.Interval(55, 10000, closed="right"),
 }
 
 def filter_models(
