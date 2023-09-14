@@ -112,6 +112,8 @@ leaderboard_df = original_df.copy()
     pending_eval_queue_df,
 ) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, EVAL_COLS)
 
+print(leaderboard_df["Precision"].unique())
+
 
 ## INTERACTION FUNCTIONS
 def add_new_eval(
@@ -214,8 +216,8 @@ def change_tab(query_param: str):
 
 
 # Searching and filtering
-def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, columns: list, type_query: list, size_query: list, show_deleted: bool, query: str):
-    filtered_df = filter_models(hidden_df, type_query, size_query, show_deleted)
+def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, columns: list, type_query: list, precision_query: str, size_query: list, show_deleted: bool, query: str):
+    filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
     if query != "":
         filtered_df = search_table(filtered_df, query)
     df = select_columns(filtered_df, columns)
@@ -247,16 +249,17 @@ NUMERIC_INTERVALS = {
 }
 
 def filter_models(
-    df: pd.DataFrame, type_query: list, size_query: list, show_deleted: bool
+    df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
 ) -> pd.DataFrame:
     # Show all models
     if show_deleted:
         filtered_df = df
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] is True]
 
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
+    filtered_df = filtered_df[df[AutoEvalColumn.precision.name].isin(precision_query)]
 
     numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
@@ -275,6 +278,12 @@ with demo:
         with gr.TabItem("🏅 LLM Benchmark", elem_id="llm-benchmark-tab-table", id=0):
             with gr.Row():
                 with gr.Column():
+                    with gr.Row():
+                        search_bar = gr.Textbox(
+                            placeholder=" 🔍 Search for your model and press ENTER...",
+                            show_label=False,
+                            elem_id="search-bar",
+                        )
                     with gr.Row():
                         shown_columns = gr.CheckboxGroup(
                             choices=[
@@ -308,11 +317,6 @@ with demo:
                             value=True, label="Show gated/private/deleted models", interactive=True
                         )
                 with gr.Column(min_width=320):
-                    search_bar = gr.Textbox(
-                        placeholder="🔍 Search for your model and press ENTER...",
-                        show_label=False,
-                        elem_id="search-bar",
-                    )
                     with gr.Box(elem_id="box-filter"):
                         filter_columns_type = gr.CheckboxGroup(
                             label="Model types",
@@ -330,6 +334,13 @@ with demo:
                             ],
                             interactive=True,
                             elem_id="filter-columns-type",
+                        )
+                        filter_columns_precision = gr.CheckboxGroup(
+                            label="Precision",
+                            choices=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
+                            value=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
+                            interactive=True,
+                            elem_id="filter-columns-precision",
                         )
                         filter_columns_size = gr.CheckboxGroup(
                             label="Model sizes",
@@ -373,6 +384,7 @@ with demo:
                     leaderboard_table,
                     shown_columns,
                     filter_columns_type,
+                    filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
@@ -386,6 +398,7 @@ with demo:
                     leaderboard_table,
                     shown_columns,
                     filter_columns_type,
+                    filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
@@ -400,6 +413,22 @@ with demo:
                     leaderboard_table,
                     shown_columns,
                     filter_columns_type,
+                    filter_columns_precision,
+                    filter_columns_size,
+                    deleted_models_visibility,
+                    search_bar,
+                ],
+                leaderboard_table,
+                queue=True,
+            )
+            filter_columns_precision.change(
+                update_table,
+                [
+                    hidden_leaderboard_table_for_search,
+                    leaderboard_table,
+                    shown_columns,
+                    filter_columns_type,
+                    filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
@@ -414,6 +443,7 @@ with demo:
                     leaderboard_table,
                     shown_columns,
                     filter_columns_type,
+                    filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
@@ -428,6 +458,7 @@ with demo:
                     leaderboard_table,
                     shown_columns,
                     filter_columns_type,
+                    filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
