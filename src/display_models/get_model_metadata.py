@@ -23,8 +23,13 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
     try:
         with open("model_info_cache.pkl", "rb") as f:
             model_info_cache = pickle.load(f)
-    except EOFError:
+    except (EOFError, FileNotFoundError):
         model_info_cache = {}
+    try:
+        with open("model_size_cache.pkl", "rb") as f:
+            model_size_cache = pickle.load(f)
+    except (EOFError, FileNotFoundError):
+        model_size_cache = {}
 
     for model_data in tqdm(leaderboard_data):
         model_name = model_data["model_name_for_query"]
@@ -39,16 +44,21 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
                 print("Repo not found!", model_name)
                 model_data[AutoEvalColumn.license.name] = None
                 model_data[AutoEvalColumn.likes.name] = None
-                model_data[AutoEvalColumn.params.name] = get_model_size(model_name, None)
-                continue
+                if model_name not in model_size_cache:
+                    model_size_cache[model_name] = get_model_size(model_name, None)
+                model_data[AutoEvalColumn.params.name] = model_size_cache[model_name]
 
         model_data[AutoEvalColumn.license.name] = get_model_license(model_info)
         model_data[AutoEvalColumn.likes.name] = get_model_likes(model_info)
-        model_data[AutoEvalColumn.params.name] = get_model_size(model_name, model_info)
+        if model_name not in model_size_cache:
+            model_size_cache[model_name] = get_model_size(model_name, model_info)
+        model_data[AutoEvalColumn.params.name] = model_size_cache[model_name]
     
     # save cache to disk in pickle format
     with open("model_info_cache.pkl", "wb") as f:
         pickle.dump(model_info_cache, f)
+    with open("model_size_cache.pkl", "wb") as f:
+        pickle.dump(model_size_cache, f)
 
 
 def get_model_license(model_info):
