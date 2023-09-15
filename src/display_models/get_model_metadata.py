@@ -8,6 +8,8 @@ from typing import List
 import huggingface_hub
 from huggingface_hub import HfApi
 from tqdm import tqdm
+from transformers import AutoModel, AutoConfig
+from accelerate import init_empty_weights
 
 from src.display_models.model_metadata_flags import DO_NOT_SUBMIT_MODELS, FLAGGED_MODELS
 from src.display_models.model_metadata_type import MODEL_TYPE_METADATA, ModelType, model_type_from_str
@@ -69,11 +71,17 @@ def get_model_size(model_name, model_info):
         return round(model_info.safetensors["total"] / 1e9, 3)
     except AttributeError:
         try:
-            size_match = re.search(size_pattern, model_name.lower())
-            size = size_match.group(0)
-            return round(float(size[:-1]) if size[-1] == "b" else float(size[:-1]) / 1e3, 3)
-        except AttributeError:
-            return 0
+            config = AutoConfig.from_pretrained(model_name, trust_remote_code=False)
+            with init_empty_weights():
+                model = AutoModel.from_config(config, trust_remote_code=False)
+            return round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e9, 3)
+        except (EnvironmentError, ValueError): # model config not found, likely private  
+            try:
+                size_match = re.search(size_pattern, model_name.lower())
+                size = size_match.group(0)
+                return round(float(size[:-1]) if size[-1] == "b" else float(size[:-1]) / 1e3, 3)
+            except AttributeError:
+                return 0
 
 
 def get_model_type(leaderboard_data: List[dict]):
