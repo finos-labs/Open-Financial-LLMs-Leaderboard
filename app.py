@@ -225,6 +225,7 @@ def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, colu
     return df
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
+    print(query)
     return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
@@ -258,6 +259,7 @@ def filter_models(
         filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
+    print(type_emoji)
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
     filtered_df = filtered_df[df[AutoEvalColumn.precision.name].isin(precision_query)]
 
@@ -325,12 +327,14 @@ with demo:
                                 ModelType.FT.to_str(),
                                 ModelType.IFT.to_str(),
                                 ModelType.RL.to_str(),
+                                ModelType.Unknown.to_str(),
                             ],
                             value=[
                                 ModelType.PT.to_str(),
                                 ModelType.FT.to_str(),
                                 ModelType.IFT.to_str(),
                                 ModelType.RL.to_str(),
+                                ModelType.Unknown.to_str(),
                             ],
                             interactive=True,
                             elem_id="filter-columns-type",

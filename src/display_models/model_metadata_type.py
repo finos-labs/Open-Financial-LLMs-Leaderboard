@@ -14,7 +14,7 @@ class ModelType(Enum):
     FT = ModelInfo(name="fine-tuned", symbol="🔶")
     IFT = ModelInfo(name="instruction-tuned", symbol="⭕")
     RL = ModelInfo(name="RL-tuned", symbol="🟦")
-    Unknown = ModelInfo(name="Unknown, add type to request file!", symbol="?")
+    Unknown = ModelInfo(name="Unknown", symbol="?")
 
     def to_str(self, separator=" "):
         return f"{self.value.symbol}{separator}{self.value.name}"
