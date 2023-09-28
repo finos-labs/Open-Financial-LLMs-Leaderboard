@@ -100,19 +100,12 @@ models = original_df["model_name_for_query"].tolist() # needed for model backlin
 
 to_be_dumped = f"models = {repr(models)}\n"
 
-# with open("models_backlinks.py", "w") as f:
-#     f.write(to_be_dumped)
-
-# print(to_be_dumped)
-
 leaderboard_df = original_df.copy()
 (
     finished_eval_queue_df,
     running_eval_queue_df,
     pending_eval_queue_df,
 ) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, EVAL_COLS)
-
-print(leaderboard_df["Precision"].unique())
 
 
 ## INTERACTION FUNCTIONS
@@ -225,7 +218,6 @@ def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, colu
     return df
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    print(query)
     return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
@@ -259,9 +251,8 @@ def filter_models(
         filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
-    print(type_emoji)
-    filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
-    filtered_df = filtered_df[df[AutoEvalColumn.precision.name].isin(precision_query)]
+    filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji + ["?"])]
+    filtered_df = filtered_df[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
 
     numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
@@ -327,14 +318,12 @@ with demo:
                                 ModelType.FT.to_str(),
                                 ModelType.IFT.to_str(),
                                 ModelType.RL.to_str(),
-                                ModelType.Unknown.to_str(),
                             ],
                             value=[
                                 ModelType.PT.to_str(),
                                 ModelType.FT.to_str(),
                                 ModelType.IFT.to_str(),
                                 ModelType.RL.to_str(),
-                                ModelType.Unknown.to_str(),
                             ],
                             interactive=True,
                             elem_id="filter-columns-type",
