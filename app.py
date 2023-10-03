@@ -569,6 +569,7 @@ with demo:
             citation_button = gr.Textbox(
                 value=CITATION_BUTTON_TEXT,
                 label=CITATION_BUTTON_LABEL,
+                lines=20,
                 elem_id="citation-button",
             ).style(show_copy_button=True)
 
