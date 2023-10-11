@@ -17,6 +17,7 @@ from src.assets.text_content import (
     TITLE,
 )
 from src.display_models.get_model_metadata import DO_NOT_SUBMIT_MODELS, ModelType
+from src.display_models.modelcard_filter import check_model_card
 from src.display_models.utils import (
     AutoEvalColumn,
     EvalQueueColumn,
@@ -121,6 +122,10 @@ def add_new_eval(
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
+    if model_type is None or model_type == "":
+        return styled_error("Please select a model type.")
+
+    # Is the user rate limited?
     num_models_submitted_in_period = user_submission_permission(model, users_to_submission_dates, RATE_LIMIT_PERIOD)
     if num_models_submitted_in_period > RATE_LIMIT_QUOTA:
         error_msg = f"Organisation or user `{model.split('/')[0]}`"
@@ -129,10 +134,11 @@ def add_new_eval(
         error_msg += "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
         return styled_error(error_msg)
 
-    if model_type is None or model_type == "":
-        return styled_error("Please select a model type.")
+    # Did the model authors forbid its submission to the leaderboard?
+    if model in DO_NOT_SUBMIT_MODELS or base_model in DO_NOT_SUBMIT_MODELS:
+        return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
 
-    # check the model actually exists before adding the eval
+   # Does the model actually exist?
     if revision == "":
         revision = "main"
 
@@ -145,8 +151,14 @@ def add_new_eval(
         model_on_hub, error = is_model_on_hub(model, revision)
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
+        
+    # Were the model card and license filled?
+    modelcard_OK, error_msg = check_model_card(model)
+    if not modelcard_OK:
+        return styled_error(error_msg)
 
-    print("adding new eval")
+    # Seems good, creating the eval
+    print("Adding new eval")
 
     eval_entry = {
         "model": model,
@@ -166,13 +178,10 @@ def add_new_eval(
         user_name = model.split("/")[0]
         model_path = model.split("/")[1]
 
+    print("Creating eval file")
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
-
-    # Check if the model has been forbidden:
-    if out_path.split("eval-queue/")[1] in DO_NOT_SUBMIT_MODELS:
-        return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
 
     # Check for duplicate submission
     if f"{model}_{revision}_{precision}" in requested_models:
@@ -181,6 +190,7 @@ def add_new_eval(
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
 
+    print("Uploading eval file")
     api.upload_file(
         path_or_fileobj=out_path,
         path_in_repo=out_path.split("eval-queue/")[1],
@@ -189,7 +199,7 @@ def add_new_eval(
         commit_message=f"Add {model} to eval queue",
     )
 
-    # remove the local file
+    # Remove the local file
     os.remove(out_path)
 
     return styled_message(
