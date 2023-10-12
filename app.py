@@ -224,7 +224,6 @@ def change_tab(query_param: str):
 # Searching and filtering
 def update_table(
     hidden_df: pd.DataFrame,
-    current_columns_df: pd.DataFrame,
     columns: list,
     type_query: list,
     precision_query: str,
@@ -233,23 +232,13 @@ def update_table(
     query: str,
 ):
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
-    final_df = []
-    if query != "":
-        queries = query.split(";")
-        for _q in queries:
-            if _q != "":
-                temp_filtered_df = search_table(filtered_df, _q)
-                if len(temp_filtered_df) > 0:
-                    final_df.append(temp_filtered_df)
-        if len(final_df) > 0:
-            filtered_df = pd.concat(final_df).drop_duplicates()
+    filtered_df = filter_queries(query, filtered_df)
     df = select_columns(filtered_df, columns)
     return df
 
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
-
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     always_here_cols = [
@@ -273,6 +262,23 @@ NUMERIC_INTERVALS = {
     "60B+": pd.Interval(55, 10000, closed="right"),
 }
 
+
+def filter_queries(query: str, filtered_df: pd.DataFrame):
+    """Added by Abishek"""
+    final_df = []
+    if query != "":
+        queries = [q.strip() for q in query.split(";")]
+        for _q in queries:
+            _q = _q.strip()
+            if _q != "":
+                temp_filtered_df = search_table(filtered_df, _q)
+                if len(temp_filtered_df) > 0:
+                    final_df.append(temp_filtered_df)
+        if len(final_df) > 0:
+            filtered_df = pd.concat(final_df)
+            filtered_df = filtered_df.drop_duplicates(subset=[AutoEvalColumn.model.name, AutoEvalColumn.precision.name, AutoEvalColumn.revision.name])
+
+    return filtered_df
 
 def filter_models(
     df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
@@ -409,7 +415,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,
@@ -423,7 +428,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,
@@ -438,7 +442,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,
@@ -453,7 +456,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,
@@ -468,7 +470,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,
@@ -483,7 +484,6 @@ with demo:
                 update_table,
                 [
                     hidden_leaderboard_table_for_search,
-                    leaderboard_table,
                     shown_columns,
                     filter_columns_type,
                     filter_columns_precision,

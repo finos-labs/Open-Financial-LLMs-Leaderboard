@@ -40,7 +40,7 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
             try:
                 model_info = api.model_info(model_name)
                 model_info_cache[model_name] = model_info
-            except huggingface_hub.utils._errors.RepositoryNotFoundError:
+            except (huggingface_hub.utils._errors.RepositoryNotFoundError, huggingface_hub.utils._errors.HfHubHTTPError):
                 print("Repo not found!", model_name)
                 model_data[AutoEvalColumn.license.name] = None
                 model_data[AutoEvalColumn.likes.name] = None
