@@ -133,8 +133,8 @@ def add_new_eval(
         error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "
         error_msg += f"in the last {RATE_LIMIT_PERIOD} days.\n"
         error_msg += (
-            "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗
-        )"
+            "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
+        )
         return styled_error(error_msg)
 
     # Did the model authors forbid its submission to the leaderboard?
