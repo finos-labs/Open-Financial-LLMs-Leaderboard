@@ -54,6 +54,7 @@ api = HfApi(token=H4_TOKEN)
 def restart_space():
     api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
 
+
 # Rate limit variables
 RATE_LIMIT_PERIOD = 7
 RATE_LIMIT_QUOTA = 5
@@ -97,7 +98,7 @@ else:
     eval_queue_private, eval_results_private = None, None
 
 original_df = get_leaderboard_df(eval_results, eval_results_private, COLS, BENCHMARK_COLS)
-models = original_df["model_name_for_query"].tolist() # needed for model backlinks in their to the leaderboard
+models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
 
 to_be_dumped = f"models = {repr(models)}\n"
 
@@ -131,14 +132,16 @@ def add_new_eval(
         error_msg = f"Organisation or user `{model.split('/')[0]}`"
         error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "
         error_msg += f"in the last {RATE_LIMIT_PERIOD} days.\n"
-        error_msg += "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
+        error_msg += (
+            "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗
+        )"
         return styled_error(error_msg)
 
     # Did the model authors forbid its submission to the leaderboard?
     if model in DO_NOT_SUBMIT_MODELS or base_model in DO_NOT_SUBMIT_MODELS:
         return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
 
-   # Does the model actually exist?
+    # Does the model actually exist?
     if revision == "":
         revision = "main"
 
@@ -151,7 +154,7 @@ def add_new_eval(
         model_on_hub, error = is_model_on_hub(model, revision)
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
-        
+
     # Were the model card and license filled?
     modelcard_OK, error_msg = check_model_card(model)
     if not modelcard_OK:
@@ -219,16 +222,34 @@ def change_tab(query_param: str):
 
 
 # Searching and filtering
-def update_table(hidden_df: pd.DataFrame, current_columns_df: pd.DataFrame, columns: list, type_query: list, precision_query: str, size_query: list, show_deleted: bool, query: str):
+def update_table(
+    hidden_df: pd.DataFrame,
+    current_columns_df: pd.DataFrame,
+    columns: list,
+    type_query: list,
+    precision_query: str,
+    size_query: list,
+    show_deleted: bool,
+    query: str,
+):
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
+    final_df = []
     if query != "":
-        filtered_df = search_table(filtered_df, query)
+        queries = query.split(";")
+        for _q in queries:
+            if _q != "":
+                temp_filtered_df = search_table(filtered_df, _q)
+                if len(temp_filtered_df) > 0:
+                    final_df.append(temp_filtered_df)
+        if len(final_df) > 0:
+            filtered_df = pd.concat(final_df).drop_duplicates()
     df = select_columns(filtered_df, columns)
-
     return df
+
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
+
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     always_here_cols = [
@@ -241,8 +262,9 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     ]
     return filtered_df
 
+
 NUMERIC_INTERVALS = {
-    "Unknown": pd.Interval(-1, 0, closed="right"), 
+    "Unknown": pd.Interval(-1, 0, closed="right"),
     "< 1.5B": pd.Interval(0, 1.5, closed="right"),
     "~3B": pd.Interval(1.5, 5, closed="right"),
     "~7B": pd.Interval(6, 11, closed="right"),
@@ -250,6 +272,7 @@ NUMERIC_INTERVALS = {
     "~35B": pd.Interval(16, 55, closed="right"),
     "60B+": pd.Interval(55, 10000, closed="right"),
 }
+
 
 def filter_models(
     df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
@@ -283,7 +306,7 @@ with demo:
                 with gr.Column():
                     with gr.Row():
                         search_bar = gr.Textbox(
-                            placeholder=" 🔍 Search for your model and press ENTER...",
+                            placeholder=" 🔍 Search for your model (separate multiple queries with `;`) and press ENTER...",
                             show_label=False,
                             elem_id="search-bar",
                         )
@@ -537,13 +560,7 @@ with demo:
 
                 with gr.Column():
                     precision = gr.Dropdown(
-                        choices=[
-                            "float16",
-                            "bfloat16",
-                            "8bit (LLM.int8)",
-                            "4bit (QLoRA / FP4)",
-                            "GPTQ"
-                        ],
+                        choices=["float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)", "GPTQ"],
                         label="Precision",
                         multiselect=False,
                         value="float16",

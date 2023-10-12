@@ -1,6 +1,7 @@
 import huggingface_hub
 from huggingface_hub import ModelCard
 
+
 # ht to @Wauplin, thank you for the snippet!
 # See https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/317
 def check_model_card(repo_id: str) -> tuple[bool, str]:
@@ -21,5 +22,5 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     # Enforce card content
     if len(card.text) < 200:
         return False, "Please add a description to your model card, it is too short."
-    
+
     return True, ""

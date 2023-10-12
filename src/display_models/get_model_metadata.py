@@ -53,7 +53,7 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
         if model_name not in model_size_cache:
             model_size_cache[model_name] = get_model_size(model_name, model_info)
         model_data[AutoEvalColumn.params.name] = model_size_cache[model_name]
-    
+
     # save cache to disk in pickle format
     with open("model_info_cache.pkl", "wb") as f:
         pickle.dump(model_info_cache, f)
@@ -85,7 +85,7 @@ def get_model_size(model_name, model_info):
             with init_empty_weights():
                 model = AutoModel.from_config(config, trust_remote_code=False)
             return round(sum(p.numel() for p in model.parameters() if p.requires_grad) / 1e9, 3)
-        except (EnvironmentError, ValueError, KeyError): # model config not found, likely private  
+        except (EnvironmentError, ValueError, KeyError):  # model config not found, likely private
             try:
                 size_match = re.search(size_pattern, model_name.lower())
                 size = size_match.group(0)

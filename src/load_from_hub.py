@@ -23,7 +23,8 @@ def get_all_requested_models(requested_models_dir: str) -> set[str]:
         current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
         if current_depth == depth:
             for file in files:
-                if not file.endswith(".json"): continue
+                if not file.endswith(".json"):
+                    continue
                 with open(os.path.join(root, file), "r") as f:
                     info = json.load(f)
                     file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}")

@@ -1,4 +1,3 @@
-
 from datetime import datetime, timezone, timedelta
 
 
@@ -12,5 +11,3 @@ def user_submission_permission(submission_name, users_to_submission_dates, rate_
     submissions_after_timelimit = [d for d in submission_dates if d > time_limit]
 
     return len(submissions_after_timelimit)
-
-

@@ -107,7 +107,7 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
                 revision=model_sha,
                 results={benchmark: mean_acc},
                 precision=precision,  # todo model_type=, weight_type=
-                date=config.get("submission_date")
+                date=config.get("submission_date"),
             )
         )
 
