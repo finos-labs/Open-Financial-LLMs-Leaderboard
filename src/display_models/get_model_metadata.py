@@ -45,13 +45,15 @@ def get_model_infos_from_hub(leaderboard_data: List[dict]):
                 model_data[AutoEvalColumn.license.name] = None
                 model_data[AutoEvalColumn.likes.name] = None
                 if model_name not in model_size_cache:
-                    model_size_cache[model_name] = get_model_size(model_name, None)
+                    size_factor = 8 if model_data["Precision"] == "GPTQ" else 1
+                    model_size_cache[model_name] = size_factor * get_model_size(model_name, None)
                 model_data[AutoEvalColumn.params.name] = model_size_cache[model_name]
 
         model_data[AutoEvalColumn.license.name] = get_model_license(model_info)
         model_data[AutoEvalColumn.likes.name] = get_model_likes(model_info)
         if model_name not in model_size_cache:
-            model_size_cache[model_name] = get_model_size(model_name, model_info)
+            size_factor = 8 if model_data["Precision"] == "GPTQ" else 1
+            model_size_cache[model_name] = size_factor * get_model_size(model_name, model_info)
         model_data[AutoEvalColumn.params.name] = model_size_cache[model_name]
 
     # save cache to disk in pickle format

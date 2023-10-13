@@ -81,6 +81,8 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     model_split = model.split("/", 1)
 
     precision = config.get("model_dtype")
+    if precision == "None":
+        precision = "GPTQ"
 
     model = model_split[-1]
 

@@ -253,14 +253,14 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
 
 
 NUMERIC_INTERVALS = {
-    "Unknown": pd.Interval(-1, 0, closed="right"),
-    "0~1.5B": pd.Interval(0, 1.5, closed="right"),
-    "1.5~3B": pd.Interval(1.5, 3, closed="right"),
-    "3~7B": pd.Interval(3, 7, closed="right"),
-    "7~13B": pd.Interval(7, 13, closed="right"),
-    "13~35B": pd.Interval(13, 35, closed="right"),
-    "35~60B": pd.Interval(35, 60, closed="right"),
-    "60B+": pd.Interval(60, 10000, closed="right"),
+    "?": pd.Interval(-1, 0, closed="right"),
+    "0~1.5": pd.Interval(0, 1.5, closed="right"),
+    "1.5~3": pd.Interval(1.5, 3, closed="right"),
+    "3~7": pd.Interval(3, 7, closed="right"),
+    "7~13": pd.Interval(7, 13, closed="right"),
+    "13~35": pd.Interval(13, 35, closed="right"),
+    "35~60": pd.Interval(35, 60, closed="right"),
+    "60+": pd.Interval(60, 10000, closed="right"),
 }
 
 
@@ -378,7 +378,7 @@ with demo:
                             elem_id="filter-columns-precision",
                         )
                         filter_columns_size = gr.CheckboxGroup(
-                            label="Model sizes",
+                            label="Model sizes (in billions of parameters)",
                             choices=list(NUMERIC_INTERVALS.keys()),
                             value=list(NUMERIC_INTERVALS.keys()),
                             interactive=True,
