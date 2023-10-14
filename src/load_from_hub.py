@@ -1,10 +1,9 @@
 import json
 import os
+from collections import defaultdict
 
 import pandas as pd
-from huggingface_hub import Repository
 from transformers import AutoConfig
-from collections import defaultdict
 
 from src.assets.hardcoded_evals import baseline, gpt4_values, gpt35_values
 from src.display_models.get_model_metadata import apply_metadata
@@ -38,43 +37,8 @@ def get_all_requested_models(requested_models_dir: str) -> set[str]:
     return set(file_names), users_to_submission_dates
 
 
-def load_all_info_from_hub(QUEUE_REPO: str, RESULTS_REPO: str, QUEUE_PATH: str, RESULTS_PATH: str) -> list[Repository]:
-    eval_queue_repo = None
-    eval_results_repo = None
-    requested_models = None
-
-    print("Pulling evaluation requests and results.")
-
-    eval_queue_repo = Repository(
-        local_dir=QUEUE_PATH,
-        clone_from=QUEUE_REPO,
-        repo_type="dataset",
-    )
-    eval_queue_repo.git_pull()
-
-    eval_results_repo = Repository(
-        local_dir=RESULTS_PATH,
-        clone_from=RESULTS_REPO,
-        repo_type="dataset",
-    )
-    eval_results_repo.git_pull()
-
-    requested_models, users_to_submission_dates = get_all_requested_models("eval-queue")
-
-    return eval_queue_repo, requested_models, eval_results_repo, users_to_submission_dates
-
-
-def get_leaderboard_df(
-    eval_results: Repository, eval_results_private: Repository, cols: list, benchmark_cols: list
-) -> pd.DataFrame:
-    if eval_results:
-        print("Pulling evaluation results for the leaderboard.")
-        eval_results.git_pull()
-    if eval_results_private:
-        print("Pulling evaluation results for the leaderboard.")
-        eval_results_private.git_pull()
-
-    all_data = get_eval_results_dicts()
+def get_leaderboard_df(results_path: str, cols: list, benchmark_cols: list) -> pd.DataFrame:
+    all_data = get_eval_results_dicts(results_path)
 
     if not IS_PUBLIC:
         all_data.append(gpt4_values)
@@ -92,16 +56,7 @@ def get_leaderboard_df(
     return df
 
 
-def get_evaluation_queue_df(
-    eval_queue: Repository, eval_queue_private: Repository, save_path: str, cols: list
-) -> list[pd.DataFrame]:
-    if eval_queue:
-        print("Pulling changes for the evaluation queue.")
-        eval_queue.git_pull()
-    if eval_queue_private:
-        print("Pulling changes for the evaluation queue.")
-        eval_queue_private.git_pull()
-
+def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
     entries = [entry for entry in os.listdir(save_path) if not entry.startswith(".")]
     all_evals = []
 
@@ -147,6 +102,5 @@ def is_model_on_hub(model_name: str, revision: str) -> bool:
             "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard.",
         )
 
-    except Exception as e:
-        print(f"Could not get the model config from the hub.: {e}")
+    except Exception:
         return False, "was not found on hub!"

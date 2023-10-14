@@ -1,11 +1,12 @@
 import json
 import os
+import re
 from datetime import datetime, timezone
 
 import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
-from huggingface_hub import HfApi
+from huggingface_hub import HfApi, snapshot_download
 
 from src.assets.css_html_js import custom_css, get_window_url_params
 from src.assets.text_content import (
@@ -26,7 +27,7 @@ from src.display_models.utils import (
     styled_message,
     styled_warning,
 )
-from src.load_from_hub import get_evaluation_queue_df, get_leaderboard_df, is_model_on_hub, load_all_info_from_hub
+from src.load_from_hub import get_all_requested_models, get_evaluation_queue_df, get_leaderboard_df, is_model_on_hub
 from src.rate_limiting import user_submission_permission
 
 pd.set_option("display.precision", 1)
@@ -82,32 +83,21 @@ BENCHMARK_COLS = [
     ]
 ]
 
-## LOAD INFO FROM HUB
-eval_queue, requested_models, eval_results, users_to_submission_dates = load_all_info_from_hub(
-    QUEUE_REPO, RESULTS_REPO, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH
-)
+snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None)
+snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None)
+requested_models, users_to_submission_dates = get_all_requested_models(EVAL_REQUESTS_PATH)
 
-if not IS_PUBLIC:
-    (eval_queue_private, requested_models_private, eval_results_private, _) = load_all_info_from_hub(
-        PRIVATE_QUEUE_REPO,
-        PRIVATE_RESULTS_REPO,
-        EVAL_REQUESTS_PATH_PRIVATE,
-        EVAL_RESULTS_PATH_PRIVATE,
-    )
-else:
-    eval_queue_private, eval_results_private = None, None
+original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
+leaderboard_df = original_df.copy()
 
-original_df = get_leaderboard_df(eval_results, eval_results_private, COLS, BENCHMARK_COLS)
 models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
-
 to_be_dumped = f"models = {repr(models)}\n"
 
-leaderboard_df = original_df.copy()
 (
     finished_eval_queue_df,
     running_eval_queue_df,
     pending_eval_queue_df,
-) = get_evaluation_queue_df(eval_queue, eval_queue_private, EVAL_REQUESTS_PATH, EVAL_COLS)
+) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
 
 
 ## INTERACTION FUNCTIONS
@@ -155,6 +145,27 @@ def add_new_eval(
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
 
+    model_info = api.model_info(repo_id=model, revision=revision)
+
+    size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
+    try:
+        model_size = round(model_info.safetensors["total"] / 1e9, 3)
+    except AttributeError:
+        try:
+            size_match = re.search(size_pattern, model.lower())
+            model_size = size_match.group(0)
+            model_size = round(float(model_size[:-1]) if model_size[-1] == "b" else float(model_size[:-1]) / 1e3, 3)
+        except AttributeError:
+            return 65
+
+    size_factor = 8 if (precision == "GPTQ" or "GPTQ" in model) else 1
+    model_size = size_factor * model_size
+
+    try:
+        license = model_info.cardData["license"]
+    except Exception:
+        license = "?"
+
     # Were the model card and license filled?
     modelcard_OK, error_msg = check_model_card(model)
     if not modelcard_OK:
@@ -173,6 +184,9 @@ def add_new_eval(
         "status": "PENDING",
         "submitted_time": current_time,
         "model_type": model_type,
+        "likes": model_info.likes,
+        "params": model_size,
+        "license": license,
     }
 
     user_name = ""
@@ -240,6 +254,7 @@ def update_table(
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
     return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
 
+
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     always_here_cols = [
         AutoEvalColumn.model_type_symbol.name,
@@ -277,9 +292,12 @@ def filter_queries(query: str, filtered_df: pd.DataFrame):
                     final_df.append(temp_filtered_df)
         if len(final_df) > 0:
             filtered_df = pd.concat(final_df)
-            filtered_df = filtered_df.drop_duplicates(subset=[AutoEvalColumn.model.name, AutoEvalColumn.precision.name, AutoEvalColumn.revision.name])
+            filtered_df = filtered_df.drop_duplicates(
+                subset=[AutoEvalColumn.model.name, AutoEvalColumn.precision.name, AutoEvalColumn.revision.name]
+            )
 
     return filtered_df
+
 
 def filter_models(
     df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
@@ -288,7 +306,7 @@ def filter_models(
     if show_deleted:
         filtered_df = df
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] is True]
 
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
@@ -599,7 +617,8 @@ with demo:
                 label=CITATION_BUTTON_LABEL,
                 lines=20,
                 elem_id="citation-button",
-            ).style(show_copy_button=True)
+                show_copy_button=True,
+            )
 
     dummy = gr.Textbox(visible=False)
     demo.load(

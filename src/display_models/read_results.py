@@ -116,10 +116,10 @@ def parse_eval_result(json_filepath: str) -> Tuple[str, list[dict]]:
     return result_key, eval_results
 
 
-def get_eval_results() -> List[EvalResult]:
+def get_eval_results(results_path: str) -> List[EvalResult]:
     json_filepaths = []
 
-    for root, dir, files in os.walk("eval-results"):
+    for root, dir, files in os.walk(results_path):
         # We should only have json files in model results
         if len(files) == 0 or any([not f.endswith(".json") for f in files]):
             continue
@@ -149,7 +149,7 @@ def get_eval_results() -> List[EvalResult]:
     return eval_results
 
 
-def get_eval_results_dicts() -> List[Dict]:
-    eval_results = get_eval_results()
+def get_eval_results_dicts(results_path: str) -> List[Dict]:
+    eval_results = get_eval_results(results_path)
 
     return [e.to_dict() for e in eval_results]
