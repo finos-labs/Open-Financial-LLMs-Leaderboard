@@ -27,6 +27,7 @@ from src.display_models.utils import (
     styled_message,
     styled_warning,
 )
+from src.manage_collections import update_collections
 from src.load_from_hub import get_all_requested_models, get_evaluation_queue_df, get_leaderboard_df, is_model_on_hub
 from src.rate_limiting import user_submission_permission
 
@@ -88,6 +89,7 @@ snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="
 requested_models, users_to_submission_dates = get_all_requested_models(EVAL_REQUESTS_PATH)
 
 original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
+update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
@@ -306,7 +308,7 @@ def filter_models(
     if show_deleted:
         filtered_df = df
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] is True]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
