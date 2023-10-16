@@ -9,7 +9,7 @@ from src.display_models.utils import AutoEvalColumn
 
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 
-path_to_collection = "HuggingFaceH4/current-best-models-of-the-open-llm-leaderboard-652d64cf619fc62beef5c2a3"
+path_to_collection = "open-llm-leaderboard/llm-leaderboard-best-models-652d6c7965a4619fb5c27a03"
 intervals = {
     "1B": pd.Interval(0, 1.5, closed="right"),
     "3B": pd.Interval(2.5, 3.5, closed="neither"),
