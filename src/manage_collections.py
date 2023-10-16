@@ -16,7 +16,7 @@ intervals = {
     "7B": pd.Interval(6, 8, closed="neither"),
     "13B": pd.Interval(10, 14, closed="neither"),
     "30B":pd.Interval(25, 35, closed="neither"), 
-    "60B": pd.Interval(55, 65, closed="neither"),
+    "65B": pd.Interval(60, 70, closed="neither"),
 }
 
 def update_collections(df: DataFrame):
@@ -39,6 +39,7 @@ def update_collections(df: DataFrame):
             filtered_df = filtered_df.loc[mask]
 
             best_models = list(filtered_df.sort_values(AutoEvalColumn.average.name, ascending=False)[AutoEvalColumn.dummy.name])
+            print(type.value.symbol, size, best_models[:10])
 
             # We add them one by one to the leaderboard
             for model in best_models:
@@ -50,7 +51,7 @@ def update_collections(df: DataFrame):
                         item_id=model, 
                         item_type="model", 
                         exists_ok=True, 
-                        note=f"Best {type.to_str(' ')} model of {size} on the leaderboard today!", 
+                        note=f"Best {type.to_str(' ')} model of around {size} on the leaderboard today!", 
                         token=H4_TOKEN
                     )
                     cur_best_models.append(model)
