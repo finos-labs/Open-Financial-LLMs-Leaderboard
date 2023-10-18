@@ -17,6 +17,13 @@ from src.assets.text_content import (
     LLM_BENCHMARKS_TEXT,
     TITLE,
 )
+from src.display_models.plot_results import (
+    create_metric_plot_obj,
+    create_scores_df,
+    create_plot_df,
+    join_model_info_with_results,
+    HUMAN_BASELINES,
+)
 from src.display_models.get_model_metadata import DO_NOT_SUBMIT_MODELS, ModelType
 from src.display_models.modelcard_filter import check_model_card
 from src.display_models.utils import (
@@ -93,6 +100,7 @@ update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
+plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
 to_be_dumped = f"models = {repr(models)}\n"
 
 (
@@ -515,6 +523,25 @@ with demo:
                 leaderboard_table,
                 queue=True,
             )
+
+        with gr.TabItem("📈 Metrics evolution through time", elem_id="llm-benchmark-tab-table", id=4):
+            with gr.Row():
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        ["Average ⬆️"],
+                        HUMAN_BASELINES,
+                        title="Average of Top Scores and Human Baseline Over Time",
+                    )
+                    gr.Plot(value=chart, interactive=False, width=500, height=500)
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        ["ARC", "HellaSwag", "MMLU", "TruthfulQA"],
+                        HUMAN_BASELINES,
+                        title="Top Scores and Human Baseline Over Time",
+                    )
+                    gr.Plot(value=chart, interactive=False, width=500, height=500)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
