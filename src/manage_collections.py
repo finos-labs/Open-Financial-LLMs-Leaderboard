@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 from pandas import DataFrame
-from huggingface_hub import get_collection, add_collection_item, delete_collection_item
+from requests.exceptions import HTTPError
+from huggingface_hub import get_collection, add_collection_item, update_collection_item, delete_collection_item
 from huggingface_hub.utils._errors import HfHubHTTPError
 
 from src.display_models.model_metadata_type import ModelType
@@ -23,10 +24,12 @@ def update_collections(df: DataFrame):
     """This function updates the Open LLM Leaderboard model collection with the latest best models for 
     each size category and type.
     """
+    collection = get_collection(collection_slug=path_to_collection, token=H4_TOKEN)
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
 
     cur_best_models = []
 
+    ix = 0
     for type in ModelType:
         if type.value.name == "": continue
         for size in intervals:
@@ -43,17 +46,21 @@ def update_collections(df: DataFrame):
 
             # We add them one by one to the leaderboard
             for model in best_models:
-                # We can use collection = get_collection to grab the id of the last item, then place it where we want using update_collection but it's costly...
-                # We could also remove exists_ok to update the note to include the date of apparition of the model for ex.
+                ix += 1
+                cur_len_collection = len(collection.items)
                 try:
-                    add_collection_item(
+                    collection = add_collection_item(
                         path_to_collection, 
                         item_id=model, 
                         item_type="model", 
-                        exists_ok=True, 
+                        exists_ok=True,
                         note=f"Best {type.to_str(' ')} model of around {size} on the leaderboard today!", 
                         token=H4_TOKEN
                     )
+                    if len(collection.items) > cur_len_collection: # we added an item - we make sure its position is correct
+                        item_object_id = collection.items[-1].item_object_id 
+                        update_collection_item(collection_slug=path_to_collection, item_object_id=item_object_id, position=ix)
+                        cur_len_collection = len(collection.items)
                     cur_best_models.append(model)
                     break
                 except HfHubHTTPError:
@@ -62,5 +69,8 @@ def update_collections(df: DataFrame):
     collection = get_collection(path_to_collection, token=H4_TOKEN)
     for item in collection.items:
         if item.item_id not in cur_best_models:
-            delete_collection_item(collection_slug=path_to_collection, item_object_id=item.item_object_id, token=H4_TOKEN)
+            try:
+                delete_collection_item(collection_slug=path_to_collection, item_object_id=item.item_object_id, token=H4_TOKEN)
+            except HfHubHTTPError:
+                continue
 
