@@ -6,7 +6,7 @@ from typing import Dict, List, Tuple
 import dateutil
 import numpy as np
 
-from src.display_models.utils import AutoEvalColumn, make_clickable_model
+from src.get_model_info.utils import AutoEvalColumn, make_clickable_model
 
 METRICS = ["acc_norm", "acc_norm", "acc", "mc2"]
 BENCHMARKS = ["arc:challenge", "hellaswag", "hendrycksTest", "truthfulqa:mc"]
@@ -31,7 +31,7 @@ class EvalResult:
     date: str = ""
 
     def to_dict(self):
-        from src.load_from_hub import is_model_on_hub
+        from src.filters import is_model_on_hub
 
         if self.org is not None:
             base_model = f"{self.org}/{self.model}"

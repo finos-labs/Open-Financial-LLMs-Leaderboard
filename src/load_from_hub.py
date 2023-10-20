@@ -3,12 +3,11 @@ import os
 from collections import defaultdict
 
 import pandas as pd
-from transformers import AutoConfig
 
 from src.assets.hardcoded_evals import baseline, gpt4_values, gpt35_values
-from src.display_models.get_model_metadata import apply_metadata
-from src.display_models.read_results import get_eval_results_dicts, make_clickable_model
-from src.display_models.utils import AutoEvalColumn, EvalQueueColumn, has_no_nan_values
+from src.get_model_info.apply_metadata_to_df import apply_metadata
+from src.plots.read_results import get_eval_results_dicts, make_clickable_model
+from src.get_model_info.utils import AutoEvalColumn, EvalQueueColumn, has_no_nan_values
 
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 
@@ -90,17 +89,3 @@ def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
     df_finished = pd.DataFrame.from_records(finished_list, columns=cols)
     return df_finished[cols], df_running[cols], df_pending[cols]
 
-
-def is_model_on_hub(model_name: str, revision: str) -> bool:
-    try:
-        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=False)
-        return True, None
-
-    except ValueError:
-        return (
-            False,
-            "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard.",
-        )
-
-    except Exception:
-        return False, "was not found on hub!"

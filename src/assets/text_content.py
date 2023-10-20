@@ -1,4 +1,4 @@
-from src.display_models.model_metadata_type import ModelType
+from src.get_model_info.hardocded_metadata.types import ModelType
 
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 
@@ -14,13 +14,14 @@ LLM_BENCHMARKS_TEXT = f"""
 With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art.
 
 ## Icons
-{ModelType.PT.to_str(" : ")} model
-{ModelType.FT.to_str(" : ")} model
-{ModelType.IFT.to_str(" : ")} model
-{ModelType.RL.to_str(" : ")} model
+{ModelType.PT.to_str(" : ")} model: new, base models, trained on a given corpora
+{ModelType.FT.to_str(" : ")} model: pretrained models finetuned on more data
+Specific fine-tune subcategories (more adapted to chat):
+{ModelType.IFT.to_str(" : ")} model: instruction fine-tunes, which are model fine-tuned specifically on datasets of task instruction 
+{ModelType.RL.to_str(" : ")} model: reinforcement fine-tunes, which usually change the model loss a bit with an added policy. 
 If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
 
-🏴‍☠️ indicates that this model has been flagged by the community, and should probably be ignored! Clicking the icon will redirect you to the discussion about the model.
+"Flagged" indicates that this model has been flagged by the community, and should probably be ignored! Clicking the link will redirect you to the discussion about the model.
 (For ex, the model was trained on the evaluation data, and is therefore cheating on the leaderboard.)
 
 ## How it works

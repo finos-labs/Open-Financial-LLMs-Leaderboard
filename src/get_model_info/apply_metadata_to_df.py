@@ -6,9 +6,9 @@ from typing import List
 from huggingface_hub import HfApi
 from tqdm import tqdm
 
-from src.display_models.model_metadata_flags import DO_NOT_SUBMIT_MODELS, FLAGGED_MODELS
-from src.display_models.model_metadata_type import MODEL_TYPE_METADATA, ModelType, model_type_from_str
-from src.display_models.utils import AutoEvalColumn, model_hyperlink
+from src.get_model_info.hardocded_metadata.flags import DO_NOT_SUBMIT_MODELS, FLAGGED_MODELS
+from src.get_model_info.hardocded_metadata.types import MODEL_TYPE_METADATA, ModelType, model_type_from_str
+from src.get_model_info.utils import AutoEvalColumn, model_hyperlink
 
 api = HfApi(token=os.environ.get("H4_TOKEN", None))
 
@@ -41,7 +41,7 @@ def get_model_metadata(leaderboard_data: List[dict]):
                 request = json.load(f)
             model_type = model_type_from_str(request["model_type"])
             model_data[AutoEvalColumn.model_type.name] = model_type.value.name
-            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol  # + ("🔺" if is_delta else "")
+            model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol
             model_data[AutoEvalColumn.license.name] = request["license"]
             model_data[AutoEvalColumn.likes.name] = request["likes"]
             model_data[AutoEvalColumn.params.name] = request["params"]

@@ -5,8 +5,8 @@ from requests.exceptions import HTTPError
 from huggingface_hub import get_collection, add_collection_item, update_collection_item, delete_collection_item
 from huggingface_hub.utils._errors import HfHubHTTPError
 
-from src.display_models.model_metadata_type import ModelType
-from src.display_models.utils import AutoEvalColumn
+from src.get_model_info.hardocded_metadata.types import ModelType
+from src.get_model_info.utils import AutoEvalColumn
 
 H4_TOKEN = os.environ.get("H4_TOKEN", None)
 
