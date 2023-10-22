@@ -31,7 +31,7 @@ def get_model_metadata(leaderboard_data: List[dict]):
                 with open(tmp_request_file, "r") as f:
                     req_content = json.load(f)
                     if (
-                        req_content["status"] == "FINISHED"
+                        req_content["status"] in ["FINISHED", "PENDING_NEW_EVAL"]
                         and req_content["precision"] == model_data["Precision"].split(".")[-1]
                     ):
                         request_file = tmp_request_file
@@ -39,13 +39,16 @@ def get_model_metadata(leaderboard_data: List[dict]):
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
-            model_type = model_type_from_str(request["model_type"])
+            model_type = model_type_from_str(request.get("model_type", ""))
             model_data[AutoEvalColumn.model_type.name] = model_type.value.name
             model_data[AutoEvalColumn.model_type_symbol.name] = model_type.value.symbol  # + ("🔺" if is_delta else "")
-            model_data[AutoEvalColumn.license.name] = request["license"]
-            model_data[AutoEvalColumn.likes.name] = request["likes"]
-            model_data[AutoEvalColumn.params.name] = request["params"]
-        except Exception:
+            model_data[AutoEvalColumn.license.name] = request.get("license", "?")
+            model_data[AutoEvalColumn.likes.name] = request.get("likes", 0)
+            model_data[AutoEvalColumn.params.name] = request.get("params", 0)
+        except Exception as e:
+            print(f"Could not find request file for {model_data['model_name_for_query']}: {e}")
+            print(f"{request_file=}")
+            print(f"{request_files=}")
             if model_data["model_name_for_query"] in MODEL_TYPE_METADATA:
                 model_data[AutoEvalColumn.model_type.name] = MODEL_TYPE_METADATA[
                     model_data["model_name_for_query"]
