@@ -1,4 +1,4 @@
-from src.display_models.utils import AutoEvalColumn, model_hyperlink
+from src.get_model_info.utils import AutoEvalColumn, model_hyperlink
 
 gpt4_values = {
     AutoEvalColumn.model.name: model_hyperlink("https://arxiv.org/abs/2303.08774", "gpt4"),

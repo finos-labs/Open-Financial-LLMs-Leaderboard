@@ -6,9 +6,9 @@ from typing import List
 from huggingface_hub import HfApi
 from tqdm import tqdm
 
-from src.display_models.model_metadata_flags import DO_NOT_SUBMIT_MODELS, FLAGGED_MODELS
-from src.display_models.model_metadata_type import MODEL_TYPE_METADATA, ModelType, model_type_from_str
-from src.display_models.utils import AutoEvalColumn, model_hyperlink
+from src.get_model_info.hardocded_metadata.flags import DO_NOT_SUBMIT_MODELS, FLAGGED_MODELS
+from src.get_model_info.hardocded_metadata.types import MODEL_TYPE_METADATA, ModelType, model_type_from_str
+from src.get_model_info.utils import AutoEvalColumn, model_hyperlink
 
 api = HfApi(token=os.environ.get("H4_TOKEN", None))
 
@@ -45,10 +45,7 @@ def get_model_metadata(leaderboard_data: List[dict]):
             model_data[AutoEvalColumn.license.name] = request.get("license", "?")
             model_data[AutoEvalColumn.likes.name] = request.get("likes", 0)
             model_data[AutoEvalColumn.params.name] = request.get("params", 0)
-        except Exception as e:
-            print(f"Could not find request file for {model_data['model_name_for_query']}: {e}")
-            print(f"{request_file=}")
-            print(f"{request_files=}")
+        except Exception:
             if model_data["model_name_for_query"] in MODEL_TYPE_METADATA:
                 model_data[AutoEvalColumn.model_type.name] = MODEL_TYPE_METADATA[
                     model_data["model_name_for_query"]

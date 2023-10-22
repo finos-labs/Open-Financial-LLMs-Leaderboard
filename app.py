@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from datetime import datetime, timezone
 
 import gradio as gr
@@ -17,9 +16,17 @@ from src.assets.text_content import (
     LLM_BENCHMARKS_TEXT,
     TITLE,
 )
-from src.display_models.get_model_metadata import DO_NOT_SUBMIT_MODELS, ModelType
-from src.display_models.modelcard_filter import check_model_card
-from src.display_models.utils import (
+from src.plots.plot_results import (
+    create_metric_plot_obj,
+    create_scores_df,
+    create_plot_df,
+    join_model_info_with_results,
+    HUMAN_BASELINES,
+)
+from src.get_model_info.apply_metadata_to_df import DO_NOT_SUBMIT_MODELS, ModelType
+from src.get_model_info.get_metadata_from_hub import get_model_size
+from src.filters import check_model_card
+from src.get_model_info.utils import (
     AutoEvalColumn,
     EvalQueueColumn,
     fields,
@@ -27,8 +34,9 @@ from src.display_models.utils import (
     styled_message,
     styled_warning,
 )
-from src.load_from_hub import get_all_requested_models, get_evaluation_queue_df, get_leaderboard_df, is_model_on_hub
-from src.rate_limiting import user_submission_permission
+from src.manage_collections import update_collections
+from src.load_from_hub import get_all_requested_models, get_evaluation_queue_df, get_leaderboard_df
+from src.filters import is_model_on_hub, user_submission_permission
 
 pd.set_option("display.precision", 1)
 
@@ -88,9 +96,11 @@ snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="
 requested_models, users_to_submission_dates = get_all_requested_models(EVAL_REQUESTS_PATH)
 
 original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
+update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
+plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
 to_be_dumped = f"models = {repr(models)}\n"
 
 (
@@ -117,14 +127,8 @@ def add_new_eval(
         return styled_error("Please select a model type.")
 
     # Is the user rate limited?
-    num_models_submitted_in_period = user_submission_permission(model, users_to_submission_dates, RATE_LIMIT_PERIOD)
-    if num_models_submitted_in_period > RATE_LIMIT_QUOTA:
-        error_msg = f"Organisation or user `{model.split('/')[0]}`"
-        error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "
-        error_msg += f"in the last {RATE_LIMIT_PERIOD} days.\n"
-        error_msg += (
-            "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
-        )
+    user_can_submit, error_msg = user_submission_permission(model, users_to_submission_dates, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA)
+    if not user_can_submit:
         return styled_error(error_msg)
 
     # Did the model authors forbid its submission to the leaderboard?
@@ -145,28 +149,19 @@ def add_new_eval(
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
 
-    model_info = api.model_info(repo_id=model, revision=revision)
-
-    size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
     try:
-        model_size = round(model_info.safetensors["total"] / 1e9, 3)
-    except AttributeError:
-        try:
-            size_match = re.search(size_pattern, model.lower())
-            model_size = size_match.group(0)
-            model_size = round(float(model_size[:-1]) if model_size[-1] == "b" else float(model_size[:-1]) / 1e3, 3)
-        except AttributeError:
-            return 65
+        model_info = api.model_info(repo_id=model, revision=revision)
+    except Exception:
+        return styled_error("Could not get your model information. Please fill it up properly.")
 
-    size_factor = 8 if (precision == "GPTQ" or "GPTQ" in model) else 1
-    model_size = size_factor * model_size
+    model_size = get_model_size(model_info=model_info , precision= precision)
 
+    # Were the model card and license filled?
     try:
         license = model_info.cardData["license"]
     except Exception:
-        license = "?"
+        return styled_error("Please select a license for your model")
 
-    # Were the model card and license filled?
     modelcard_OK, error_msg = check_model_card(model)
     if not modelcard_OK:
         return styled_error(error_msg)
@@ -269,13 +264,13 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
 
 NUMERIC_INTERVALS = {
     "?": pd.Interval(-1, 0, closed="right"),
-    "0~1.5": pd.Interval(0, 1.5, closed="right"),
-    "1.5~3": pd.Interval(1.5, 3, closed="right"),
-    "3~7": pd.Interval(3, 7, closed="right"),
-    "7~13": pd.Interval(7, 13, closed="right"),
-    "13~35": pd.Interval(13, 35, closed="right"),
-    "35~60": pd.Interval(35, 60, closed="right"),
-    "60+": pd.Interval(60, 10000, closed="right"),
+    "~1.5": pd.Interval(0, 2, closed="right"),
+    "~3": pd.Interval(2, 4, closed="right"),
+    "~7": pd.Interval(4, 9, closed="right"),
+    "~13": pd.Interval(9, 20, closed="right"),
+    "~35": pd.Interval(20, 45, closed="right"),
+    "~60": pd.Interval(45, 70, closed="right"),
+    "70+": pd.Interval(70, 10000, closed="right"),
 }
 
 
@@ -513,6 +508,25 @@ with demo:
                 leaderboard_table,
                 queue=True,
             )
+
+        with gr.TabItem("📈 Metrics evolution through time", elem_id="llm-benchmark-tab-table", id=4):
+            with gr.Row():
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        ["Average ⬆️"],
+                        HUMAN_BASELINES,
+                        title="Average of Top Scores and Human Baseline Over Time",
+                    )
+                    gr.Plot(value=chart, interactive=False, width=500, height=500)
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        ["ARC", "HellaSwag", "MMLU", "TruthfulQA"],
+                        HUMAN_BASELINES,
+                        title="Top Scores and Human Baseline Over Time",
+                    )
+                    gr.Plot(value=chart, interactive=False, width=500, height=500)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
