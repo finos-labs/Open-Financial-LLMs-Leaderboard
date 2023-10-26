@@ -46,6 +46,8 @@ def get_model_metadata(leaderboard_data: List[dict]):
             model_data[AutoEvalColumn.likes.name] = request.get("likes", 0)
             model_data[AutoEvalColumn.params.name] = request.get("params", 0)
         except Exception:
+            print(f"Could not find request file for {model_data['model_name_for_query']}")
+
             if model_data["model_name_for_query"] in MODEL_TYPE_METADATA:
                 model_data[AutoEvalColumn.model_type.name] = MODEL_TYPE_METADATA[
                     model_data["model_name_for_query"]
@@ -56,6 +58,11 @@ def get_model_metadata(leaderboard_data: List[dict]):
             else:
                 model_data[AutoEvalColumn.model_type.name] = ModelType.Unknown.value.name
                 model_data[AutoEvalColumn.model_type_symbol.name] = ModelType.Unknown.value.symbol
+
+            # if we cannot find a request file, set license and likes to unknown
+            model_data[AutoEvalColumn.license.name] =  "?"
+            model_data[AutoEvalColumn.likes.name] = 0
+            model_data[AutoEvalColumn.params.name] =  0
 
 
 def flag_models(leaderboard_data: List[dict]):
