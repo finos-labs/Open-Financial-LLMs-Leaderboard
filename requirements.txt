@@ -61,6 +61,7 @@ starlette==0.26.1
 toolz==0.12.0
 tqdm==4.65.0
 transformers@git+https://github.com/clefourrier/transformers.git
+tokenizers==0.13.3
 #tokenizers==0.14.1 wait for tokenizers patch in dependencies with hf_hub
 #transformers==4.34
 typing_extensions==4.5.0
