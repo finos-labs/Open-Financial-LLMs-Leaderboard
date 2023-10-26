@@ -103,7 +103,7 @@ If everything is done, check you can launch the EleutherAIHarness on your model 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""
 @misc{open-llm-leaderboard,
-  author = {Edward Beeching, Clémentine Fourrier, Nathan Habib, Sheon Han, Nathan Lambert, Nazneen Rajani, Omar Sanseviero, Lewis Tunstall, Thomas Wolf},
+  author = {Edward Beeching and Clémentine Fourrier and Nathan Habib and Sheon Han and Nathan Lambert and Nazneen Rajani and Omar Sanseviero and Lewis Tunstall and Thomas Wolf},
   title = {Open LLM Leaderboard},
   year = {2023},
   publisher = {Hugging Face},
