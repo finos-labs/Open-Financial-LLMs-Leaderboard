@@ -1,4 +1,5 @@
 import huggingface_hub
+import os
 from huggingface_hub import ModelCard
 from transformers import AutoConfig
 
@@ -29,9 +30,9 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     return True, ""
 
 
-def is_model_on_hub(model_name: str, revision: str) -> bool:
+def is_model_on_hub(model_name: str, revision: str, token: str = None) -> bool:
     try:
-        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=False)
+        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=False, token=token)
         return True, None
 
     except ValueError:
