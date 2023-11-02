@@ -91,8 +91,15 @@ BENCHMARK_COLS = [
     ]
 ]
 
-snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None)
-snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None)
+try:
+    snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+except Exception:
+    restart_space()
+try:
+    snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+except Exception:
+    restart_space()
+
 requested_models, users_to_submission_dates = get_all_requested_models(EVAL_REQUESTS_PATH)
 
 original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
