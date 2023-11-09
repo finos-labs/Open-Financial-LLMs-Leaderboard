@@ -8,13 +8,16 @@ import numpy as np
 
 from src.get_model_info.utils import AutoEvalColumn, make_clickable_model
 
-METRICS = ["acc_norm", "acc_norm", "acc", "mc2"]
-BENCHMARKS = ["arc:challenge", "hellaswag", "hendrycksTest", "truthfulqa:mc"]
+METRICS = ["acc_norm", "acc_norm", "acc", "mc2", "acc", "acc", "f1"]
+BENCHMARKS = ["arc:challenge", "hellaswag", "hendrycksTest", "truthfulqa:mc", "winogrande", "gsm8k", "drop"]
 BENCH_TO_NAME = {
     "arc:challenge": AutoEvalColumn.arc.name,
     "hellaswag": AutoEvalColumn.hellaswag.name,
     "hendrycksTest": AutoEvalColumn.mmlu.name,
     "truthfulqa:mc": AutoEvalColumn.truthfulqa.name,
+    "winogrande": AutoEvalColumn.winogrande.name,
+    "gsm8k": AutoEvalColumn.gsm8k.name,
+    "drop": AutoEvalColumn.drop.name,
 }
 
 
@@ -46,7 +49,7 @@ class EvalResult:
         data_dict[AutoEvalColumn.model.name] = make_clickable_model(base_model)
         data_dict[AutoEvalColumn.dummy.name] = base_model
         data_dict[AutoEvalColumn.revision.name] = self.revision
-        data_dict[AutoEvalColumn.average.name] = sum([v for k, v in self.results.items()]) / 4.0
+        data_dict[AutoEvalColumn.average.name] = sum([v for k, v in self.results.items()]) / 7.0
         data_dict[AutoEvalColumn.still_on_hub.name] = (
             is_model_on_hub(base_model, self.revision)[0] or base_model == "baseline"
         )

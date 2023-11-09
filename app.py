@@ -88,6 +88,9 @@ BENCHMARK_COLS = [
         AutoEvalColumn.hellaswag,
         AutoEvalColumn.mmlu,
         AutoEvalColumn.truthfulqa,
+        AutoEvalColumn.winogrande,
+        AutoEvalColumn.gsm8k,
+        AutoEvalColumn.drop
     ]
 ]
 
@@ -107,7 +110,7 @@ update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
-plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
+#plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
 to_be_dumped = f"models = {repr(models)}\n"
 
 (
@@ -516,24 +519,24 @@ with demo:
                 queue=True,
             )
 
-        with gr.TabItem("📈 Metrics evolution through time", elem_id="llm-benchmark-tab-table", id=4):
-            with gr.Row():
-                with gr.Column():
-                    chart = create_metric_plot_obj(
-                        plot_df,
-                        ["Average ⬆️"],
-                        HUMAN_BASELINES,
-                        title="Average of Top Scores and Human Baseline Over Time",
-                    )
-                    gr.Plot(value=chart, interactive=False, width=500, height=500)
-                with gr.Column():
-                    chart = create_metric_plot_obj(
-                        plot_df,
-                        ["ARC", "HellaSwag", "MMLU", "TruthfulQA"],
-                        HUMAN_BASELINES,
-                        title="Top Scores and Human Baseline Over Time",
-                    )
-                    gr.Plot(value=chart, interactive=False, width=500, height=500)
+        # with gr.TabItem("📈 Metrics evolution through time", elem_id="llm-benchmark-tab-table", id=4):
+        #     with gr.Row():
+        #         with gr.Column():
+        #             chart = create_metric_plot_obj(
+        #                 plot_df,
+        #                 ["Average ⬆️"],
+        #                 HUMAN_BASELINES,
+        #                 title="Average of Top Scores and Human Baseline Over Time",
+        #             )
+        #             gr.Plot(value=chart, interactive=False, width=500, height=500)
+        #         with gr.Column():
+        #             chart = create_metric_plot_obj(
+        #                 plot_df,
+        #                 ["ARC", "HellaSwag", "MMLU", "TruthfulQA", "Winogrande", "GSM8K", "DROP"],
+        #                 HUMAN_BASELINES,
+        #                 title="Top Scores and Human Baseline Over Time",
+        #             )
+        #             gr.Plot(value=chart, interactive=False, width=500, height=500)
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 

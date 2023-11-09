@@ -35,6 +35,9 @@ baseline = {
     AutoEvalColumn.hellaswag.name: 25.0,
     AutoEvalColumn.mmlu.name: 25.0,
     AutoEvalColumn.truthfulqa.name: 25.0,
+    AutoEvalColumn.winogrande.name: 50.0,
+    AutoEvalColumn.gsm8k.name: 0.21,
+    AutoEvalColumn.drop.name: 0.47,
     AutoEvalColumn.dummy.name: "baseline",
     AutoEvalColumn.model_type.name: "",
 }
