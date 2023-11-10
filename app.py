@@ -58,7 +58,7 @@ except Exception:
 
 
 original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
-#update_collections(original_df.copy())
+update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 #models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
