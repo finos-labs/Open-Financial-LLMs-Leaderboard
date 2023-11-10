@@ -1,4 +1,4 @@
-from src.get_model_info.hardocded_metadata.types import ModelType
+from src.display.utils import ModelType
 
 TITLE = """<h1 align="center" id="space-title">🤗 Open LLM Leaderboard</h1>"""
 
@@ -42,7 +42,7 @@ We chose these benchmarks as they test a variety of reasoning and general knowle
 ## Details and logs
 You can find:
 - detailed numerical results in the `results` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/results
-- details on the input/outputs for the models in the `details` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/details
+- details on the input/outputs for the models in the `details` of each model, that you can access by clicking the 📄 emoji after the model name
 - community queries and running status in the `requests` Hugging Face dataset: https://huggingface.co/datasets/open-llm-leaderboard/requests
 
 ## Reproducibility

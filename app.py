@@ -1,14 +1,24 @@
 import json
 import os
-from datetime import datetime, timezone
 
 import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
-from huggingface_hub import HfApi, snapshot_download
+from huggingface_hub import snapshot_download
 
-from src.assets.css_html_js import custom_css, get_window_url_params
-from src.assets.text_content import (
+from src.display.utils import (
+    COLS,
+    TYPES,
+    BENCHMARK_COLS,
+    EVAL_COLS,
+    EVAL_TYPES,
+    AutoEvalColumn,
+    ModelType,
+    NUMERIC_INTERVALS,
+    fields,
+)
+from src.display.css_html_js import custom_css, get_window_url_params
+from src.display.about import (
     CITATION_BUTTON_LABEL,
     CITATION_BUTTON_TEXT,
     EVALUATION_QUEUE_TEXT,
@@ -16,217 +26,50 @@ from src.assets.text_content import (
     LLM_BENCHMARKS_TEXT,
     TITLE,
 )
-from src.plots.plot_results import (
+from src.tools.plots import (
     create_metric_plot_obj,
     create_scores_df,
     create_plot_df,
     join_model_info_with_results,
     HUMAN_BASELINES,
 )
-from src.get_model_info.apply_metadata_to_df import DO_NOT_SUBMIT_MODELS, ModelType
-from src.get_model_info.get_metadata_from_hub import get_model_size
-from src.filters import check_model_card
-from src.get_model_info.utils import (
-    AutoEvalColumn,
-    EvalQueueColumn,
-    fields,
-    styled_error,
-    styled_message,
-    styled_warning,
-)
-from src.manage_collections import update_collections
-from src.load_from_hub import get_all_requested_models, get_evaluation_queue_df, get_leaderboard_df
-from src.filters import is_model_on_hub, user_submission_permission
-
-pd.set_option("display.precision", 1)
-
-# clone / pull the lmeh eval data
-H4_TOKEN = os.environ.get("H4_TOKEN", None)
-
-QUEUE_REPO = "open-llm-leaderboard/requests"
-RESULTS_REPO = "open-llm-leaderboard/results"
-
-PRIVATE_QUEUE_REPO = "open-llm-leaderboard/private-requests"
-PRIVATE_RESULTS_REPO = "open-llm-leaderboard/private-results"
-
-IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
-
-EVAL_REQUESTS_PATH = "eval-queue"
-EVAL_RESULTS_PATH = "eval-results"
-
-EVAL_REQUESTS_PATH_PRIVATE = "eval-queue-private"
-EVAL_RESULTS_PATH_PRIVATE = "eval-results-private"
-
-api = HfApi(token=H4_TOKEN)
+from src.tools.collections import update_collections
+from src.populate import get_evaluation_queue_df, get_leaderboard_df
+from src.envs import H4_TOKEN, QUEUE_REPO, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, RESULTS_REPO, API, REPO_ID, IS_PUBLIC
+from src.submission.submit import add_new_eval
 
 
 def restart_space():
-    api.restart_space(repo_id="HuggingFaceH4/open_llm_leaderboard", token=H4_TOKEN)
+    API.restart_space(repo_id=REPO_ID, token=H4_TOKEN)
 
-
-# Rate limit variables
-RATE_LIMIT_PERIOD = 7
-RATE_LIMIT_QUOTA = 5
-
-# Column selection
-COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]
-TYPES = [c.type for c in fields(AutoEvalColumn) if not c.hidden]
-COLS_LITE = [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
-TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden]
-
-if not IS_PUBLIC:
-    COLS.insert(2, AutoEvalColumn.precision.name)
-    TYPES.insert(2, AutoEvalColumn.precision.type)
-
-EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
-EVAL_TYPES = [c.type for c in fields(EvalQueueColumn)]
-
-BENCHMARK_COLS = [
-    c.name
-    for c in [
-        AutoEvalColumn.arc,
-        AutoEvalColumn.hellaswag,
-        AutoEvalColumn.mmlu,
-        AutoEvalColumn.truthfulqa,
-        AutoEvalColumn.winogrande,
-        AutoEvalColumn.gsm8k,
-        AutoEvalColumn.drop
-    ]
-]
 
 try:
-    snapshot_download(repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+    snapshot_download(
+        repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+    )
 except Exception:
     restart_space()
 try:
-    snapshot_download(repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30)
+    snapshot_download(
+        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+    )
 except Exception:
     restart_space()
 
-requested_models, users_to_submission_dates = get_all_requested_models(EVAL_REQUESTS_PATH)
 
 original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
-update_collections(original_df.copy())
+#update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
-models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
-#plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
-to_be_dumped = f"models = {repr(models)}\n"
+#models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
+# plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
+#to_be_dumped = f"models = {repr(models)}\n"
 
 (
     finished_eval_queue_df,
     running_eval_queue_df,
     pending_eval_queue_df,
 ) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
-
-
-## INTERACTION FUNCTIONS
-def add_new_eval(
-    model: str,
-    base_model: str,
-    revision: str,
-    precision: str,
-    private: bool,
-    weight_type: str,
-    model_type: str,
-):
-    precision = precision.split(" ")[0]
-    current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-    if model_type is None or model_type == "":
-        return styled_error("Please select a model type.")
-
-    # Is the user rate limited?
-    user_can_submit, error_msg = user_submission_permission(model, users_to_submission_dates, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA)
-    if not user_can_submit:
-        return styled_error(error_msg)
-
-    # Did the model authors forbid its submission to the leaderboard?
-    if model in DO_NOT_SUBMIT_MODELS or base_model in DO_NOT_SUBMIT_MODELS:
-        return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
-
-    # Does the model actually exist?
-    if revision == "":
-        revision = "main"
-
-    if weight_type in ["Delta", "Adapter"]:
-        base_model_on_hub, error = is_model_on_hub(base_model, revision, H4_TOKEN)
-        if not base_model_on_hub:
-            return styled_error(f'Base model "{base_model}" {error}')
-
-    if not weight_type == "Adapter":
-        model_on_hub, error = is_model_on_hub(model, revision)
-        if not model_on_hub:
-            return styled_error(f'Model "{model}" {error}')
-
-    try:
-        model_info = api.model_info(repo_id=model, revision=revision)
-    except Exception:
-        return styled_error("Could not get your model information. Please fill it up properly.")
-
-    model_size = get_model_size(model_info=model_info , precision= precision)
-
-    # Were the model card and license filled?
-    try:
-        license = model_info.cardData["license"]
-    except Exception:
-        return styled_error("Please select a license for your model")
-
-    modelcard_OK, error_msg = check_model_card(model)
-    if not modelcard_OK:
-        return styled_error(error_msg)
-
-    # Seems good, creating the eval
-    print("Adding new eval")
-
-    eval_entry = {
-        "model": model,
-        "base_model": base_model,
-        "revision": revision,
-        "private": private,
-        "precision": precision,
-        "weight_type": weight_type,
-        "status": "PENDING",
-        "submitted_time": current_time,
-        "model_type": model_type,
-        "likes": model_info.likes,
-        "params": model_size,
-        "license": license,
-    }
-
-    user_name = ""
-    model_path = model
-    if "/" in model:
-        user_name = model.split("/")[0]
-        model_path = model.split("/")[1]
-
-    print("Creating eval file")
-    OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
-    os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
-
-    # Check for duplicate submission
-    if f"{model}_{revision}_{precision}" in requested_models:
-        return styled_warning("This model has been already submitted.")
-
-    with open(out_path, "w") as f:
-        f.write(json.dumps(eval_entry))
-
-    print("Uploading eval file")
-    api.upload_file(
-        path_or_fileobj=out_path,
-        path_in_repo=out_path.split("eval-queue/")[1],
-        repo_id=QUEUE_REPO,
-        repo_type="dataset",
-        commit_message=f"Add {model} to eval queue",
-    )
-
-    # Remove the local file
-    os.remove(out_path)
-
-    return styled_message(
-        "Your request has been submitted to the evaluation queue!\nPlease wait for up to an hour for the model to show in the PENDING list."
-    )
 
 
 # Basics
@@ -272,18 +115,6 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     return filtered_df
 
 
-NUMERIC_INTERVALS = {
-    "?": pd.Interval(-1, 0, closed="right"),
-    "~1.5": pd.Interval(0, 2, closed="right"),
-    "~3": pd.Interval(2, 4, closed="right"),
-    "~7": pd.Interval(4, 9, closed="right"),
-    "~13": pd.Interval(9, 20, closed="right"),
-    "~35": pd.Interval(20, 45, closed="right"),
-    "~60": pd.Interval(45, 70, closed="right"),
-    "70+": pd.Interval(70, 10000, closed="right"),
-}
-
-
 def filter_queries(query: str, filtered_df: pd.DataFrame):
     """Added by Abishek"""
     final_df = []
@@ -311,7 +142,7 @@ def filter_models(
     if show_deleted:
         filtered_df = df
     else:  # Show only still on the hub models
-        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] is True]
+        filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
     filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
@@ -342,54 +173,22 @@ with demo:
                         )
                     with gr.Row():
                         shown_columns = gr.CheckboxGroup(
-                            choices=[
-                                c
-                                for c in COLS
-                                if c
-                                not in [
-                                    AutoEvalColumn.dummy.name,
-                                    AutoEvalColumn.model.name,
-                                    AutoEvalColumn.model_type_symbol.name,
-                                    AutoEvalColumn.still_on_hub.name,
-                                ]
-                            ],
-                            value=[
-                                c
-                                for c in COLS_LITE
-                                if c
-                                not in [
-                                    AutoEvalColumn.dummy.name,
-                                    AutoEvalColumn.model.name,
-                                    AutoEvalColumn.model_type_symbol.name,
-                                    AutoEvalColumn.still_on_hub.name,
-                                ]
-                            ],
+                            choices=[c.name for c in fields(AutoEvalColumn) if not c.hidden and not c.never_hidden and not c.dummy],
+                            value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden and not c.never_hidden],
                             label="Select columns to show",
                             elem_id="column-select",
                             interactive=True,
                         )
                     with gr.Row():
                         deleted_models_visibility = gr.Checkbox(
-                            value=True, label="Show gated/private/deleted models", interactive=True
+                            value=False, label="Show gated/private/deleted models", interactive=True
                         )
                 with gr.Column(min_width=320):
                     with gr.Box(elem_id="box-filter"):
                         filter_columns_type = gr.CheckboxGroup(
                             label="Model types",
-                            choices=[
-                                ModelType.PT.to_str(),
-                                ModelType.FT.to_str(),
-                                ModelType.IFT.to_str(),
-                                ModelType.RL.to_str(),
-                                ModelType.Unknown.to_str(),
-                            ],
-                            value=[
-                                ModelType.PT.to_str(),
-                                ModelType.FT.to_str(),
-                                ModelType.IFT.to_str(),
-                                ModelType.RL.to_str(),
-                                ModelType.Unknown.to_str(),
-                            ],
+                            choices=[t.to_str() for t in ModelType],
+                            value=[t.to_str() for t in ModelType],
                             interactive=True,
                             elem_id="filter-columns-type",
                         )
@@ -410,16 +209,11 @@ with demo:
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df[
-                    [AutoEvalColumn.model_type_symbol.name, AutoEvalColumn.model.name]
+                    [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
                     + shown_columns.value
                     + [AutoEvalColumn.dummy.name]
                 ],
-                headers=[
-                    AutoEvalColumn.model_type_symbol.name,
-                    AutoEvalColumn.model.name,
-                ]
-                + shown_columns.value
-                + [AutoEvalColumn.dummy.name],
+                headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
                 max_rows=None,
                 elem_id="leaderboard-table",
@@ -429,7 +223,7 @@ with demo:
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.components.Dataframe(
-                value=original_df,
+                value=original_df[COLS],
                 headers=COLS,
                 datatype=TYPES,
                 max_rows=None,
@@ -519,7 +313,8 @@ with demo:
                 queue=True,
             )
 
-        # with gr.TabItem("📈 Metrics evolution through time", elem_id="llm-benchmark-tab-table", id=4):
+        # with gr.TabItem("📈
+        #  evolution through time", elem_id="llm-benchmark-tab-table", id=4):
         #     with gr.Row():
         #         with gr.Column():
         #             chart = create_metric_plot_obj(
@@ -589,12 +384,7 @@ with demo:
                     revision_name_textbox = gr.Textbox(label="revision", placeholder="main")
                     private = gr.Checkbox(False, label="Private", visible=not IS_PUBLIC)
                     model_type = gr.Dropdown(
-                        choices=[
-                            ModelType.PT.to_str(" : "),
-                            ModelType.FT.to_str(" : "),
-                            ModelType.IFT.to_str(" : "),
-                            ModelType.RL.to_str(" : "),
-                        ],
+                        choices=[t.to_str(" : ") for t in ModelType],
                         label="Model type",
                         multiselect=False,
                         value=None,

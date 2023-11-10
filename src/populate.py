@@ -1,50 +1,18 @@
 import json
 import os
-from collections import defaultdict
 
 import pandas as pd
 
-from src.assets.hardcoded_evals import baseline, gpt4_values, gpt35_values
-from src.get_model_info.apply_metadata_to_df import apply_metadata
-from src.plots.read_results import get_eval_results_dicts, make_clickable_model
-from src.get_model_info.utils import AutoEvalColumn, EvalQueueColumn, has_no_nan_values
-
-IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
-
-
-def get_all_requested_models(requested_models_dir: str) -> set[str]:
-    depth = 1
-    file_names = []
-    users_to_submission_dates = defaultdict(list)
-
-    for root, _, files in os.walk(requested_models_dir):
-        current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
-        if current_depth == depth:
-            for file in files:
-                if not file.endswith(".json"):
-                    continue
-                with open(os.path.join(root, file), "r") as f:
-                    info = json.load(f)
-                    file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}")
-
-                    # Select organisation
-                    if info["model"].count("/") == 0 or "submitted_time" not in info:
-                        continue
-                    organisation, _ = info["model"].split("/")
-                    users_to_submission_dates[organisation].append(info["submitted_time"])
-
-    return set(file_names), users_to_submission_dates
+from src.leaderboard.filter_models import filter_models
+from src.leaderboard.read_evals import get_eval_results
+from src.display.formatting import make_clickable_model, has_no_nan_values
+from src.display.utils import AutoEvalColumn, EvalQueueColumn, baseline_row
 
 
 def get_leaderboard_df(results_path: str, cols: list, benchmark_cols: list) -> pd.DataFrame:
-    all_data = get_eval_results_dicts(results_path)
-
-    if not IS_PUBLIC:
-        all_data.append(gpt4_values)
-        all_data.append(gpt35_values)
-
-    all_data.append(baseline)
-    apply_metadata(all_data)  # Populate model type based on known hardcoded values in `metadata.py`
+    all_data = get_eval_results(results_path)
+    all_data.append(baseline_row)
+    filter_models(all_data)
 
     df = pd.DataFrame.from_records(all_data)
     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
@@ -88,4 +56,3 @@ def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
     df_running = pd.DataFrame.from_records(running_list, columns=cols)
     df_finished = pd.DataFrame.from_records(finished_list, columns=cols)
     return df_finished[cols], df_running[cols], df_pending[cols]
-

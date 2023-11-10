@@ -1,5 +1,9 @@
 import huggingface_hub
 import os
+import json
+import re
+from collections import defaultdict
+from huggingface_hub.hf_api import ModelInfo
 from huggingface_hub import ModelCard
 from transformers import AutoConfig
 
@@ -30,9 +34,9 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     return True, ""
 
 
-def is_model_on_hub(model_name: str, revision: str, token: str = None) -> bool:
+def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False) -> tuple[bool, str]:
     try:
-        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=False, token=token)
+        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
         return True, None
 
     except ValueError:
@@ -43,6 +47,23 @@ def is_model_on_hub(model_name: str, revision: str, token: str = None) -> bool:
 
     except Exception:
         return False, "was not found on hub!"
+
+
+def get_model_size(model_info: ModelInfo, precision: str):
+    size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
+    try:
+        model_size = round(model_info.safetensors["total"] / 1e9, 3)
+    except AttributeError:
+        try:
+            size_match = re.search(size_pattern, model_info.modelId.lower())
+            model_size = size_match.group(0)
+            model_size = round(float(model_size[:-1]) if model_size[-1] == "b" else float(model_size[:-1]) / 1e3, 3)
+        except AttributeError:
+            return 0  # Unknown model sizes are indicated as 0, see NUMERIC_INTERVALS in app.py
+
+    size_factor = 8 if (precision == "GPTQ" or "gptq" in model_info.modelId.lower()) else 1
+    model_size = size_factor * model_size
+    return model_size
 
 
 def user_submission_permission(submission_name, users_to_submission_dates, rate_limit_period, rate_limit_quota):
@@ -65,3 +86,26 @@ def user_submission_permission(submission_name, users_to_submission_dates, rate_
         return False, error_msg
     return True, ""
 
+
+def already_submitted_models(requested_models_dir: str) -> set[str]:
+    depth = 1
+    file_names = []
+    users_to_submission_dates = defaultdict(list)
+
+    for root, _, files in os.walk(requested_models_dir):
+        current_depth = root.count(os.sep) - requested_models_dir.count(os.sep)
+        if current_depth == depth:
+            for file in files:
+                if not file.endswith(".json"):
+                    continue
+                with open(os.path.join(root, file), "r") as f:
+                    info = json.load(f)
+                    file_names.append(f"{info['model']}_{info['revision']}_{info['precision']}")
+
+                    # Select organisation
+                    if info["model"].count("/") == 0 or "submitted_time" not in info:
+                        continue
+                    organisation, _ = info["model"].split("/")
+                    users_to_submission_dates[organisation].append(info["submitted_time"])
+
+    return set(file_names), users_to_submission_dates

@@ -4,7 +4,7 @@ from plotly.graph_objs import Figure
 import pickle
 from datetime import datetime, timezone
 from typing import List, Dict, Tuple, Any
-from src.get_model_info.hardocded_metadata.flags import FLAGGED_MODELS
+from src.leaderboard.filter_models import FLAGGED_MODELS
 
 # Average ⬆️ human baseline is 0.897 (source: averaging human baselines below)
 # ARC human baseline is 0.80 (source: https://lab42.global/arc/)
