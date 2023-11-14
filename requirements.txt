@@ -44,7 +44,7 @@ pandas==2.0.0
 Pillow==9.5.0
 plotly==5.14.1
 pyarrow==11.0.0
-pydantic==1.10.7
+pydantic==2.4.2
 pydub==0.25.1
 pyparsing==3.0.9
 pyrsistent==0.19.3
