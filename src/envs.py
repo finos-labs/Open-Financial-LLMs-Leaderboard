@@ -1,4 +1,5 @@
 import os
+
 from huggingface_hub import HfApi
 
 # clone / pull the lmeh eval data
@@ -24,5 +25,6 @@ PATH_TO_COLLECTION = "open-llm-leaderboard/llm-leaderboard-best-models-652d6c796
 # Rate limit variables
 RATE_LIMIT_PERIOD = 7
 RATE_LIMIT_QUOTA = 5
+HAS_HIGHER_RATE_LIMIT = ["TheBloke"]
 
 API = HfApi(token=H4_TOKEN)

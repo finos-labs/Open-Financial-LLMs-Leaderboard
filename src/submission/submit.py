@@ -1,17 +1,17 @@
-import os, json
-
+import json
+import os
 from datetime import datetime, timezone
 
-from src.display.formatting import styled_error, styled_warning, styled_message
+from src.display.formatting import styled_error, styled_message, styled_warning
+from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
 from src.leaderboard.filter_models import DO_NOT_SUBMIT_MODELS
 from src.submission.check_validity import (
-    user_submission_permission,
-    is_model_on_hub,
-    get_model_size,
-    check_model_card,
     already_submitted_models,
+    check_model_card,
+    get_model_size,
+    is_model_on_hub,
+    user_submission_permission,
 )
-from src.envs import RATE_LIMIT_QUOTA, RATE_LIMIT_PERIOD, H4_TOKEN, EVAL_REQUESTS_PATH, API, QUEUE_REPO
 
 requested_models, users_to_submission_dates = already_submitted_models(EVAL_REQUESTS_PATH)
 

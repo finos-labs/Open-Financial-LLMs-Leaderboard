@@ -1,11 +1,11 @@
 import os
+
 import pandas as pd
-from pandas import DataFrame
-from huggingface_hub import get_collection, add_collection_item, update_collection_item, delete_collection_item
+from huggingface_hub import add_collection_item, delete_collection_item, get_collection, update_collection_item
 from huggingface_hub.utils._errors import HfHubHTTPError
+from pandas import DataFrame
 
 from src.display.utils import AutoEvalColumn, ModelType
-
 from src.envs import H4_TOKEN, PATH_TO_COLLECTION
 
 # Specific intervals for the collections

@@ -3,10 +3,10 @@ import os
 
 import pandas as pd
 
+from src.display.formatting import has_no_nan_values, make_clickable_model
+from src.display.utils import AutoEvalColumn, EvalQueueColumn, baseline_row
 from src.leaderboard.filter_models import filter_models
 from src.leaderboard.read_evals import get_eval_results
-from src.display.formatting import make_clickable_model, has_no_nan_values
-from src.display.utils import AutoEvalColumn, EvalQueueColumn, baseline_row
 
 
 def get_leaderboard_df(results_path: str, cols: list, benchmark_cols: list) -> pd.DataFrame:

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-import pandas as pd
 from enum import Enum
+
+import pandas as pd
 
 
 # These classes are for user facing column names,

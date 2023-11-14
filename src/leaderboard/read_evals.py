@@ -1,15 +1,15 @@
-import json
-import os
-import math
 import glob
+import json
+import math
+import os
 from dataclasses import dataclass
 from typing import Dict, List, Tuple
 
 import dateutil
 import numpy as np
 
-from src.display.utils import AutoEvalColumn, ModelType, Tasks
 from src.display.formatting import make_clickable_model
+from src.display.utils import AutoEvalColumn, ModelType, Tasks
 from src.submission.check_validity import is_model_on_hub
 
 
@@ -56,7 +56,9 @@ class EvalResult:
             model = org_and_model[1]
             result_key = f"{org}_{model}_{precision}"
 
-        still_on_hub = is_model_on_hub("/".join(org_and_model), config.get("model_sha", "main"), trust_remote_code=True)[0]
+        still_on_hub = is_model_on_hub(
+            "/".join(org_and_model), config.get("model_sha", "main"), trust_remote_code=True
+        )[0]
 
         # Extract results available in this file (some results are split in several files)
         results = {}
@@ -73,8 +75,8 @@ class EvalResult:
                 continue
 
             # Some truthfulQA values are NaNs
-            if task.benchmark == "truthfulqa:mc" and 'harness|truthfulqa:mc|0' in data["results"]:
-                if math.isnan(float(data["results"]['harness|truthfulqa:mc|0'][task.metric])):
+            if task.benchmark == "truthfulqa:mc" and "harness|truthfulqa:mc|0" in data["results"]:
+                if math.isnan(float(data["results"]["harness|truthfulqa:mc|0"][task.metric])):
                     results[task.benchmark] = 0.0
                     continue
 
@@ -191,7 +193,7 @@ def get_eval_results(results_path: str) -> List[EvalResult]:
     for v in eval_results.values():
         try:
             results.append(v.to_dict())
-        except KeyError: # not all eval values present 
+        except KeyError:  # not all eval values present
             continue
 
     return results

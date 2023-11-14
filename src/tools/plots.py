@@ -1,9 +1,11 @@
+import pickle
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Tuple
+
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objs import Figure
-import pickle
-from datetime import datetime, timezone
-from typing import List, Dict, Tuple, Any
+
 from src.leaderboard.filter_models import FLAGGED_MODELS
 
 # Average ⬆️ human baseline is 0.897 (source: averaging human baselines below)

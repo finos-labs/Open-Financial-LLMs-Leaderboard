@@ -1,13 +1,15 @@
-import huggingface_hub
-import os
 import json
+import os
 import re
 from collections import defaultdict
-from huggingface_hub.hf_api import ModelInfo
+from datetime import datetime, timedelta, timezone
+
+import huggingface_hub
 from huggingface_hub import ModelCard
+from huggingface_hub.hf_api import ModelInfo
 from transformers import AutoConfig
 
-from datetime import datetime, timedelta, timezone
+from src.envs import HAS_HIGHER_RATE_LIMIT
 
 
 # ht to @Wauplin, thank you for the snippet!
@@ -76,6 +78,9 @@ def user_submission_permission(submission_name, users_to_submission_dates, rate_
     submissions_after_timelimit = [d for d in submission_dates if d > time_limit]
 
     num_models_submitted_in_period = len(submissions_after_timelimit)
+    if org_or_user in HAS_HIGHER_RATE_LIMIT:
+        rate_limit_quota = 2 * rate_limit_quota
+
     if num_models_submitted_in_period > rate_limit_quota:
         error_msg = f"Organisation or user `{org_or_user}`"
         error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "

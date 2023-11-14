@@ -1,11 +1,12 @@
-from datetime import datetime, timezone
 import json
 import os
-import re
-import click
-from huggingface_hub import HfApi, snapshot_download
-from colorama import Fore
 import pprint
+import re
+from datetime import datetime, timezone
+
+import click
+from colorama import Fore
+from huggingface_hub import HfApi, snapshot_download
 
 EVAL_REQUESTS_PATH = "eval-queue"
 QUEUE_REPO = "open-llm-leaderboard/requests"

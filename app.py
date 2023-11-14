@@ -6,18 +6,6 @@ import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
-from src.display.utils import (
-    COLS,
-    TYPES,
-    BENCHMARK_COLS,
-    EVAL_COLS,
-    EVAL_TYPES,
-    AutoEvalColumn,
-    ModelType,
-    NUMERIC_INTERVALS,
-    fields,
-)
-from src.display.css_html_js import custom_css, get_window_url_params
 from src.display.about import (
     CITATION_BUTTON_LABEL,
     CITATION_BUTTON_TEXT,
@@ -26,17 +14,29 @@ from src.display.about import (
     LLM_BENCHMARKS_TEXT,
     TITLE,
 )
-from src.tools.plots import (
-    create_metric_plot_obj,
-    create_scores_df,
-    create_plot_df,
-    join_model_info_with_results,
-    HUMAN_BASELINES,
+from src.display.css_html_js import custom_css, get_window_url_params
+from src.display.utils import (
+    BENCHMARK_COLS,
+    COLS,
+    EVAL_COLS,
+    EVAL_TYPES,
+    NUMERIC_INTERVALS,
+    TYPES,
+    AutoEvalColumn,
+    ModelType,
+    fields,
 )
-from src.tools.collections import update_collections
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
-from src.envs import H4_TOKEN, QUEUE_REPO, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, RESULTS_REPO, API, REPO_ID, IS_PUBLIC
 from src.submission.submit import add_new_eval
+from src.tools.collections import update_collections
+from src.tools.plots import (
+    HUMAN_BASELINES,
+    create_metric_plot_obj,
+    create_plot_df,
+    create_scores_df,
+    join_model_info_with_results,
+)
 
 
 def restart_space():
@@ -61,9 +61,9 @@ original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
 update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
-#models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
+# models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
 # plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
-#to_be_dumped = f"models = {repr(models)}\n"
+# to_be_dumped = f"models = {repr(models)}\n"
 
 (
     finished_eval_queue_df,
@@ -173,8 +173,16 @@ with demo:
                         )
                     with gr.Row():
                         shown_columns = gr.CheckboxGroup(
-                            choices=[c.name for c in fields(AutoEvalColumn) if not c.hidden and not c.never_hidden and not c.dummy],
-                            value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.hidden and not c.never_hidden],
+                            choices=[
+                                c.name
+                                for c in fields(AutoEvalColumn)
+                                if not c.hidden and not c.never_hidden and not c.dummy
+                            ],
+                            value=[
+                                c.name
+                                for c in fields(AutoEvalColumn)
+                                if c.displayed_by_default and not c.hidden and not c.never_hidden
+                            ],
                             label="Select columns to show",
                             elem_id="column-select",
                             interactive=True,
