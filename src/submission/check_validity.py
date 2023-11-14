@@ -67,6 +67,8 @@ def get_model_size(model_info: ModelInfo, precision: str):
     model_size = size_factor * model_size
     return model_size
 
+def get_model_arch(model_info: ModelInfo):
+    return model_info.config.get("architectures", "Unknown")
 
 def user_submission_permission(submission_name, users_to_submission_dates, rate_limit_period, rate_limit_quota):
     org_or_user, _ = submission_name.split("/")

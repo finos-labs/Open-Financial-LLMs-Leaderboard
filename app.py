@@ -73,14 +73,13 @@ leaderboard_df = original_df.copy()
 
 
 # Basics
-def change_tab(query_param: str):
-    query_param = query_param.replace("'", '"')
-    query_param = json.loads(query_param)
-
-    if isinstance(query_param, dict) and "tab" in query_param and query_param["tab"] == "evaluation":
-        return gr.Tabs.update(selected=1)
-    else:
-        return gr.Tabs.update(selected=0)
+#def change_tab(query_param: str):
+#    query_param = query_param.replace("'", '"')
+#     query_param = json.loads(query_param)
+#    if isinstance(query_param, dict) and "tab" in query_param and query_param["tab"] == "evaluation":
+#        return gr.Tabs.update(selected=1)
+#    else:
+#        return gr.Tabs.update(selected=0)
 
 
 # Searching and filtering
@@ -192,28 +191,28 @@ with demo:
                             value=False, label="Show gated/private/deleted models", interactive=True
                         )
                 with gr.Column(min_width=320):
-                    with gr.Box(elem_id="box-filter"):
-                        filter_columns_type = gr.CheckboxGroup(
-                            label="Model types",
-                            choices=[t.to_str() for t in ModelType],
-                            value=[t.to_str() for t in ModelType],
-                            interactive=True,
-                            elem_id="filter-columns-type",
-                        )
-                        filter_columns_precision = gr.CheckboxGroup(
-                            label="Precision",
-                            choices=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
-                            value=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
-                            interactive=True,
-                            elem_id="filter-columns-precision",
-                        )
-                        filter_columns_size = gr.CheckboxGroup(
-                            label="Model sizes (in billions of parameters)",
-                            choices=list(NUMERIC_INTERVALS.keys()),
-                            value=list(NUMERIC_INTERVALS.keys()),
-                            interactive=True,
-                            elem_id="filter-columns-size",
-                        )
+                    #with gr.Box(elem_id="box-filter"):
+                    filter_columns_type = gr.CheckboxGroup(
+                        label="Model types",
+                        choices=[t.to_str() for t in ModelType],
+                        value=[t.to_str() for t in ModelType],
+                        interactive=True,
+                        elem_id="filter-columns-type",
+                    )
+                    filter_columns_precision = gr.CheckboxGroup(
+                        label="Precision",
+                        choices=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
+                        value=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
+                        interactive=True,
+                        elem_id="filter-columns-precision",
+                    )
+                    filter_columns_size = gr.CheckboxGroup(
+                        label="Model sizes (in billions of parameters)",
+                        choices=list(NUMERIC_INTERVALS.keys()),
+                        value=list(NUMERIC_INTERVALS.keys()),
+                        interactive=True,
+                        elem_id="filter-columns-size",
+                    )
 
             leaderboard_table = gr.components.Dataframe(
                 value=leaderboard_df[
@@ -223,10 +222,10 @@ with demo:
                 ],
                 headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
-                max_rows=None,
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
+                column_widths=["2%", "33%"] 
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
@@ -234,7 +233,6 @@ with demo:
                 value=original_df[COLS],
                 headers=COLS,
                 datatype=TYPES,
-                max_rows=None,
                 visible=False,
             )
             search_bar.submit(
@@ -358,7 +356,7 @@ with demo:
                                 value=finished_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
-                                max_rows=5,
+                                row_count=5,
                             )
                     with gr.Accordion(
                         f"🔄 Running Evaluation Queue ({len(running_eval_queue_df)})",
@@ -369,7 +367,7 @@ with demo:
                                 value=running_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
-                                max_rows=5,
+                                row_count=5,
                             )
 
                     with gr.Accordion(
@@ -381,7 +379,7 @@ with demo:
                                 value=pending_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
-                                max_rows=5,
+                                row_count=5,
                             )
             with gr.Row():
                 gr.Markdown("# ✉️✨ Submit your model here!", elem_classes="markdown-text")
@@ -442,15 +440,15 @@ with demo:
                 show_copy_button=True,
             )
 
-    dummy = gr.Textbox(visible=False)
-    demo.load(
-        change_tab,
-        dummy,
-        tabs,
-        _js=get_window_url_params,
-    )
+    #dummy = gr.Textbox(visible=False)
+    #demo.load(
+    #    change_tab,
+    #    dummy,
+    #    tabs,
+    #    js=get_window_url_params,
+    #)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)
 scheduler.start()
-demo.queue(concurrency_count=40).launch()
+demo.queue().launch()

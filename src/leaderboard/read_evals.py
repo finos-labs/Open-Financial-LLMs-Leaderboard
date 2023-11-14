@@ -24,6 +24,7 @@ class EvalResult:
     precision: str = ""
     model_type: ModelType = ModelType.Unknown
     weight_type: str = "Original"
+    architecture: str = "Unknown"
     license: str = "?"
     likes: int = 0
     num_params: int = 0
