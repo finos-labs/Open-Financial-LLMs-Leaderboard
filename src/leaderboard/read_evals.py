@@ -73,8 +73,8 @@ class EvalResult:
                 continue
 
             # Some truthfulQA values are NaNs
-            if task.benchmark == "truthfulqa:mc" and task.benchmark in data["results"]:
-                if math.isnan(float(data["results"][task.benchmark][task.metric])):
+            if task.benchmark == "truthfulqa:mc" and 'harness|truthfulqa:mc|0' in data["results"]:
+                if math.isnan(float(data["results"]['harness|truthfulqa:mc|0'][task.metric])):
                     results[task.benchmark] = 0.0
                     continue
 
