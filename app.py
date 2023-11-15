@@ -232,7 +232,7 @@ with demo:
                     search_bar,
                 ],
                 leaderboard_table,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
             shown_columns.change(
                 update_table,
@@ -247,7 +247,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
             filter_columns_type.change(
                 update_table,
@@ -262,7 +262,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
             filter_columns_precision.change(
                 update_table,
@@ -277,7 +277,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
             filter_columns_size.change(
                 update_table,
@@ -292,7 +292,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
             deleted_models_visibility.change(
                 update_table,
@@ -307,7 +307,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
-                concurrency_limit=None,
+                #concurrency_limit=None,
             )
 
         with gr.TabItem("📈 Metrics through time", elem_id="llm-benchmark-tab-table", id=4):
