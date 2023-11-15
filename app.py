@@ -31,17 +31,14 @@ from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 from src.tools.collections import update_collections
 from src.tools.plots import (
-    HUMAN_BASELINES,
     create_metric_plot_obj,
     create_plot_df,
     create_scores_df,
-    join_model_info_with_results,
 )
 
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID, token=H4_TOKEN)
-
 
 try:
     snapshot_download(
@@ -57,29 +54,17 @@ except Exception:
     restart_space()
 
 
-original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
+raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
 update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
-# models = original_df["model_name_for_query"].tolist()  # needed for model backlinks in their to the leaderboard
-# plot_df = create_plot_df(create_scores_df(join_model_info_with_results(original_df)))
-# to_be_dumped = f"models = {repr(models)}\n"
+plot_df = create_plot_df(create_scores_df(raw_data))
 
 (
     finished_eval_queue_df,
     running_eval_queue_df,
     pending_eval_queue_df,
 ) = get_evaluation_queue_df(EVAL_REQUESTS_PATH, EVAL_COLS)
-
-
-# Basics
-#def change_tab(query_param: str):
-#    query_param = query_param.replace("'", '"')
-#     query_param = json.loads(query_param)
-#    if isinstance(query_param, dict) and "tab" in query_param and query_param["tab"] == "evaluation":
-#        return gr.Tabs.update(selected=1)
-#    else:
-#        return gr.Tabs.update(selected=0)
 
 
 # Searching and filtering
@@ -247,6 +232,7 @@ with demo:
                     search_bar,
                 ],
                 leaderboard_table,
+                concurrency_limit=None,
             )
             shown_columns.change(
                 update_table,
@@ -261,6 +247,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
+                concurrency_limit=None,
             )
             filter_columns_type.change(
                 update_table,
@@ -275,6 +262,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
+                concurrency_limit=None,
             )
             filter_columns_precision.change(
                 update_table,
@@ -289,6 +277,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
+                concurrency_limit=None,
             )
             filter_columns_size.change(
                 update_table,
@@ -303,6 +292,7 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
+                concurrency_limit=None,
             )
             deleted_models_visibility.change(
                 update_table,
@@ -317,27 +307,25 @@ with demo:
                 ],
                 leaderboard_table,
                 queue=True,
+                concurrency_limit=None,
             )
 
-        # with gr.TabItem("📈
-        #  evolution through time", elem_id="llm-benchmark-tab-table", id=4):
-        #     with gr.Row():
-        #         with gr.Column():
-        #             chart = create_metric_plot_obj(
-        #                 plot_df,
-        #                 ["Average ⬆️"],
-        #                 HUMAN_BASELINES,
-        #                 title="Average of Top Scores and Human Baseline Over Time",
-        #             )
-        #             gr.Plot(value=chart, interactive=False, width=500, height=500)
-        #         with gr.Column():
-        #             chart = create_metric_plot_obj(
-        #                 plot_df,
-        #                 ["ARC", "HellaSwag", "MMLU", "TruthfulQA", "Winogrande", "GSM8K", "DROP"],
-        #                 HUMAN_BASELINES,
-        #                 title="Top Scores and Human Baseline Over Time",
-        #             )
-        #             gr.Plot(value=chart, interactive=False, width=500, height=500)
+        with gr.TabItem("📈 Metrics through time", elem_id="llm-benchmark-tab-table", id=4):
+            with gr.Row():
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        [AutoEvalColumn.average.name],
+                        title="Average of Top Scores and Human Baseline Over Time (from last update)",
+                    )
+                    gr.Plot(value=chart, min_width=500) 
+                with gr.Column():
+                    chart = create_metric_plot_obj(
+                        plot_df,
+                        BENCHMARK_COLS,
+                        title="Top Scores and Human Baseline Over Time (from last update)",
+                    )
+                    gr.Plot(value=chart, min_width=500) 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
@@ -439,14 +427,6 @@ with demo:
                 elem_id="citation-button",
                 show_copy_button=True,
             )
-
-    #dummy = gr.Textbox(visible=False)
-    #demo.load(
-    #    change_tab,
-    #    dummy,
-    #    tabs,
-    #    js=get_window_url_params,
-    #)
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)

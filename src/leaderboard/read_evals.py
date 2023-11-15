@@ -3,9 +3,9 @@ import json
 import math
 import os
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
 
 import dateutil
+from datetime import datetime
 import numpy as np
 
 from src.display.formatting import make_clickable_model
@@ -61,8 +61,6 @@ class EvalResult:
         still_on_hub, error = is_model_on_hub(
             full_model, config.get("model_sha", "main"), trust_remote_code=True
         )
-        if not still_on_hub:
-            print(full_model, error)
 
         # Extract results available in this file (some results are split in several files)
         results = {}
@@ -100,7 +98,6 @@ class EvalResult:
             results=results,
             precision=precision,  # todo model_type=, weight_type=
             revision=config.get("model_sha", ""),
-            date=config.get("submission_date", ""),
             still_on_hub=still_on_hub,
         )
 
@@ -114,6 +111,7 @@ class EvalResult:
             self.license = request.get("license", "?")
             self.likes = request.get("likes", 0)
             self.num_params = request.get("params", 0)
+            self.date = request.get("submitted_time", "")
         except Exception:
             print(f"Could not find request file for {self.org}/{self.model}")
 
@@ -162,7 +160,7 @@ def get_request_file_for_model(model_name, precision):
     return request_file
 
 
-def get_eval_results(results_path: str) -> List[EvalResult]:
+def get_raw_eval_results(results_path: str) -> list[EvalResult]:
     json_filepaths = []
 
     for root, _, files in os.walk(results_path):
@@ -196,7 +194,8 @@ def get_eval_results(results_path: str) -> List[EvalResult]:
     results = []
     for v in eval_results.values():
         try:
-            results.append(v.to_dict())
+            v.to_dict() # we test if the dict version is complete
+            results.append(v)
         except KeyError:  # not all eval values present
             continue
 

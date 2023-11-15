@@ -60,7 +60,7 @@ baseline_row = {
     AutoEvalColumn.model.name: "<p>Baseline</p>",
     AutoEvalColumn.revision.name: "N/A",
     AutoEvalColumn.precision.name: None,
-    AutoEvalColumn.average.name: 25.0,
+    AutoEvalColumn.average.name: 31.0,
     AutoEvalColumn.arc.name: 25.0,
     AutoEvalColumn.hellaswag.name: 25.0,
     AutoEvalColumn.mmlu.name: 25.0,
@@ -72,19 +72,43 @@ baseline_row = {
     AutoEvalColumn.model_type.name: "",
 }
 
+# Average ⬆️ human baseline is 0.897 (source: averaging human baselines below)
+# ARC human baseline is 0.80 (source: https://lab42.global/arc/)
+# HellaSwag human baseline is 0.95 (source: https://deepgram.com/learn/hellaswag-llm-benchmark-guide)
+# MMLU human baseline is 0.898 (source: https://openreview.net/forum?id=d7KBjmI3GmQ)
+# TruthfulQA human baseline is 0.94(source: https://arxiv.org/pdf/2109.07958.pdf)
+# Drop: https://leaderboard.allenai.org/drop/submissions/public
+# Winogrande: https://leaderboard.allenai.org/winogrande/submissions/public
+# GSM8K: paper
+# Define the human baselines
+human_baseline_row = {
+    AutoEvalColumn.model.name: "<p>Human performance</p>",
+    AutoEvalColumn.revision.name: "N/A",
+    AutoEvalColumn.precision.name: None,
+    AutoEvalColumn.average.name: 92.75,
+    AutoEvalColumn.arc.name: 80.0,
+    AutoEvalColumn.hellaswag.name: 95.0,
+    AutoEvalColumn.mmlu.name: 89.8,
+    AutoEvalColumn.truthfulqa.name: 94.0,
+    AutoEvalColumn.winogrande.name: 94.0,
+    AutoEvalColumn.gsm8k.name: 100,
+    AutoEvalColumn.drop.name: 96.42,
+    AutoEvalColumn.dummy.name: "human_baseline",
+    AutoEvalColumn.model_type.name: "",
+}
 
 @dataclass
-class ModelInfo:
+class ModelTypeDetails:
     name: str
     symbol: str  # emoji
 
 
 class ModelType(Enum):
-    PT = ModelInfo(name="pretrained", symbol="🟢")
-    FT = ModelInfo(name="fine-tuned", symbol="🔶")
-    IFT = ModelInfo(name="instruction-tuned", symbol="⭕")
-    RL = ModelInfo(name="RL-tuned", symbol="🟦")
-    Unknown = ModelInfo(name="", symbol="?")
+    PT = ModelTypeDetails(name="pretrained", symbol="🟢")
+    FT = ModelTypeDetails(name="fine-tuned", symbol="🔶")
+    IFT = ModelTypeDetails(name="instruction-tuned", symbol="⭕")
+    RL = ModelTypeDetails(name="RL-tuned", symbol="🟦")
+    Unknown = ModelTypeDetails(name="", symbol="?")
 
     def to_str(self, separator=" "):
         return f"{self.value.symbol}{separator}{self.value.name}"
@@ -128,7 +152,7 @@ TYPES_LITE = [c.type for c in fields(AutoEvalColumn) if c.displayed_by_default a
 EVAL_COLS = [c.name for c in fields(EvalQueueColumn)]
 EVAL_TYPES = [c.type for c in fields(EvalQueueColumn)]
 
-BENCHMARK_COLS = [t.value.col_name for t in Tasks if t.value.col_name in fields(AutoEvalColumn)]
+BENCHMARK_COLS = [t.value.col_name for t in Tasks]
 
 NUMERIC_INTERVALS = {
     "?": pd.Interval(-1, 0, closed="right"),
