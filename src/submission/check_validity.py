@@ -55,7 +55,7 @@ def get_model_size(model_info: ModelInfo, precision: str):
     size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
     try:
         model_size = round(model_info.safetensors["total"] / 1e9, 3)
-    except AttributeError:
+    except (AttributeError, TypeError):
         try:
             size_match = re.search(size_pattern, model_info.modelId.lower())
             model_size = size_match.group(0)
