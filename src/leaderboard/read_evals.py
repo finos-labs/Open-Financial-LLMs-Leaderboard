@@ -56,10 +56,13 @@ class EvalResult:
             org = org_and_model[0]
             model = org_and_model[1]
             result_key = f"{org}_{model}_{precision}"
+        full_model = "/".join(org_and_model)
 
-        still_on_hub = is_model_on_hub(
-            "/".join(org_and_model), config.get("model_sha", "main"), trust_remote_code=True
-        )[0]
+        still_on_hub, error = is_model_on_hub(
+            full_model, config.get("model_sha", "main"), trust_remote_code=True
+        )
+        if not still_on_hub:
+            print(full_model, error)
 
         # Extract results available in this file (some results are split in several files)
         results = {}
@@ -91,7 +94,7 @@ class EvalResult:
 
         return self(
             eval_name=result_key,
-            full_model="/".join(org_and_model),
+            full_model=full_model,
             org=org,
             model=model,
             results=results,
