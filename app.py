@@ -387,7 +387,7 @@ with demo:
             with gr.Row():
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")
-                    revision_name_textbox = gr.Textbox(label="revision", placeholder="main")
+                    revision_name_textbox = gr.Textbox(label="Revision commit", placeholder="main")
                     private = gr.Checkbox(False, label="Private", visible=not IS_PUBLIC)
                     model_type = gr.Dropdown(
                         choices=[t.to_str(" : ") for t in ModelType],
