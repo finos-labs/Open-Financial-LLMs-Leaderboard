@@ -14,7 +14,7 @@ PRIVATE_RESULTS_REPO = "open-llm-leaderboard/private-results"
 
 IS_PUBLIC = bool(os.environ.get("IS_PUBLIC", True))
 
-CACHE_PATH="/data"
+CACHE_PATH=os.getenv("HF_HOME", ".")
 
 EVAL_REQUESTS_PATH = os.path.join(CACHE_PATH, "eval-queue")
 EVAL_RESULTS_PATH = os.path.join(CACHE_PATH, "eval-results")
