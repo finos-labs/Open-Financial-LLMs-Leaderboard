@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import dateutil
 from datetime import datetime
+from transformers import AutoConfig
 import numpy as np
 
 from src.display.formatting import make_clickable_model
@@ -15,24 +16,26 @@ from src.submission.check_validity import is_model_on_hub
 
 @dataclass
 class EvalResult:
-    eval_name: str
-    full_model: str
-    org: str
+    # Also see src.display.utils.AutoEvalColumn for what will be displayed.
+    eval_name: str # org_model_precision (uid)
+    full_model: str # org/model (path on hub)
+    org: str 
     model: str
-    revision: str
+    revision: str # commit hash, "" if main
     results: dict
     precision: str = ""
-    model_type: ModelType = ModelType.Unknown
-    weight_type: str = "Original"
-    architecture: str = "Unknown"
+    model_type: ModelType = ModelType.Unknown # Pretrained, fine tuned, ...
+    weight_type: str = "Original" # Original or Adapter
+    architecture: str = "Unknown" # From config file
     license: str = "?"
     likes: int = 0
     num_params: int = 0
-    date: str = ""
+    date: str = "" # submission date of request file
     still_on_hub: bool = False
 
     @classmethod
     def init_from_json_file(self, json_filepath):
+        """Inits the result from the specific model result file"""
         with open(json_filepath) as fp:
             data = json.load(fp)
 
@@ -58,9 +61,14 @@ class EvalResult:
             result_key = f"{org}_{model}_{precision}"
         full_model = "/".join(org_and_model)
 
-        still_on_hub, error = is_model_on_hub(
+        still_on_hub, error, model_config = is_model_on_hub(
             full_model, config.get("model_sha", "main"), trust_remote_code=True
         )
+        architecture = "?"
+        if model_config is not None:
+            architectures = getattr(model_config, "architectures", None)
+            if architectures:
+                architecture = ";".join(architectures)
 
         # Extract results available in this file (some results are split in several files)
         results = {}
@@ -96,18 +104,21 @@ class EvalResult:
             org=org,
             model=model,
             results=results,
-            precision=precision,  # todo model_type=, weight_type=
-            revision=config.get("model_sha", ""),
+            precision=precision,  
+            revision= config.get("model_sha", ""),
             still_on_hub=still_on_hub,
+            architecture=architecture
         )
 
-    def update_with_request_file(self):
-        request_file = get_request_file_for_model(self.full_model, self.precision)
+    def update_with_request_file(self, requests_path):
+        """Finds the relevant request file for the current model and updates info with it"""
+        request_file = get_request_file_for_model(requests_path, self.full_model, self.precision)
 
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
             self.model_type = ModelType.from_str(request.get("model_type", ""))
+            self.weight_type = request.get("weight_type", "?")
             self.license = request.get("license", "?")
             self.likes = request.get("likes", 0)
             self.num_params = request.get("params", 0)
@@ -116,6 +127,7 @@ class EvalResult:
             print(f"Could not find request file for {self.org}/{self.model}")
 
     def to_dict(self):
+        """Converts the Eval Result to a dict compatible with our dataframe display"""
         average = sum([v for v in self.results.values() if v is not None]) / len(Tasks)
         data_dict = {
             "eval_name": self.eval_name,  # not a column, just a save name,
@@ -123,6 +135,7 @@ class EvalResult:
             AutoEvalColumn.model_type.name: self.model_type.value.name,
             AutoEvalColumn.model_type_symbol.name: self.model_type.value.symbol,
             AutoEvalColumn.weight_type.name: self.weight_type,
+            AutoEvalColumn.architecture.name: self.architecture,
             AutoEvalColumn.model.name: make_clickable_model(self.full_model),
             AutoEvalColumn.dummy.name: self.full_model,
             AutoEvalColumn.revision.name: self.revision,
@@ -139,9 +152,10 @@ class EvalResult:
         return data_dict
 
 
-def get_request_file_for_model(model_name, precision):
+def get_request_file_for_model(requests_path, model_name, precision):
+    """Selects the correct request file for a given model. Only keeps runs tagged as FINISHED"""
     request_files = os.path.join(
-        "eval-queue",
+        requests_path,
         f"{model_name}_eval_request_*.json",
     )
     request_files = glob.glob(request_files)
@@ -160,8 +174,9 @@ def get_request_file_for_model(model_name, precision):
     return request_file
 
 
-def get_raw_eval_results(results_path: str) -> list[EvalResult]:
-    json_filepaths = []
+def get_raw_eval_results(results_path: str, requests_path: str) -> list[EvalResult]:
+    """From the path of the results folder root, extract all needed info for results"""
+    model_result_filepaths = []
 
     for root, _, files in os.walk(results_path):
         # We should only have json files in model results
@@ -174,15 +189,14 @@ def get_raw_eval_results(results_path: str) -> list[EvalResult]:
         except dateutil.parser._parser.ParserError:
             files = [files[-1]]
 
-        # up_to_date = files[-1]
         for file in files:
-            json_filepaths.append(os.path.join(root, file))
+            model_result_filepaths.append(os.path.join(root, file))
 
     eval_results = {}
-    for json_filepath in json_filepaths:
+    for model_result_filepath in model_result_filepaths:
         # Creation of result
-        eval_result = EvalResult.init_from_json_file(json_filepath)
-        eval_result.update_with_request_file()
+        eval_result = EvalResult.init_from_json_file(model_result_filepath)
+        eval_result.update_with_request_file(requests_path)
 
         # Store results of same eval together
         eval_name = eval_result.eval_name

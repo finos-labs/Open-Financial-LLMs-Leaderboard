@@ -54,7 +54,7 @@ except Exception:
     restart_space()
 
 
-raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, COLS, BENCHMARK_COLS)
+raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
 update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 

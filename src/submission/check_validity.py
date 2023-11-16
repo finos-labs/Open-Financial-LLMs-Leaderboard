@@ -38,17 +38,18 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
 
 def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False) -> tuple[bool, str]:
     try:
-        AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
-        return True, None
+        config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
+        return True, None, config
 
     except ValueError:
         return (
             False,
             "needs to be launched with `trust_remote_code=True`. For safety reason, we do not allow these models to be automatically submitted to the leaderboard.",
+            None
         )
 
     except Exception:
-        return False, "was not found on hub!"
+        return False, "was not found on hub!", None
 
 
 def get_model_size(model_info: ModelInfo, precision: str):

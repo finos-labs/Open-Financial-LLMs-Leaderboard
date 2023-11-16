@@ -34,6 +34,7 @@ class AutoEvalColumn:  # Auto evals column
     gsm8k = ColumnContent("GSM8K", "number", True)
     drop = ColumnContent("DROP", "number", True)
     model_type = ColumnContent("Type", "str", False)
+    architecture = ColumnContent("Architecture", "str", False)
     weight_type = ColumnContent("Weight type", "str", False, True)
     precision = ColumnContent("Precision", "str", False)  # , True)
     license = ColumnContent("Hub License", "str", False)
