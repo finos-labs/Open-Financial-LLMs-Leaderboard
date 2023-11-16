@@ -129,8 +129,8 @@ def filter_models(
         filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
 
     type_emoji = [t[0] for t in type_query]
-    filtered_df = filtered_df[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
-    filtered_df = filtered_df[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
+    filtered_df = filtered_df.loc[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
+    filtered_df = filtered_df.loc[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
 
     numeric_interval = pd.IntervalIndex(sorted([NUMERIC_INTERVALS[s] for s in size_query]))
     params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
@@ -234,81 +234,22 @@ with demo:
                 leaderboard_table,
                 concurrency_limit=None,
             )
-            shown_columns.change(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-                queue=True,
-                concurrency_limit=None,
-            )
-            filter_columns_type.change(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-                queue=True,
-                concurrency_limit=None,
-            )
-            filter_columns_precision.change(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-                queue=True,
-                concurrency_limit=None,
-            )
-            filter_columns_size.change(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-                queue=True,
-                concurrency_limit=None,
-            )
-            deleted_models_visibility.change(
-                update_table,
-                [
-                    hidden_leaderboard_table_for_search,
-                    shown_columns,
-                    filter_columns_type,
-                    filter_columns_precision,
-                    filter_columns_size,
-                    deleted_models_visibility,
-                    search_bar,
-                ],
-                leaderboard_table,
-                queue=True,
-                concurrency_limit=None,
-            )
+            for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size, deleted_models_visibility]:
+                selector.change(
+                    update_table,
+                    [
+                        hidden_leaderboard_table_for_search,
+                        shown_columns,
+                        filter_columns_type,
+                        filter_columns_precision,
+                        filter_columns_size,
+                        deleted_models_visibility,
+                        search_bar,
+                    ],
+                    leaderboard_table,
+                    queue=True,
+                    concurrency_limit=None,
+                )
 
         with gr.TabItem("📈 Metrics through time", elem_id="llm-benchmark-tab-table", id=4):
             with gr.Row():
