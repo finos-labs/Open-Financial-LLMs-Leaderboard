@@ -10,15 +10,17 @@ The leaderboard's backend runs the great [Eleuther AI Language Model Evaluation 
 """
 
 LLM_BENCHMARKS_TEXT = f"""
+Useful links: [FAQ](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/179), [Community resources](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/174), [Collection of best models](https://huggingface.co/collections/open-llm-leaderboard/llm-leaderboard-best-models-652d6c7965a4619fb5c27a03).
+
 # Context
 With the plethora of large language models (LLMs) and chatbots being released week upon week, often with grandiose claims of their performance, it can be hard to filter out the genuine progress that is being made by the open-source community and which model is the current state of the art.
 
 ## Icons
-{ModelType.PT.to_str(" : ")} model: new, base models, trained on a given corpora
-{ModelType.FT.to_str(" : ")} model: pretrained models finetuned on more data
+- {ModelType.PT.to_str(" : ")} model: new, base models, trained on a given corpora
+- {ModelType.FT.to_str(" : ")} model: pretrained models finetuned on more data
 Specific fine-tune subcategories (more adapted to chat):
-{ModelType.IFT.to_str(" : ")} model: instruction fine-tunes, which are model fine-tuned specifically on datasets of task instruction 
-{ModelType.RL.to_str(" : ")} model: reinforcement fine-tunes, which usually change the model loss a bit with an added policy. 
+- {ModelType.IFT.to_str(" : ")} model: instruction fine-tunes, which are model fine-tuned specifically on datasets of task instruction 
+- {ModelType.RL.to_str(" : ")} model: reinforcement fine-tunes, which usually change the model loss a bit with an added policy. 
 If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
 
 "Flagged" indicates that this model has been flagged by the community, and should probably be ignored! Clicking the link will redirect you to the discussion about the model.
@@ -71,10 +73,6 @@ Side note on the baseline scores:
 To get more information about quantization, see:
 - 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
 - 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
-
-## More resources
-If you still have questions, you can check our FAQ [here](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/179)!
-We also gather cool resources from the community, other teams, and other labs [here](https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/174)!
 """
 
 EVALUATION_QUEUE_TEXT = """
