@@ -11,7 +11,7 @@ from src.display.about import (
     LLM_BENCHMARKS_TEXT,
     TITLE,
 )
-from src.display.css_html_js import custom_css, get_window_url_params
+from src.display.css_html_js import custom_css
 from src.display.utils import (
     BENCHMARK_COLS,
     COLS,
@@ -26,6 +26,7 @@ from src.display.utils import (
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
+from src.submission.check_validity import already_submitted_models
 from src.tools.collections import update_collections
 from src.tools.plots import (
     create_metric_plot_obj,

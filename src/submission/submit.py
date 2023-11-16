@@ -13,8 +13,8 @@ from src.submission.check_validity import (
     user_submission_permission,
 )
 
-requested_models, users_to_submission_dates = already_submitted_models(EVAL_REQUESTS_PATH)
-
+REQUESTED_MODELS = None
+USERS_TO_SUBMISSION_DATES = None
 
 def add_new_eval(
     model: str,
@@ -25,6 +25,12 @@ def add_new_eval(
     weight_type: str,
     model_type: str,
 ):
+    global REQUESTED_MODELS
+    global USERS_TO_SUBMISSION_DATES
+    if not REQUESTED_MODELS:
+        REQUESTED_MODELS, USERS_TO_SUBMISSION_DATES = already_submitted_models(EVAL_REQUESTS_PATH)
+
+
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -33,7 +39,7 @@ def add_new_eval(
 
     # Is the user rate limited?
     user_can_submit, error_msg = user_submission_permission(
-        model, users_to_submission_dates, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
+        model, USERS_TO_SUBMISSION_DATES, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
     )
     if not user_can_submit:
         return styled_error(error_msg)
@@ -99,14 +105,14 @@ def add_new_eval(
         user_name = model.split("/")[0]
         model_path = model.split("/")[1]
 
+    # Check for duplicate submission
+    if f"{model}_{revision}_{precision}" in REQUESTED_MODELS:
+        return styled_warning("This model has been already submitted.")
+
     print("Creating eval file")
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
     out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
-
-    # Check for duplicate submission
-    if f"{model}_{revision}_{precision}" in requested_models:
-        return styled_warning("This model has been already submitted.")
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))
