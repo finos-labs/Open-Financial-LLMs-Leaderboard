@@ -1,6 +1,3 @@
-import json
-import os
-
 import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
