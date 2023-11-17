@@ -232,7 +232,6 @@ with demo:
                     search_bar,
                 ],
                 leaderboard_table,
-                concurrency_limit=None,
             )
             for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size, deleted_models_visibility]:
                 selector.change(
@@ -248,7 +247,6 @@ with demo:
                     ],
                     leaderboard_table,
                     queue=True,
-                    concurrency_limit=None,
                 )
 
         with gr.TabItem("📈 Metrics through time", elem_id="llm-benchmark-tab-table", id=4):
@@ -372,4 +370,4 @@ with demo:
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)
 scheduler.start()
-demo.queue().launch()
+demo.queue(default_concurrency_limit=40).launch()
