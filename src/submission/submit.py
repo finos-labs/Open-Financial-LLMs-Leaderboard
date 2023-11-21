@@ -3,14 +3,12 @@ import os
 from datetime import datetime, timezone
 
 from src.display.formatting import styled_error, styled_message, styled_warning
-from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
-from src.leaderboard.filter_models import DO_NOT_SUBMIT_MODELS
+from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO
 from src.submission.check_validity import (
     already_submitted_models,
     check_model_card,
     get_model_size,
     is_model_on_hub,
-    user_submission_permission,
 )
 
 REQUESTED_MODELS = None
@@ -21,7 +19,6 @@ def add_new_eval(
     base_model: str,
     revision: str,
     precision: str,
-    private: bool,
     weight_type: str,
     model_type: str,
 ):
@@ -41,18 +38,6 @@ def add_new_eval(
 
     if model_type is None or model_type == "":
         return styled_error("Please select a model type.")
-
-    # Is the user rate limited?
-    if user_name != "":
-        user_can_submit, error_msg = user_submission_permission(
-            user_name, USERS_TO_SUBMISSION_DATES, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
-        )
-        if not user_can_submit:
-            return styled_error(error_msg)
-
-    # Did the model authors forbid its submission to the leaderboard?
-    if model in DO_NOT_SUBMIT_MODELS or base_model in DO_NOT_SUBMIT_MODELS:
-        return styled_warning("Model authors have requested that their model be not submitted on the leaderboard.")
 
     # Does the model actually exist?
     if revision == "":
@@ -94,7 +79,6 @@ def add_new_eval(
         "model": model,
         "base_model": base_model,
         "revision": revision,
-        "private": private,
         "precision": precision,
         "weight_type": weight_type,
         "status": "PENDING",
@@ -112,7 +96,7 @@ def add_new_eval(
     print("Creating eval file")
     OUT_DIR = f"{EVAL_REQUESTS_PATH}/{user_name}"
     os.makedirs(OUT_DIR, exist_ok=True)
-    out_path = f"{OUT_DIR}/{model_path}_eval_request_{private}_{precision}_{weight_type}.json"
+    out_path = f"{OUT_DIR}/{model_path}_eval_request_False_{precision}_{weight_type}.json"
 
     with open(out_path, "w") as f:
         f.write(json.dumps(eval_entry))

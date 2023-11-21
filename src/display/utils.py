@@ -13,14 +13,10 @@ class Task:
     metric: str
     col_name: str
 
+# Init: to update with your specific keys
 class Tasks(Enum):
-    arc = Task("arc:challenge", "acc_norm", "ARC")
-    hellaswag = Task("hellaswag", "acc_norm", "HellaSwag")
-    mmlu = Task("hendrycksTest", "acc", "MMLU")
-    truthfulqa = Task("truthfulqa:mc", "mc2", "TruthfulQA")
-    winogrande = Task("winogrande", "acc", "Winogrande")
-    gsm8k = Task("gsm8k", "acc", "GSM8K")
-    drop = Task("drop", "f1", "DROP")
+    task0 = Task("Key in the harness", "metric in the harness", "display name")
+    task1 = Task("Key in the harness", "metric in the harness", "display name")
 
 # These classes are for user facing column names,
 # to avoid having to change them all around the code
@@ -67,44 +63,20 @@ class EvalQueueColumn:  # Queue column
     weight_type = ColumnContent("weight_type", "str", "Original")
     status = ColumnContent("status", "str", True)
 
-
 baseline_row = {
     AutoEvalColumn.model.name: "<p>Baseline</p>",
     AutoEvalColumn.revision.name: "N/A",
     AutoEvalColumn.precision.name: None,
-    AutoEvalColumn.average.name: 31.0,
-    AutoEvalColumn.arc.name: 25.0,
-    AutoEvalColumn.hellaswag.name: 25.0,
-    AutoEvalColumn.mmlu.name: 25.0,
-    AutoEvalColumn.truthfulqa.name: 25.0,
-    AutoEvalColumn.winogrande.name: 50.0,
-    AutoEvalColumn.gsm8k.name: 0.21,
-    AutoEvalColumn.drop.name: 0.47,
+    AutoEvalColumn.average.name: 0,
     AutoEvalColumn.dummy.name: "baseline",
     AutoEvalColumn.model_type.name: "",
 }
 
-# Average ⬆️ human baseline is 0.897 (source: averaging human baselines below)
-# ARC human baseline is 0.80 (source: https://lab42.global/arc/)
-# HellaSwag human baseline is 0.95 (source: https://deepgram.com/learn/hellaswag-llm-benchmark-guide)
-# MMLU human baseline is 0.898 (source: https://openreview.net/forum?id=d7KBjmI3GmQ)
-# TruthfulQA human baseline is 0.94(source: https://arxiv.org/pdf/2109.07958.pdf)
-# Drop: https://leaderboard.allenai.org/drop/submissions/public
-# Winogrande: https://leaderboard.allenai.org/winogrande/submissions/public
-# GSM8K: paper
-# Define the human baselines
 human_baseline_row = {
     AutoEvalColumn.model.name: "<p>Human performance</p>",
     AutoEvalColumn.revision.name: "N/A",
     AutoEvalColumn.precision.name: None,
-    AutoEvalColumn.average.name: 92.75,
-    AutoEvalColumn.arc.name: 80.0,
-    AutoEvalColumn.hellaswag.name: 95.0,
-    AutoEvalColumn.mmlu.name: 89.8,
-    AutoEvalColumn.truthfulqa.name: 94.0,
-    AutoEvalColumn.winogrande.name: 94.0,
-    AutoEvalColumn.gsm8k.name: 100,
-    AutoEvalColumn.drop.name: 96.42,
+    AutoEvalColumn.average.name: 0,
     AutoEvalColumn.dummy.name: "human_baseline",
     AutoEvalColumn.model_type.name: "",
 }
@@ -112,7 +84,8 @@ human_baseline_row = {
 @dataclass
 class ModelDetails:
     name: str
-    symbol: str = "" # emoji, only for the model type
+    display_name: str = ""
+    symbol: str = "" # emoji
 
 
 class ModelType(Enum):
@@ -162,9 +135,6 @@ class Precision(Enum):
         if precision in ["GPTQ", "None"]:
             return Precision.qt_GPTQ
         return Precision.Unknown
-        
-
-
 
 # Column selection
 COLS = [c.name for c in fields(AutoEvalColumn) if not c.hidden]

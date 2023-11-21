@@ -10,13 +10,8 @@ from huggingface_hub.hf_api import ModelInfo
 from transformers import AutoConfig
 from transformers.models.auto.tokenization_auto import tokenizer_class_from_name, get_tokenizer_config
 
-from src.envs import HAS_HIGHER_RATE_LIMIT
-
-
-# ht to @Wauplin, thank you for the snippet!
-# See https://huggingface.co/spaces/HuggingFaceH4/open_llm_leaderboard/discussions/317
 def check_model_card(repo_id: str) -> tuple[bool, str]:
-    # Returns operation status, and error message
+    """Checks if the model card and license exist and have been filled"""
     try:
         card = ModelCard.load(repo_id)
     except huggingface_hub.utils.EntryNotFoundError:
@@ -38,6 +33,7 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
 
 
 def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False) -> tuple[bool, str]:
+    """Makes sure the model is on the hub, and uses a valid configuration (in the latest transformers version)"""
     try:
         config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
         if test_tokenizer:
@@ -69,46 +65,19 @@ def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_rem
 
 
 def get_model_size(model_info: ModelInfo, precision: str):
-    size_pattern = size_pattern = re.compile(r"(\d\.)?\d+(b|m)")
+    """Gets the model size from the configuration, or the model name if the configuration does not contain the information."""
     try:
         model_size = round(model_info.safetensors["total"] / 1e9, 3)
-    except (AttributeError, TypeError ):
-        try:
-            size_match = re.search(size_pattern, model_info.modelId.lower())
-            model_size = size_match.group(0)
-            model_size = round(float(model_size[:-1]) if model_size[-1] == "b" else float(model_size[:-1]) / 1e3, 3)
-        except AttributeError:
-            return 0  # Unknown model sizes are indicated as 0, see NUMERIC_INTERVALS in app.py
+    except (AttributeError, TypeError):
+        return 0  # Unknown model sizes are indicated as 0, see NUMERIC_INTERVALS in app.py
 
     size_factor = 8 if (precision == "GPTQ" or "gptq" in model_info.modelId.lower()) else 1
     model_size = size_factor * model_size
     return model_size
 
 def get_model_arch(model_info: ModelInfo):
+    """Gets the model architecture from the configuration"""
     return model_info.config.get("architectures", "Unknown")
-
-def user_submission_permission(org_or_user, users_to_submission_dates, rate_limit_period, rate_limit_quota):
-    if org_or_user not in users_to_submission_dates:
-        return True, ""
-    submission_dates = sorted(users_to_submission_dates[org_or_user])
-
-    time_limit = (datetime.now(timezone.utc) - timedelta(days=rate_limit_period)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    submissions_after_timelimit = [d for d in submission_dates if d > time_limit]
-
-    num_models_submitted_in_period = len(submissions_after_timelimit)
-    if org_or_user in HAS_HIGHER_RATE_LIMIT:
-        rate_limit_quota = 2 * rate_limit_quota
-
-    if num_models_submitted_in_period > rate_limit_quota:
-        error_msg = f"Organisation or user `{org_or_user}`"
-        error_msg += f"already has {num_models_submitted_in_period} model requests submitted to the leaderboard "
-        error_msg += f"in the last {rate_limit_period} days.\n"
-        error_msg += (
-            "Please wait a couple of days before resubmitting, so that everybody can enjoy using the leaderboard 🤗"
-        )
-        return False, error_msg
-    return True, ""
-
 
 def already_submitted_models(requested_models_dir: str) -> set[str]:
     depth = 1

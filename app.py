@@ -25,16 +25,9 @@ from src.display.utils import (
     WeightType,
     Precision
 )
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
-from src.submission.check_validity import already_submitted_models
-from src.tools.collections import update_collections
-from src.tools.plots import (
-    create_metric_plot_obj,
-    create_plot_df,
-    create_scores_df,
-)
 
 
 def restart_space():
@@ -57,10 +50,7 @@ except Exception:
 
 
 raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
-update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
-
-plot_df = create_plot_df(create_scores_df(raw_data))
 
 (
     finished_eval_queue_df,
@@ -251,22 +241,6 @@ with demo:
                     queue=True,
                 )
 
-        with gr.TabItem("📈 Metrics through time", elem_id="llm-benchmark-tab-table", id=4):
-            with gr.Row():
-                with gr.Column():
-                    chart = create_metric_plot_obj(
-                        plot_df,
-                        [AutoEvalColumn.average.name],
-                        title="Average of Top Scores and Human Baseline Over Time (from last update)",
-                    )
-                    gr.Plot(value=chart, min_width=500) 
-                with gr.Column():
-                    chart = create_metric_plot_obj(
-                        plot_df,
-                        BENCHMARK_COLS,
-                        title="Top Scores and Human Baseline Over Time (from last update)",
-                    )
-                    gr.Plot(value=chart, min_width=500) 
         with gr.TabItem("📝 About", elem_id="llm-benchmark-tab-table", id=2):
             gr.Markdown(LLM_BENCHMARKS_TEXT, elem_classes="markdown-text")
 
@@ -317,7 +291,6 @@ with demo:
                 with gr.Column():
                     model_name_textbox = gr.Textbox(label="Model name")
                     revision_name_textbox = gr.Textbox(label="Revision commit", placeholder="main")
-                    private = gr.Checkbox(False, label="Private", visible=not IS_PUBLIC)
                     model_type = gr.Dropdown(
                         choices=[t.to_str(" : ") for t in ModelType if t != ModelType.Unknown],
                         label="Model type",
@@ -352,7 +325,6 @@ with demo:
                     base_model_name_textbox,
                     revision_name_textbox,
                     precision,
-                    private,
                     weight_type,
                     model_type,
                 ],

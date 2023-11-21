@@ -72,23 +72,8 @@ class EvalResult:
         results = {}
         for task in Tasks:
             task = task.value
-            # We skip old mmlu entries
-            wrong_mmlu_version = False
-            if task.benchmark == "hendrycksTest":
-                for mmlu_k in ["harness|hendrycksTest-abstract_algebra|5", "hendrycksTest-abstract_algebra"]:
-                    if mmlu_k in data["versions"] and data["versions"][mmlu_k] == 0:
-                        wrong_mmlu_version = True
 
-            if wrong_mmlu_version:
-                continue
-
-            # Some truthfulQA values are NaNs
-            if task.benchmark == "truthfulqa:mc" and "harness|truthfulqa:mc|0" in data["results"]:
-                if math.isnan(float(data["results"]["harness|truthfulqa:mc|0"][task.metric])):
-                    results[task.benchmark] = 0.0
-                    continue
-
-            # We average all scores of a given metric (mostly for mmlu)
+            # We average all scores of a given metric
             accs = np.array([v.get(task.metric, None) for k, v in data["results"].items() if task.benchmark in k])
             if accs.size == 0 or any([acc is None for acc in accs]):
                 continue
