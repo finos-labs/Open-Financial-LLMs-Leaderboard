@@ -1,12 +1,12 @@
-from src.display.utils import ModelType
-from enum import Enum
 from dataclasses import dataclass
+from enum import Enum
 
 @dataclass
 class Task:
     benchmark: str
     metric: str
     col_name: str
+
 
 # Init: to update with your specific keys
 class Tasks(Enum):

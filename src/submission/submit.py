@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timezone
 
 from src.display.formatting import styled_error, styled_message, styled_warning
-from src.envs import API, EVAL_REQUESTS_PATH, H4_TOKEN, QUEUE_REPO
+from src.envs import API, EVAL_REQUESTS_PATH, TOKEN, QUEUE_REPO
 from src.submission.check_validity import (
     already_submitted_models,
     check_model_card,
@@ -45,7 +45,7 @@ def add_new_eval(
 
     # Is the model on the hub?
     if weight_type in ["Delta", "Adapter"]:
-        base_model_on_hub, error, _ = is_model_on_hub(model_name=base_model, revision=revision, token=H4_TOKEN, test_tokenizer=True)
+        base_model_on_hub, error, _ = is_model_on_hub(model_name=base_model, revision=revision, token=TOKEN, test_tokenizer=True)
         if not base_model_on_hub:
             return styled_error(f'Base model "{base_model}" {error}')
 

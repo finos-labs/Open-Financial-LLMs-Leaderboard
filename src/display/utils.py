@@ -8,6 +8,7 @@ from src.display.about import Tasks
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
 
+
 # These classes are for user facing column names,
 # to avoid having to change them all around the code
 # when a modif is needed
