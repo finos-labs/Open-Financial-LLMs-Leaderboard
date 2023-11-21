@@ -3,20 +3,10 @@ from enum import Enum
 
 import pandas as pd
 
+from src.display.about import Tasks
+
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
-
-
-@dataclass
-class Task:
-    benchmark: str
-    metric: str
-    col_name: str
-
-# Init: to update with your specific keys
-class Tasks(Enum):
-    task0 = Task("Key in the harness", "metric in the harness", "display name")
-    task1 = Task("Key in the harness", "metric in the harness", "display name")
 
 # These classes are for user facing column names,
 # to avoid having to change them all around the code
@@ -30,6 +20,7 @@ class ColumnContent:
     never_hidden: bool = False
     dummy: bool = False
 
+## Leaderboard columns
 auto_eval_column_dict = []
 # Init
 auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, never_hidden=True)])
@@ -54,6 +45,7 @@ auto_eval_column_dict.append(["dummy", ColumnContent, ColumnContent("model_name_
 # We use make dataclass to dynamically fill the scores from Tasks
 AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)
 
+## For the queue columns in the submission tab
 @dataclass(frozen=True)
 class EvalQueueColumn:  # Queue column
     model = ColumnContent("model", "markdown", True)
@@ -63,24 +55,7 @@ class EvalQueueColumn:  # Queue column
     weight_type = ColumnContent("weight_type", "str", "Original")
     status = ColumnContent("status", "str", True)
 
-baseline_row = {
-    AutoEvalColumn.model.name: "<p>Baseline</p>",
-    AutoEvalColumn.revision.name: "N/A",
-    AutoEvalColumn.precision.name: None,
-    AutoEvalColumn.average.name: 0,
-    AutoEvalColumn.dummy.name: "baseline",
-    AutoEvalColumn.model_type.name: "",
-}
-
-human_baseline_row = {
-    AutoEvalColumn.model.name: "<p>Human performance</p>",
-    AutoEvalColumn.revision.name: "N/A",
-    AutoEvalColumn.precision.name: None,
-    AutoEvalColumn.average.name: 0,
-    AutoEvalColumn.dummy.name: "human_baseline",
-    AutoEvalColumn.model_type.name: "",
-}
-
+## All the model information that we might need
 @dataclass
 class ModelDetails:
     name: str

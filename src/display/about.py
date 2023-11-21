@@ -1,31 +1,33 @@
 from src.display.utils import ModelType
+from enum import Enum
+from dataclasses import dataclass
 
-# To complete, what is your leaderboard name
+@dataclass
+class Task:
+    benchmark: str
+    metric: str
+    col_name: str
+
+# Init: to update with your specific keys
+class Tasks(Enum):
+    task0 = Task("Key in the harness", "metric in the harness", "Display name 1")
+    task1 = Task("Key in the harness", "metric in the harness", "Display name 2")
+
+
+# Your leaderboard name
 TITLE = """<h1 align="center" id="space-title">Leaderboard</h1>"""
 
-# to complete - what does your leaderboard evaluate
+# What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
 """
 
-# to complete - which evaluations are you running? how can people reproduce what you have?
+# Which evaluations are you running? how can people reproduce what you have?
 LLM_BENCHMARKS_TEXT = f"""
 ## How it works
 
 ## Reproducibility
 To reproduce our results, here is the commands you can run:
 
-## Quantization
-To get more information about quantization, see:
-- 8 bits: [blog post](https://huggingface.co/blog/hf-bitsandbytes-integration), [paper](https://arxiv.org/abs/2208.07339)
-- 4 bits: [blog post](https://huggingface.co/blog/4bit-transformers-bitsandbytes), [paper](https://arxiv.org/abs/2305.14314)
-
-## Model types
-- {ModelType.PT.to_str(" : ")} model: new, base models, trained on a given corpora
-- {ModelType.FT.to_str(" : ")} model: pretrained models finetuned on more data
-Specific fine-tune subcategories (more adapted to chat):
-- {ModelType.IFT.to_str(" : ")} model: instruction fine-tunes, which are model fine-tuned specifically on datasets of task instruction 
-- {ModelType.RL.to_str(" : ")} model: reinforcement fine-tunes, which usually change the model loss a bit with an added policy. 
-If there is no icon, we have not uploaded the information on the model yet, feel free to open an issue with the model information!
 """
 
 EVALUATION_QUEUE_TEXT = """

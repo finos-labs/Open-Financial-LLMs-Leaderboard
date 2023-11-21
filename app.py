@@ -3,7 +3,7 @@ import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
-from src.display.about import (
+from display.about import (
     CITATION_BUTTON_LABEL,
     CITATION_BUTTON_TEXT,
     EVALUATION_QUEUE_TEXT,
@@ -25,13 +25,13 @@ from src.display.utils import (
     WeightType,
     Precision
 )
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, QUEUE_REPO, REPO_ID, RESULTS_REPO
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, TOKEN, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 
 
 def restart_space():
-    API.restart_space(repo_id=REPO_ID, token=H4_TOKEN)
+    API.restart_space(repo_id=REPO_ID, token=TOKEN)
 
 try:
     print(EVAL_REQUESTS_PATH)
@@ -91,8 +91,7 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     return filtered_df
 
 
-def filter_queries(query: str, filtered_df: pd.DataFrame):
-    """Added by Abishek"""
+def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
     final_df = []
     if query != "":
         queries = [q.strip() for q in query.split(";")]
