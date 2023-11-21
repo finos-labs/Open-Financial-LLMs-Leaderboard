@@ -5,8 +5,6 @@ import os
 from dataclasses import dataclass
 
 import dateutil
-from datetime import datetime
-from transformers import AutoConfig
 import numpy as np
 
 from src.display.formatting import make_clickable_model
@@ -16,7 +14,6 @@ from src.submission.check_validity import is_model_on_hub
 
 @dataclass
 class EvalResult:
-    # Also see src.display.utils.AutoEvalColumn for what will be displayed.
     eval_name: str # org_model_precision (uid)
     full_model: str # org/model (path on hub)
     org: str 
@@ -26,7 +23,7 @@ class EvalResult:
     precision: Precision = Precision.Unknown
     model_type: ModelType = ModelType.Unknown # Pretrained, fine tuned, ...
     weight_type: WeightType = WeightType.Original # Original or Adapter
-    architecture: str = "Unknown" # From config file
+    architecture: str = "Unknown" 
     license: str = "?"
     likes: int = 0
     num_params: int = 0
@@ -39,8 +36,7 @@ class EvalResult:
         with open(json_filepath) as fp:
             data = json.load(fp)
 
-        # We manage the legacy config format
-        config = data.get("config", data.get("config_general", None))
+        config = data.get("config")
 
         # Precision
         precision = Precision.from_str(config.get("model_dtype"))
@@ -59,7 +55,7 @@ class EvalResult:
             result_key = f"{org}_{model}_{precision.value.name}"
         full_model = "/".join(org_and_model)
 
-        still_on_hub, error, model_config = is_model_on_hub(
+        still_on_hub, _, model_config = is_model_on_hub(
             full_model, config.get("model_sha", "main"), trust_remote_code=True, test_tokenizer=False
         )
         architecture = "?"
@@ -73,8 +69,8 @@ class EvalResult:
         for task in Tasks:
             task = task.value
 
-            # We average all scores of a given metric
-            accs = np.array([v.get(task.metric, None) for k, v in data["results"].items() if task.benchmark in k])
+            # We average all scores of a given metric (not all metrics are present in all files)
+            accs = np.array([v.get(task.metric, None) for k, v in data["results"].items() if task.benchmark == k])
             if accs.size == 0 or any([acc is None for acc in accs]):
                 continue
 

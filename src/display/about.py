@@ -10,15 +10,17 @@ class Task:
 
 # Init: to update with your specific keys
 class Tasks(Enum):
-    task0 = Task("Key in the harness", "metric in the harness", "Display name 1")
-    task1 = Task("Key in the harness", "metric in the harness", "Display name 2")
+    # task_key in the json file, metric_key in the json file, name to display in the leaderboard 
+    task0 = Task("task_name1", "metric_name", "First task")
+    task1 = Task("task_name2", "metric_name", "Second task")
 
 
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">Leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title">Demo leaderboard</h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
+Intro text
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
