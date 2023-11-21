@@ -28,7 +28,7 @@ If there is no icon, we have not uploaded the information on the model yet, feel
 
 ## How it works
 
-📈 We evaluate models on 4 key benchmarks using the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks.
+📈 We evaluate models on 7 key benchmarks using the <a href="https://github.com/EleutherAI/lm-evaluation-harness" target="_blank">  Eleuther AI Language Model Evaluation Harness </a>, a unified framework to test generative language models on a large number of different evaluation tasks.
 
 - <a href="https://arxiv.org/abs/1803.05457" target="_blank">  AI2 Reasoning Challenge </a> (25-shot) - a set of grade-school science questions.
 - <a href="https://arxiv.org/abs/1905.07830" target="_blank">  HellaSwag </a> (10-shot) - a test of commonsense inference, which is easy for humans (~95%) but challenging for SOTA models.
@@ -67,7 +67,7 @@ The tasks and few shots parameters are:
 Side note on the baseline scores: 
 - for log-likelihood evaluation, we select the random baseline
 - for DROP, we select the best submission score according to [their leaderboard](https://leaderboard.allenai.org/drop/submissions/public) when the paper came out (NAQANet score)
-- for GSM8K, we select the score obtained in the paper after inetuning a 6B model on the full GSM8K training set for 50 epochs
+- for GSM8K, we select the score obtained in the paper after finetuning a 6B model on the full GSM8K training set for 50 epochs
 
 ## Quantization
 To get more information about quantization, see:
