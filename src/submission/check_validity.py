@@ -8,6 +8,7 @@ import huggingface_hub
 from huggingface_hub import ModelCard
 from huggingface_hub.hf_api import ModelInfo
 from transformers import AutoConfig
+from transformers.models.auto.tokenization_auto import tokenizer_class_from_name, get_tokenizer_config
 
 from src.envs import HAS_HIGHER_RATE_LIMIT
 
@@ -36,9 +37,24 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     return True, ""
 
 
-def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False) -> tuple[bool, str]:
+def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False) -> tuple[bool, str]:
     try:
         config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
+        if test_tokenizer:
+            tokenizer_config = get_tokenizer_config(model_name) 
+            if tokenizer_config is not None:
+                tokenizer_class_candidate = tokenizer_config.get("tokenizer_class", None)
+            else:
+                tokenizer_class_candidate = config.tokenizer_class 
+
+
+            tokenizer_class = tokenizer_class_from_name(tokenizer_class_candidate)
+            if tokenizer_class is None:
+                return (
+                    False,
+                    f"uses {tokenizer_class_candidate}, which is not in a transformers release, therefore not supported at the moment.",
+                    None
+                )
         return True, None, config
 
     except ValueError:
@@ -48,7 +64,7 @@ def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_rem
             None
         )
 
-    except Exception:
+    except Exception as e:
         return False, "was not found on hub!", None
 
 

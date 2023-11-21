@@ -54,12 +54,12 @@ def add_new_eval(
 
     # Is the model on the hub?
     if weight_type in ["Delta", "Adapter"]:
-        base_model_on_hub, error, _ = is_model_on_hub(base_model, revision, H4_TOKEN)
+        base_model_on_hub, error, _ = is_model_on_hub(model_name=base_model, revision=revision, token=H4_TOKEN, test_tokenizer=True)
         if not base_model_on_hub:
             return styled_error(f'Base model "{base_model}" {error}')
 
     if not weight_type == "Adapter":
-        model_on_hub, error, _ = is_model_on_hub(model, revision)
+        model_on_hub, error, _ = is_model_on_hub(model_name=model, revision=revision, test_tokenizer=True)
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
 
