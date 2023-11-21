@@ -30,6 +30,11 @@ def add_new_eval(
     if not REQUESTED_MODELS:
         REQUESTED_MODELS, USERS_TO_SUBMISSION_DATES = already_submitted_models(EVAL_REQUESTS_PATH)
 
+    user_name = ""
+    model_path = model
+    if "/" in model:
+        user_name = model.split("/")[0]
+        model_path = model.split("/")[1]
 
     precision = precision.split(" ")[0]
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -38,11 +43,12 @@ def add_new_eval(
         return styled_error("Please select a model type.")
 
     # Is the user rate limited?
-    user_can_submit, error_msg = user_submission_permission(
-        model, USERS_TO_SUBMISSION_DATES, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
-    )
-    if not user_can_submit:
-        return styled_error(error_msg)
+    if user_name != "":
+        user_can_submit, error_msg = user_submission_permission(
+            user_name, USERS_TO_SUBMISSION_DATES, RATE_LIMIT_PERIOD, RATE_LIMIT_QUOTA
+        )
+        if not user_can_submit:
+            return styled_error(error_msg)
 
     # Did the model authors forbid its submission to the leaderboard?
     if model in DO_NOT_SUBMIT_MODELS or base_model in DO_NOT_SUBMIT_MODELS:
@@ -98,12 +104,6 @@ def add_new_eval(
         "params": model_size,
         "license": license,
     }
-
-    user_name = ""
-    model_path = model
-    if "/" in model:
-        user_name = model.split("/")[0]
-        model_path = model.split("/")[1]
 
     # Check for duplicate submission
     if f"{model}_{revision}_{precision}" in REQUESTED_MODELS:

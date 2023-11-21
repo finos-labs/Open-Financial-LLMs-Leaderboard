@@ -22,6 +22,8 @@ from src.display.utils import (
     AutoEvalColumn,
     ModelType,
     fields,
+    WeightType,
+    Precision
 )
 from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, H4_TOKEN, IS_PUBLIC, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
@@ -37,25 +39,25 @@ from src.tools.plots import (
 
 def restart_space():
     API.restart_space(repo_id=REPO_ID, token=H4_TOKEN)
-
-try:
-    print(EVAL_REQUESTS_PATH)
-    snapshot_download(
-        repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
-    )
-except Exception:
-    restart_space()
-try:
-    print(EVAL_RESULTS_PATH)
-    snapshot_download(
-        repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
-    )
-except Exception:
-    restart_space()
+if False:
+    try:
+        print(EVAL_REQUESTS_PATH)
+        snapshot_download(
+            repo_id=QUEUE_REPO, local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+        )
+    except Exception:
+        restart_space()
+    try:
+        print(EVAL_RESULTS_PATH)
+        snapshot_download(
+            repo_id=RESULTS_REPO, local_dir=EVAL_RESULTS_PATH, repo_type="dataset", tqdm_class=None, etag_timeout=30
+        )
+    except Exception:
+        restart_space()
 
 
 raw_data, original_df = get_leaderboard_df(EVAL_RESULTS_PATH, EVAL_REQUESTS_PATH, COLS, BENCHMARK_COLS)
-update_collections(original_df.copy())
+# update_collections(original_df.copy())
 leaderboard_df = original_df.copy()
 
 plot_df = create_plot_df(create_scores_df(raw_data))
@@ -186,8 +188,8 @@ with demo:
                     )
                     filter_columns_precision = gr.CheckboxGroup(
                         label="Precision",
-                        choices=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
-                        value=["torch.float16", "torch.bfloat16", "torch.float32", "8bit", "4bit", "GPTQ"],
+                        choices=[i.value.name for i in Precision],
+                        value=[i.value.name for i in Precision],
                         interactive=True,
                         elem_id="filter-columns-precision",
                     )
@@ -317,7 +319,7 @@ with demo:
                     revision_name_textbox = gr.Textbox(label="Revision commit", placeholder="main")
                     private = gr.Checkbox(False, label="Private", visible=not IS_PUBLIC)
                     model_type = gr.Dropdown(
-                        choices=[t.to_str(" : ") for t in ModelType],
+                        choices=[t.to_str(" : ") for t in ModelType if t != ModelType.Unknown],
                         label="Model type",
                         multiselect=False,
                         value=None,
@@ -326,14 +328,14 @@ with demo:
 
                 with gr.Column():
                     precision = gr.Dropdown(
-                        choices=["float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)", "GPTQ"],
+                        choices=[i.value.name for i in Precision if i != Precision.Unknown],
                         label="Precision",
                         multiselect=False,
                         value="float16",
                         interactive=True,
                     )
                     weight_type = gr.Dropdown(
-                        choices=["Original", "Delta", "Adapter"],
+                        choices=[i.value.name for i in WeightType],
                         label="Weights type",
                         multiselect=False,
                         value="Original",

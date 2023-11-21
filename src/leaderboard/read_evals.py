@@ -10,7 +10,7 @@ from transformers import AutoConfig
 import numpy as np
 
 from src.display.formatting import make_clickable_model
-from src.display.utils import AutoEvalColumn, ModelType, Tasks
+from src.display.utils import AutoEvalColumn, ModelType, Tasks, Precision, WeightType
 from src.submission.check_validity import is_model_on_hub
 
 
@@ -23,9 +23,9 @@ class EvalResult:
     model: str
     revision: str # commit hash, "" if main
     results: dict
-    precision: str = ""
+    precision: Precision = Precision.Unknown
     model_type: ModelType = ModelType.Unknown # Pretrained, fine tuned, ...
-    weight_type: str = "Original" # Original or Adapter
+    weight_type: WeightType = WeightType.Original # Original or Adapter
     architecture: str = "Unknown" # From config file
     license: str = "?"
     likes: int = 0
@@ -43,9 +43,7 @@ class EvalResult:
         config = data.get("config", data.get("config_general", None))
 
         # Precision
-        precision = config.get("model_dtype")
-        if precision == "None":
-            precision = "GPTQ"
+        precision = Precision.from_str(config.get("model_dtype"))
 
         # Get model and org
         org_and_model = config.get("model_name", config.get("model_args", None))
@@ -54,15 +52,15 @@ class EvalResult:
         if len(org_and_model) == 1:
             org = None
             model = org_and_model[0]
-            result_key = f"{model}_{precision}"
+            result_key = f"{model}_{precision.value.name}"
         else:
             org = org_and_model[0]
             model = org_and_model[1]
-            result_key = f"{org}_{model}_{precision}"
+            result_key = f"{org}_{model}_{precision.value.name}"
         full_model = "/".join(org_and_model)
 
         still_on_hub, error, model_config = is_model_on_hub(
-            full_model, config.get("model_sha", "main"), trust_remote_code=True
+            full_model, config.get("model_sha", "main"), trust_remote_code=True, test_tokenizer=False
         )
         architecture = "?"
         if model_config is not None:
@@ -112,13 +110,13 @@ class EvalResult:
 
     def update_with_request_file(self, requests_path):
         """Finds the relevant request file for the current model and updates info with it"""
-        request_file = get_request_file_for_model(requests_path, self.full_model, self.precision)
+        request_file = get_request_file_for_model(requests_path, self.full_model, self.precision.value.name)
 
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
             self.model_type = ModelType.from_str(request.get("model_type", ""))
-            self.weight_type = request.get("weight_type", "?")
+            self.weight_type = WeightType[request.get("weight_type", "Original")]
             self.license = request.get("license", "?")
             self.likes = request.get("likes", 0)
             self.num_params = request.get("params", 0)
@@ -131,10 +129,10 @@ class EvalResult:
         average = sum([v for v in self.results.values() if v is not None]) / len(Tasks)
         data_dict = {
             "eval_name": self.eval_name,  # not a column, just a save name,
-            AutoEvalColumn.precision.name: self.precision,
+            AutoEvalColumn.precision.name: self.precision.value.name,
             AutoEvalColumn.model_type.name: self.model_type.value.name,
             AutoEvalColumn.model_type_symbol.name: self.model_type.value.symbol,
-            AutoEvalColumn.weight_type.name: self.weight_type,
+            AutoEvalColumn.weight_type.name: self.weight_type.value.name,
             AutoEvalColumn.architecture.name: self.architecture,
             AutoEvalColumn.model.name: make_clickable_model(self.full_model),
             AutoEvalColumn.dummy.name: self.full_model,
@@ -167,7 +165,7 @@ def get_request_file_for_model(requests_path, model_name, precision):
         with open(tmp_request_file, "r") as f:
             req_content = json.load(f)
             if (
-                req_content["status"] in ["FINISHED", "PENDING_NEW_EVAL"]
+                req_content["status"] in ["FINISHED"]
                 and req_content["precision"] == precision.split(".")[-1]
             ):
                 request_file = tmp_request_file

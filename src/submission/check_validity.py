@@ -87,8 +87,7 @@ def get_model_size(model_info: ModelInfo, precision: str):
 def get_model_arch(model_info: ModelInfo):
     return model_info.config.get("architectures", "Unknown")
 
-def user_submission_permission(submission_name, users_to_submission_dates, rate_limit_period, rate_limit_quota):
-    org_or_user, _ = submission_name.split("/")
+def user_submission_permission(org_or_user, users_to_submission_dates, rate_limit_period, rate_limit_quota):
     if org_or_user not in users_to_submission_dates:
         return True, ""
     submission_dates = sorted(users_to_submission_dates[org_or_user])

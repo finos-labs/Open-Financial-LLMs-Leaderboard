@@ -1,8 +1,26 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, make_dataclass
 from enum import Enum
 
 import pandas as pd
 
+def fields(raw_class):
+    return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
+
+
+@dataclass
+class Task:
+    benchmark: str
+    metric: str
+    col_name: str
+
+class Tasks(Enum):
+    arc = Task("arc:challenge", "acc_norm", "ARC")
+    hellaswag = Task("hellaswag", "acc_norm", "HellaSwag")
+    mmlu = Task("hendrycksTest", "acc", "MMLU")
+    truthfulqa = Task("truthfulqa:mc", "mc2", "TruthfulQA")
+    winogrande = Task("winogrande", "acc", "Winogrande")
+    gsm8k = Task("gsm8k", "acc", "GSM8K")
+    drop = Task("drop", "f1", "DROP")
 
 # These classes are for user facing column names,
 # to avoid having to change them all around the code
@@ -16,36 +34,29 @@ class ColumnContent:
     never_hidden: bool = False
     dummy: bool = False
 
+auto_eval_column_dict = []
+# Init
+auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, never_hidden=True)])
+auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, never_hidden=True)])
+#Scores
+auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Average ⬆️", "number", True)])
+for task in Tasks:
+    auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True)])
+# Model information
+auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False)])
+auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False)])
+auto_eval_column_dict.append(["weight_type", ColumnContent, ColumnContent("Weight type", "str", False, True)])
+auto_eval_column_dict.append(["precision", ColumnContent, ColumnContent("Precision", "str", False)])
+auto_eval_column_dict.append(["license", ColumnContent, ColumnContent("Hub License", "str", False)])
+auto_eval_column_dict.append(["params", ColumnContent, ColumnContent("#Params (B)", "number", False)])
+auto_eval_column_dict.append(["likes", ColumnContent, ColumnContent("Hub ❤️", "number", False)])
+auto_eval_column_dict.append(["still_on_hub", ColumnContent, ColumnContent("Available on the hub", "bool", False)])
+auto_eval_column_dict.append(["revision", ColumnContent, ColumnContent("Model sha", "str", False, False)])
+# Dummy column for the search bar (hidden by the custom CSS)
+auto_eval_column_dict.append(["dummy", ColumnContent, ColumnContent("model_name_for_query", "str", False, dummy=True)])
 
-def fields(raw_class):
-    return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
-
-
-@dataclass(frozen=True)
-class AutoEvalColumn:  # Auto evals column
-    model_type_symbol = ColumnContent("T", "str", True, never_hidden=True)
-    model = ColumnContent("Model", "markdown", True, never_hidden=True)
-    average = ColumnContent("Average ⬆️", "number", True)
-    arc = ColumnContent("ARC", "number", True)
-    hellaswag = ColumnContent("HellaSwag", "number", True)
-    mmlu = ColumnContent("MMLU", "number", True)
-    truthfulqa = ColumnContent("TruthfulQA", "number", True)
-    winogrande = ColumnContent("Winogrande", "number", True)
-    gsm8k = ColumnContent("GSM8K", "number", True)
-    drop = ColumnContent("DROP", "number", True)
-    model_type = ColumnContent("Type", "str", False)
-    architecture = ColumnContent("Architecture", "str", False)
-    weight_type = ColumnContent("Weight type", "str", False, True)
-    precision = ColumnContent("Precision", "str", False)  # , True)
-    license = ColumnContent("Hub License", "str", False)
-    params = ColumnContent("#Params (B)", "number", False)
-    likes = ColumnContent("Hub ❤️", "number", False)
-    still_on_hub = ColumnContent("Available on the hub", "bool", False)
-    revision = ColumnContent("Model sha", "str", False, False)
-    dummy = ColumnContent(
-        "model_name_for_query", "str", False, dummy=True
-    )  # dummy col to implement search bar (hidden by custom CSS)
-
+# We use make dataclass to dynamically fill the scores from Tasks
+AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)
 
 @dataclass(frozen=True)
 class EvalQueueColumn:  # Queue column
@@ -99,17 +110,17 @@ human_baseline_row = {
 }
 
 @dataclass
-class ModelTypeDetails:
+class ModelDetails:
     name: str
-    symbol: str  # emoji
+    symbol: str = "" # emoji, only for the model type
 
 
 class ModelType(Enum):
-    PT = ModelTypeDetails(name="pretrained", symbol="🟢")
-    FT = ModelTypeDetails(name="fine-tuned", symbol="🔶")
-    IFT = ModelTypeDetails(name="instruction-tuned", symbol="⭕")
-    RL = ModelTypeDetails(name="RL-tuned", symbol="🟦")
-    Unknown = ModelTypeDetails(name="", symbol="?")
+    PT = ModelDetails(name="pretrained", symbol="🟢")
+    FT = ModelDetails(name="fine-tuned", symbol="🔶")
+    IFT = ModelDetails(name="instruction-tuned", symbol="⭕")
+    RL = ModelDetails(name="RL-tuned", symbol="🟦")
+    Unknown = ModelDetails(name="", symbol="?")
 
     def to_str(self, separator=" "):
         return f"{self.value.symbol}{separator}{self.value.name}"
@@ -126,22 +137,33 @@ class ModelType(Enum):
             return ModelType.IFT
         return ModelType.Unknown
 
+class WeightType(Enum):
+    Adapter = ModelDetails("Adapter")
+    Original = ModelDetails("Original")
+    Delta = ModelDetails("Delta")
 
-@dataclass
-class Task:
-    benchmark: str
-    metric: str
-    col_name: str
+class Precision(Enum):
+    float16 = ModelDetails("float16")
+    bfloat16 = ModelDetails("bfloat16")
+    qt_8bit = ModelDetails("8bit")
+    qt_4bit = ModelDetails("4bit")
+    qt_GPTQ = ModelDetails("GPTQ")
+    Unknown = ModelDetails("?")
 
+    def from_str(precision):
+        if precision in ["torch.float16", "float16"]:
+            return Precision.float16
+        if precision in ["torch.bfloat16", "bfloat16"]:
+            return Precision.bfloat16
+        if precision in ["8bit"]:
+            return Precision.qt_8bit
+        if precision in ["4bit"]:
+            return Precision.qt_4bit
+        if precision in ["GPTQ", "None"]:
+            return Precision.qt_GPTQ
+        return Precision.Unknown
+        
 
-class Tasks(Enum):
-    arc = Task("arc:challenge", "acc_norm", AutoEvalColumn.arc.name)
-    hellaswag = Task("hellaswag", "acc_norm", AutoEvalColumn.hellaswag.name)
-    mmlu = Task("hendrycksTest", "acc", AutoEvalColumn.mmlu.name)
-    truthfulqa = Task("truthfulqa:mc", "mc2", AutoEvalColumn.truthfulqa.name)
-    winogrande = Task("winogrande", "acc", AutoEvalColumn.winogrande.name)
-    gsm8k = Task("gsm8k", "acc", AutoEvalColumn.gsm8k.name)
-    drop = Task("drop", "f1", AutoEvalColumn.drop.name)
 
 
 # Column selection
