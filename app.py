@@ -3,7 +3,7 @@ import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
-from display.about import (
+from src.display.about import (
     CITATION_BUTTON_LABEL,
     CITATION_BUTTON_TEXT,
     EVALUATION_QUEUE_TEXT,
