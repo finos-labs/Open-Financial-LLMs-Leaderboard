@@ -13,3 +13,5 @@ requests==2.28.2
 tqdm==4.65.0
 transformers==4.35.2
 tokenizers>=0.15.0
+git+https://github.com/EleutherAI/lm-evaluation-harness.git@b281b0921b636bc36ad05c0b0b0763bd6dd43463#egg=lm-eval
+accelerate==0.24.1

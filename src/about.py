@@ -11,8 +11,12 @@ class Task:
 # Init: to update with your specific keys
 class Tasks(Enum):
     # task_key in the json file, metric_key in the json file, name to display in the leaderboard 
-    task0 = Task("task_name1", "metric_name", "First task")
-    task1 = Task("task_name2", "metric_name", "Second task")
+    task0 = Task("anli_r1", "acc", "ANLI")
+    task1 = Task("logiqa", "acc_norm", "LogiQA")
+
+TASKS_HARNESS = [task.value.benchmark for task in Tasks]
+
+NUM_FEWSHOT = 0 # Change with your few shot
 
 
 # Your leaderboard name

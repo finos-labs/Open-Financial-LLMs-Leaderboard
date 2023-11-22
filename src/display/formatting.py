@@ -1,12 +1,3 @@
-import os
-from datetime import datetime, timezone
-
-from huggingface_hub import HfApi
-from huggingface_hub.hf_api import ModelInfo
-
-
-API = HfApi()
-
 def model_hyperlink(link, model_name):
     return f'<a target="_blank" href="{link}" style="color: var(--link-text-color); text-decoration: underline;text-decoration-style: dotted;">{model_name}</a>'
 

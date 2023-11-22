@@ -103,7 +103,7 @@ class EvalResult:
             self.num_params = request.get("params", 0)
             self.date = request.get("submitted_time", "")
         except Exception:
-            print(f"Could not find request file for {self.org}/{self.model}")
+            print(f"Could not find request file for {self.org}/{self.model} with precision {self.precision.value.name}")
 
     def to_dict(self):
         """Converts the Eval Result to a dict compatible with our dataframe display"""

@@ -1,9 +1,10 @@
+import subprocess
 import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
 
-from src.display.about import (
+from src.about import (
     CITATION_BUTTON_LABEL,
     CITATION_BUTTON_TEXT,
     EVALUATION_QUEUE_TEXT,
@@ -30,8 +31,13 @@ from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 
 
+subprocess.run(["python", "scripts/fix_harness_import.py"])
+
 def restart_space():
     API.restart_space(repo_id=REPO_ID, token=TOKEN)
+
+def launch_backend():
+    _ = subprocess.run(["python", "main_backend.py"])
 
 try:
     print(EVAL_REQUESTS_PATH)
@@ -342,5 +348,8 @@ with demo:
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)
+scheduler.add_job(launch_backend, "interval", seconds=100) # will only allow one job to be run at the same time
 scheduler.start()
 demo.queue(default_concurrency_limit=40).launch()
+
+restart_space()

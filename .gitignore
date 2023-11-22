@@ -6,10 +6,8 @@ __pycache__/
 *ipynb
 .vscode/
 
-gpt_4_evals/
-human_evals/
 eval-queue/
 eval-results/
-auto_evals/
-
-src/assets/model_counts.html
+eval-queue-bk/
+eval-results-bk/
+logs/

@@ -3,7 +3,7 @@ from enum import Enum
 
 import pandas as pd
 
-from src.display.about import Tasks
+from src.about import Tasks
 
 def fields(raw_class):
     return [v for k, v in raw_class.__dict__.items() if k[:2] != "__" and k[-2:] != "__"]
