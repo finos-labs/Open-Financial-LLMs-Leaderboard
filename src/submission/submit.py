@@ -87,6 +87,7 @@ def add_new_eval(
         "likes": model_info.likes,
         "params": model_size,
         "license": license,
+        "private": False,
     }
 
     # Check for duplicate submission
