@@ -14,7 +14,7 @@ class EvalRequest:
     json_filepath: str
     weight_type: str = "Original"
     model_type: str = ""  # pretrained, finetuned, with RL
-    precision: str = ""  # float16, bfloat16, 8bit, 4bit, GPTQ
+    precision: str = ""  # float16, bfloat16
     base_model: Optional[str] = None # for adapter models
     revision: str = "main" # commit
     submitted_time: Optional[str] = "2022-05-18T11:40:22.519222"  # random date just so that we can still order requests by date
@@ -28,11 +28,12 @@ class EvalRequest:
 
         if self.precision in ["float16", "bfloat16"]:
             model_args += f",dtype={self.precision}"
-        elif self.precision == "8bit":
-            model_args += ",load_in_8bit=True"
-        elif self.precision == "4bit":
-            model_args += ",load_in_4bit=True"
-        elif self.precision == "GPTQ":
+        # Quantized models need some added config, the install of bits and bytes, etc
+        #elif self.precision == "8bit":
+        #    model_args += ",load_in_8bit=True"
+        #elif self.precision == "4bit":
+        #    model_args += ",load_in_4bit=True"
+        #elif self.precision == "GPTQ":
             # A GPTQ model does not need dtype to be specified,
             # it will be inferred from the config
             pass
@@ -42,9 +43,7 @@ class EvalRequest:
         return model_args
 
 
-def set_eval_request(
-    api: HfApi, eval_request: EvalRequest, set_to_status: str, hf_repo: str, local_dir: str
-):
+def set_eval_request(api: HfApi, eval_request: EvalRequest, set_to_status: str, hf_repo: str, local_dir: str):
     """Updates a given eval request with its new status on the hub (running, completed, failed, ...)"""
     json_filepath = eval_request.json_filepath
 

@@ -94,9 +94,9 @@ class WeightType(Enum):
 class Precision(Enum):
     float16 = ModelDetails("float16")
     bfloat16 = ModelDetails("bfloat16")
-    qt_8bit = ModelDetails("8bit")
-    qt_4bit = ModelDetails("4bit")
-    qt_GPTQ = ModelDetails("GPTQ")
+    #qt_8bit = ModelDetails("8bit")
+    #qt_4bit = ModelDetails("4bit")
+    #qt_GPTQ = ModelDetails("GPTQ")
     Unknown = ModelDetails("?")
 
     def from_str(precision):
@@ -104,12 +104,12 @@ class Precision(Enum):
             return Precision.float16
         if precision in ["torch.bfloat16", "bfloat16"]:
             return Precision.bfloat16
-        if precision in ["8bit"]:
-            return Precision.qt_8bit
-        if precision in ["4bit"]:
-            return Precision.qt_4bit
-        if precision in ["GPTQ", "None"]:
-            return Precision.qt_GPTQ
+        #if precision in ["8bit"]:
+        #    return Precision.qt_8bit
+        #if precision in ["4bit"]:
+        #    return Precision.qt_4bit
+        #if precision in ["GPTQ", "None"]:
+        #    return Precision.qt_GPTQ
         return Precision.Unknown
 
 # Column selection
