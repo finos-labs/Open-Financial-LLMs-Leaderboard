@@ -26,7 +26,7 @@ from src.display.utils import (
     WeightType,
     Precision
 )
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, TOKEN, QUEUE_REPO, REPO_ID, RESULTS_REPO
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 
@@ -34,7 +34,7 @@ from src.submission.submit import add_new_eval
 subprocess.run(["python", "scripts/fix_harness_import.py"])
 
 def restart_space():
-    API.restart_space(repo_id=REPO_ID, token=TOKEN)
+    API.restart_space(repo_id=REPO_ID)
 
 def launch_backend():
     _ = subprocess.run(["python", "main_backend.py"])
