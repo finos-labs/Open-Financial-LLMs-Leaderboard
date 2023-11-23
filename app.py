@@ -351,5 +351,3 @@ scheduler.add_job(restart_space, "interval", seconds=1800)
 scheduler.add_job(launch_backend, "interval", seconds=100) # will only allow one job to be run at the same time
 scheduler.start()
 demo.queue(default_concurrency_limit=40).launch()
-
-restart_space()
