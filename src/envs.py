@@ -5,7 +5,7 @@ from huggingface_hub import HfApi
 # Info to change for your repository
 # ----------------------------------
 TOKEN = os.environ.get("TOKEN", None) # A read/write token for your org
-
+print(TOKEN)
 OWNER = "demo-leaderboard-backend" # Change to your org - don't forget to create a results and request file
 DEVICE = "cpu" # cuda:0 if you add compute
 LIMIT = 20 # !!!! Should be None for actual evaluations!!!
