@@ -31,26 +31,20 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
 
     return True, ""
 
-
 def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False) -> tuple[bool, str]:
-    """Makes sure the model is on the hub, and uses a valid configuration (in the latest transformers version)"""
     try:
         config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
         if test_tokenizer:
-            tokenizer_config = get_tokenizer_config(model_name) 
-            if tokenizer_config is not None:
-                tokenizer_class_candidate = tokenizer_config.get("tokenizer_class", None)
-            else:
-                tokenizer_class_candidate = config.tokenizer_class 
-
-
-            tokenizer_class = tokenizer_class_from_name(tokenizer_class_candidate)
-            if tokenizer_class is None:
+            try:
+                tk = AutoTokenizer.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
+            except ValueError as e:
                 return (
                     False,
-                    f"uses {tokenizer_class_candidate}, which is not in a transformers release, therefore not supported at the moment.",
+                    f"uses a tokenizer which is not in a transformers release: {e}",
                     None
                 )
+            except Exception as e:
+                return (False, "'s tokenizer cannot be loaded. Is your tokenizer class in a stable transformers release, and correctly configured?", None)
         return True, None, config
 
     except ValueError:
