@@ -7,11 +7,9 @@ from datetime import datetime, timezone
 import click
 from colorama import Fore
 from huggingface_hub import HfApi, snapshot_download
+from src.envs import TOKEN, EVAL_REQUESTS_PATH, QUEUE_REPO
 
-EVAL_REQUESTS_PATH = "eval-queue"
-QUEUE_REPO = "open-llm-leaderboard/requests"
-
-precisions = ("float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)", "GPTQ")
+precisions = ("float16", "bfloat16", "8bit (LLM.int8)", "4bit (QLoRA / FP4)", "GPTQ", "float32")
 model_types = ("pretrained", "fine-tuned", "RL-tuned", "instruction-tuned")
 weight_types = ("Original", "Delta", "Adapter")
 
@@ -36,7 +34,7 @@ def get_model_size(model_info, precision: str):
 def main():
     api = HfApi()
     current_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH, repo_type="dataset")
+    snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH, repo_type="dataset", token=TOKEN)
 
     model_name = click.prompt("Enter model name")
     revision = click.prompt("Enter revision", default="main")

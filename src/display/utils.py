@@ -94,6 +94,7 @@ class WeightType(Enum):
 class Precision(Enum):
     float16 = ModelDetails("float16")
     bfloat16 = ModelDetails("bfloat16")
+    float32 = ModelDetails("float32")
     #qt_8bit = ModelDetails("8bit")
     #qt_4bit = ModelDetails("4bit")
     #qt_GPTQ = ModelDetails("GPTQ")
@@ -104,6 +105,8 @@ class Precision(Enum):
             return Precision.float16
         if precision in ["torch.bfloat16", "bfloat16"]:
             return Precision.bfloat16
+        if precision in ["float32"]:
+            return Precision.float32
         #if precision in ["8bit"]:
         #    return Precision.qt_8bit
         #if precision in ["4bit"]:

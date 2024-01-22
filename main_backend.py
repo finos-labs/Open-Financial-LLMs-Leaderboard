@@ -9,7 +9,7 @@ from src.backend.run_eval_suite import run_evaluation
 from src.backend.manage_requests import check_completed_evals, get_eval_requests, set_eval_request
 from src.backend.sort_queue import sort_models_by_priority
 
-from src.envs import QUEUE_REPO, EVAL_REQUESTS_PATH_BACKEND, RESULTS_REPO, EVAL_RESULTS_PATH_BACKEND, DEVICE, API, LIMIT
+from src.envs import QUEUE_REPO, EVAL_REQUESTS_PATH_BACKEND, RESULTS_REPO, EVAL_RESULTS_PATH_BACKEND, DEVICE, API, LIMIT, TOKEN
 from src.about import Tasks, NUM_FEWSHOT
 TASKS_HARNESS = [task.value.benchmark for task in Tasks]
 
@@ -21,8 +21,8 @@ RUNNING_STATUS = "RUNNING"
 FINISHED_STATUS = "FINISHED"
 FAILED_STATUS = "FAILED"
 
-snapshot_download(repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
-snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60)
+snapshot_download(repo_id=RESULTS_REPO, revision="main", local_dir=EVAL_RESULTS_PATH_BACKEND, repo_type="dataset", max_workers=60, token=TOKEN)
+snapshot_download(repo_id=QUEUE_REPO, revision="main", local_dir=EVAL_REQUESTS_PATH_BACKEND, repo_type="dataset", max_workers=60, token=TOKEN)
 
 def run_auto_eval():
     current_pending_status = [PENDING_STATUS]

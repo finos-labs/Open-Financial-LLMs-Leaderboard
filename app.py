@@ -26,7 +26,7 @@ from src.display.utils import (
     WeightType,
     Precision
 )
-from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
+from src.envs import API, DEVICE, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 
@@ -309,7 +309,7 @@ with demo:
                         choices=[i.value.name for i in Precision if i != Precision.Unknown],
                         label="Precision",
                         multiselect=False,
-                        value="float16",
+                        value="float16" if DEVICE != "cpu" else "float32",
                         interactive=True,
                     )
                     weight_type = gr.Dropdown(

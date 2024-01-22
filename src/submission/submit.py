@@ -50,7 +50,7 @@ def add_new_eval(
             return styled_error(f'Base model "{base_model}" {error}')
 
     if not weight_type == "Adapter":
-        model_on_hub, error, _ = is_model_on_hub(model_name=model, revision=revision, test_tokenizer=True)
+        model_on_hub, error, _ = is_model_on_hub(model_name=model, revision=revision, token=TOKEN, test_tokenizer=True)
         if not model_on_hub:
             return styled_error(f'Model "{model}" {error}')
 

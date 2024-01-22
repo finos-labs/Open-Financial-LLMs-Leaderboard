@@ -8,7 +8,7 @@ import huggingface_hub
 from huggingface_hub import ModelCard
 from huggingface_hub.hf_api import ModelInfo
 from transformers import AutoConfig
-from transformers.models.auto.tokenization_auto import tokenizer_class_from_name, get_tokenizer_config
+from transformers.models.auto.tokenization_auto import AutoTokenizer
 
 def check_model_card(repo_id: str) -> tuple[bool, str]:
     """Checks if the model card and license exist and have been filled"""
