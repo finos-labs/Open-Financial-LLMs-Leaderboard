@@ -9,6 +9,7 @@ from src.leaderboard.read_evals import get_raw_eval_results
 
 
 def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchmark_cols: list) -> pd.DataFrame:
+    """Creates a dataframe from all the individual experiment results"""
     raw_data = get_raw_eval_results(results_path, requests_path)
     all_data_json = [v.to_dict() for v in raw_data]
 
@@ -22,6 +23,7 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
 
 
 def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
+    """Creates the different dataframes for the evaluation queues requestes"""
     entries = [entry for entry in os.listdir(save_path) if not entry.startswith(".")]
     all_evals = []
 

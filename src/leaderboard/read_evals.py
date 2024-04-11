@@ -14,6 +14,8 @@ from src.submission.check_validity import is_model_on_hub
 
 @dataclass
 class EvalResult:
+    """Represents one full evaluation. Built from a combination of the result and request file for a given run.
+    """
     eval_name: str # org_model_precision (uid)
     full_model: str # org/model (path on hub)
     org: str 

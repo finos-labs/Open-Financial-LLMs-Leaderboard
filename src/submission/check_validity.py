@@ -32,6 +32,7 @@ def check_model_card(repo_id: str) -> tuple[bool, str]:
     return True, ""
 
 def is_model_on_hub(model_name: str, revision: str, token: str = None, trust_remote_code=False, test_tokenizer=False) -> tuple[bool, str]:
+    """Checks if the model model_name is on the hub, and whether it (and its tokenizer) can be loaded with AutoClasses."""
     try:
         config = AutoConfig.from_pretrained(model_name, revision=revision, trust_remote_code=trust_remote_code, token=token)
         if test_tokenizer:
@@ -74,6 +75,7 @@ def get_model_arch(model_info: ModelInfo):
     return model_info.config.get("architectures", "Unknown")
 
 def already_submitted_models(requested_models_dir: str) -> set[str]:
+    """Gather a list of already submitted models to avoid duplicates"""
     depth = 1
     file_names = []
     users_to_submission_dates = defaultdict(list)
