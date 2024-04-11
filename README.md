@@ -37,4 +37,3 @@ Request files are created automatically by this tool.
 
 If you encounter problem on the space, don't hesitate to restart it to remove the create eval-queue, eval-queue-bk, eval-results and eval-results-bk created folder.
 
-If you want to run your own backend, you only need to change the logic in src/backend/run_eval_suite, which at the moment launches the Eleuther AI Harness.

@@ -116,7 +116,6 @@ class EvalResult:
             AutoEvalColumn.weight_type.name: self.weight_type.value.name,
             AutoEvalColumn.architecture.name: self.architecture,
             AutoEvalColumn.model.name: make_clickable_model(self.full_model),
-            AutoEvalColumn.dummy.name: self.full_model,
             AutoEvalColumn.revision.name: self.revision,
             AutoEvalColumn.average.name: average,
             AutoEvalColumn.license.name: self.license,

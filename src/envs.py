@@ -6,9 +6,7 @@ from huggingface_hub import HfApi
 # ----------------------------------
 TOKEN = os.environ.get("TOKEN") # A read/write token for your org
 
-OWNER = "demo-leaderboard-backend" # Change to your org - don't forget to create a results and request file
-DEVICE = "cpu" # "cuda:0" if you add compute
-LIMIT = 20 # !!!! Should be None for actual evaluations!!!
+OWNER = "demo-leaderboard-backend" # Change to your org - don't forget to create a results and request dataset, with the correct format!
 # ----------------------------------
 
 REPO_ID = f"{OWNER}/leaderboard"

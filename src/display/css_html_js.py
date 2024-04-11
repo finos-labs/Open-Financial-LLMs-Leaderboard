@@ -38,12 +38,6 @@ custom_css = """
     padding: 0px;
 }
 
-/* Hides the final AutoEvalColumn */
-#llm-benchmark-tab-table table td:last-child,
-#llm-benchmark-tab-table table th:last-child {
-    display: none;
-}
-
 /* Limit the width of the first AutoEvalColumn so that names don't expand too much */
 table td:first-child,
 table th:first-child {

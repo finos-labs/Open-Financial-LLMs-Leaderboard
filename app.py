@@ -26,18 +26,13 @@ from src.display.utils import (
     WeightType,
     Precision
 )
-from src.envs import API, DEVICE, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
+from src.envs import API, EVAL_REQUESTS_PATH, EVAL_RESULTS_PATH, QUEUE_REPO, REPO_ID, RESULTS_REPO, TOKEN
 from src.populate import get_evaluation_queue_df, get_leaderboard_df
 from src.submission.submit import add_new_eval
 
 
-subprocess.run(["python", "scripts/fix_harness_import.py"])
-
 def restart_space():
     API.restart_space(repo_id=REPO_ID)
-
-def launch_backend():
-    _ = subprocess.run(["python", "main_backend.py"])
 
 try:
     print(EVAL_REQUESTS_PATH)
@@ -82,7 +77,7 @@ def update_table(
 
 
 def search_table(df: pd.DataFrame, query: str) -> pd.DataFrame:
-    return df[(df[AutoEvalColumn.dummy.name].str.contains(query, case=False))]
+    return df[(df[AutoEvalColumn.model.name].str.contains(query, case=False))]
 
 
 def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
@@ -92,7 +87,7 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
     ]
     # We use COLS to maintain sorting
     filtered_df = df[
-        always_here_cols + [c for c in COLS if c in df.columns and c in columns] + [AutoEvalColumn.dummy.name]
+        always_here_cols + [c for c in COLS if c in df.columns and c in columns] 
     ]
     return filtered_df
 
@@ -157,7 +152,7 @@ with demo:
                             choices=[
                                 c.name
                                 for c in fields(AutoEvalColumn)
-                                if not c.hidden and not c.never_hidden and not c.dummy
+                                if not c.hidden and not c.never_hidden
                             ],
                             value=[
                                 c.name
@@ -200,7 +195,6 @@ with demo:
                 value=leaderboard_df[
                     [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
                     + shown_columns.value
-                    + [AutoEvalColumn.dummy.name]
                 ],
                 headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
                 datatype=TYPES,
@@ -309,7 +303,7 @@ with demo:
                         choices=[i.value.name for i in Precision if i != Precision.Unknown],
                         label="Precision",
                         multiselect=False,
-                        value="float16" if DEVICE != "cpu" else "float32",
+                        value="float16",
                         interactive=True,
                     )
                     weight_type = gr.Dropdown(
@@ -348,6 +342,5 @@ with demo:
 
 scheduler = BackgroundScheduler()
 scheduler.add_job(restart_space, "interval", seconds=1800)
-scheduler.add_job(launch_backend, "interval", seconds=100) # will only allow one job to be run at the same time
 scheduler.start()
 demo.queue(default_concurrency_limit=40).launch()

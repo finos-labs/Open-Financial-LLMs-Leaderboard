@@ -19,7 +19,6 @@ class ColumnContent:
     displayed_by_default: bool
     hidden: bool = False
     never_hidden: bool = False
-    dummy: bool = False
 
 ## Leaderboard columns
 auto_eval_column_dict = []
@@ -40,8 +39,6 @@ auto_eval_column_dict.append(["params", ColumnContent, ColumnContent("#Params (B
 auto_eval_column_dict.append(["likes", ColumnContent, ColumnContent("Hub ❤️", "number", False)])
 auto_eval_column_dict.append(["still_on_hub", ColumnContent, ColumnContent("Available on the hub", "bool", False)])
 auto_eval_column_dict.append(["revision", ColumnContent, ColumnContent("Model sha", "str", False, False)])
-# Dummy column for the search bar (hidden by the custom CSS)
-auto_eval_column_dict.append(["dummy", ColumnContent, ColumnContent("model_name_for_query", "str", False, dummy=True)])
 
 # We use make dataclass to dynamically fill the scores from Tasks
 AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)
