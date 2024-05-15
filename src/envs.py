@@ -6,7 +6,7 @@ from huggingface_hub import HfApi
 # ----------------------------------
 TOKEN = os.environ.get("TOKEN") # A read/write token for your org
 
-OWNER = "demo-leaderboard-backend" # Change to your org - don't forget to create a results and request dataset, with the correct format!
+OWNER = "TheFinAI" # Change to your org - don't forget to create a results and request dataset, with the correct format!
 # ----------------------------------
 
 REPO_ID = f"{OWNER}/leaderboard"
