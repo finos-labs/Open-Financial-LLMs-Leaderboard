@@ -71,11 +71,16 @@ NUM_FEWSHOT = 0 # Change with your few shot
 
 
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">Demo leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title">🐲 The FinBen FLARE Leaderboard</h1>"""
 
 # What does your leaderboard evaluate?
-INTRODUCTION_TEXT = """
-Intro text
+INTRODUCTION_TEXT = """📊 The FinBen FLARE Leaderboard is designed to rigorously track, rank, and evaluate state-of-the-art models in financial Natural Language Understanding and Prediction. 
+
+📈 Unique to FLARE, our leaderboard not only covers standard NLP tasks but also incorporates financial prediction tasks such as stock movement and credit scoring, offering a more comprehensive evaluation for real-world financial applications.
+
+📚 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance.
+
+🔗 For more details, refer to our GitHub page [here](https://github.com/The-FinAI/PIXIU).
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
