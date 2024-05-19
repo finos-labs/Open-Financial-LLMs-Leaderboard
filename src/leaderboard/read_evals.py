@@ -91,8 +91,7 @@ class EvalResult:
             precision=precision,  
             revision= config.get("model_sha", ""),
             still_on_hub=still_on_hub,
-            architecture=architecture,
-            model_type=model_type
+            architecture=architecture
         )
 
     def update_with_request_file(self, requests_path):
