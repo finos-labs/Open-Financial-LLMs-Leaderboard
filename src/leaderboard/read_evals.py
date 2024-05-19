@@ -43,9 +43,6 @@ class EvalResult:
         # Precision
         precision = Precision.from_str(config.get("model_dtype"))
 
-        # ModelType
-        model_type = ModelType.from_str(config.get("model_type"))
-
         # Get model and org
         org_and_model = config.get("model_name", config.get("model_args", None))
         org_and_model = org_and_model.split("/", 1)
