@@ -56,21 +56,56 @@ NUM_FEWSHOT = 0 # Change with your few shot
 TITLE = """<h1 align="center" id="space-title">🐲 The FinBen FLARE Leaderboard</h1>"""
 
 # What does your leaderboard evaluate?
-INTRODUCTION_TEXT = """📊 The FinBen FLARE Leaderboard is designed to rigorously track, rank, and evaluate state-of-the-art models in financial Natural Language Understanding and Prediction. 
-
-📈 Unique to FLARE, our leaderboard not only covers standard NLP tasks but also incorporates financial prediction tasks such as stock movement and credit scoring, offering a more comprehensive evaluation for real-world financial applications.
-
-📚 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance.
-
-🔗 For more details, refer to our GitHub page [here](https://github.com/The-FinAI/PIXIU).
+INTRODUCTION_TEXT = """
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
 LLM_BENCHMARKS_TEXT = f"""
-## How it works
+## Introduction
+📊 The FinBen FLARE Leaderboard is designed to rigorously track, rank, and evaluate state-of-the-art models in financial Natural Language Understanding and Prediction. 
 
-## Reproducibility
-To reproduce our results, here is the commands you can run:
+📈 Unique to FLARE, our leaderboard not only covers standard NLP tasks but also incorporates financial prediction tasks such as stock movement and credit scoring, offering a more comprehensive evaluation for real-world financial applications.
+
+## Metrics
+📚 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance.
+   Metrics for specific tasks are as follows:
+    FPB-F1
+    FiQA-SA-F1
+    TSA-RMSE
+    Headlines-AvgF1
+    FOMC-F1
+    FinArg-ACC-MicroF1
+    FinArg-ARC-MicroF1
+    Multifin-MicroF1
+    MA-MicroF1
+    MLESG-MicroF1
+    NER-EntityF1
+    FINER-ORD-EntityF1
+    FinRED-F1
+    SC-F1
+    CD-F1
+    FinQA-EmAcc
+    TATQA-EmAcc
+    ConvFinQA-EmAcc
+    FNXL-EntityF1
+    FSRL-EntityF1
+    EDTSUM-Rouge-1
+    ECTSUM-Rouge-1
+    BigData22-Acc
+    ACL18-Acc
+    CIKM18-Acc
+    German-F1
+    Australian-F1
+    LendingClub-F1
+    ccf-F1
+    ccfraud-F1
+    polish-F1
+    taiwan-F1
+    portoseguro-F1
+    travelinsurance-F1
+    
+## REPRODUCIBILITY
+🔗 For more details, refer to our GitHub page [here](https://github.com/The-FinAI/PIXIU).
 
 """
 
