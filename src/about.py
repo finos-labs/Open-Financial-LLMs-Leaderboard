@@ -71,9 +71,7 @@ LLM_BENCHMARKS_TEXT = f"""
    Metrics for specific tasks are as follows:
     
     FPB-F1
-    
     FiQA-SA-F1
-    
     TSA-RMSE
     Headlines-AvgF1
     FOMC-F1
