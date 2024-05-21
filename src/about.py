@@ -69,8 +69,11 @@ LLM_BENCHMARKS_TEXT = f"""
 ## Metrics
 📚 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance.
    Metrics for specific tasks are as follows:
+    
     FPB-F1
+    
     FiQA-SA-F1
+    
     TSA-RMSE
     Headlines-AvgF1
     FOMC-F1
