@@ -59,9 +59,13 @@ TITLE = """<h1 align="center" id="space-title">🐲 Open Finance LLM Leaderboard
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
 🌟 The FinBen FLARE Leaderboard: Evaluate and compare the performance of financial Large Language Models (LLMs).
+
 When you submit a model on the "Submit here!" page, it is automatically evaluated on a set of financial benchmarks.
+
 The GPU used for evaluation is operated with the support of __[Wuhan University](http://en.whu.edu.cn/)__ and __[University of Florida](https://www.ufl.edu/)__.
-The datasets used for evaluation consist of diverse financial datasets like the `FinBen` benchmark to assess tasks such as sentiment analysis, named entity recognition, question answering, and more.
+
+The datasets used for evaluation consist of diverse financial datasets from `FinBen` benchmark to assess tasks such as sentiment analysis, named entity recognition, question answering, and more.
+
 More details about the benchmarks and the evaluation process are provided on the “About” page.
 """
 
@@ -142,7 +146,7 @@ GPUs are provided by Wuhan University and the University of Florida for the eval
 
 ## More Resources
 
-If you still have questions, you can check our github repository [here](https://github.com/TheFinAI/PIXIU).
+If you still have questions, you can check our github repository [here](https://github.com/The-FinAI/PIXIU).
 """
 
 EVALUATION_QUEUE_TEXT = """
