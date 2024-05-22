@@ -121,15 +121,15 @@ Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUG
 - **BigData22**: Acc
 - **ACL18**: Acc
 - **CIKM18**: Acc
-- **German**: F1
-- **Australian**: F1
-- **LendingClub**: F1
-- **ccf**: F1
-- **ccfraud**: F1
-- **polish**: F1
-- **taiwan**: F1
-- **portoseguro**: F1
-- **travelinsurance**: F1
+- **German**: MCC
+- **Australian**: MCC
+- **LendingClub**: MCC
+- **ccf**: MCC
+- **ccfraud**: MCC
+- **polish**: MCC
+- **taiwan**: MCC
+- **portoseguro**: MCC
+- **travelinsurance**: MCC
 
 To ensure a fair and unbiased assessment of the models' true capabilities, all evaluations are conducted in zero-shot settings (0-shots). This approach eliminates any potential advantage from task-specific fine-tuning, providing a clear indication of how well the models can generalize to new tasks.
 
