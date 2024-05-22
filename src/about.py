@@ -38,15 +38,15 @@ class Tasks(Enum):
     task28 = Task("BigData22", "Acc", "BigData22")
     task30 = Task("ACL18", "Acc", "ACL18")
     task32 = Task("CIKM18", "Acc", "CIKM18")
-    task34 = Task("German", "F1", "German")
-    task36 = Task("Australian", "F1", "Australian")
-    task38 = Task("LendingClub", "F1", "LendingClub")
-    task40 = Task("ccf", "F1", "ccf")
-    task42 = Task("ccfraud", "F1", "ccfraud")
-    task44 = Task("polish", "F1", "polish")
-    task46 = Task("taiwan", "F1", "taiwan")
-    task48 = Task("portoseguro", "F1", "portoseguro")
-    task50 = Task("travelinsurance", "F1", "travelinsurance")
+    task34 = Task("German", "MCC", "German")
+    task36 = Task("Australian", "MCC", "Australian")
+    task38 = Task("LendingClub", "MCC", "LendingClub")
+    task40 = Task("ccf", "MCC", "ccf")
+    task42 = Task("ccfraud", "MCC", "ccfraud")
+    task44 = Task("polish", "MCC", "polish")
+    task46 = Task("taiwan", "MCC", "taiwan")
+    task48 = Task("portoseguro", "MCC", "portoseguro")
+    task50 = Task("travelinsurance", "MCC", "travelinsurance")
 
 
 NUM_FEWSHOT = 0  # Change with your few shot
@@ -54,11 +54,11 @@ NUM_FEWSHOT = 0  # Change with your few shot
 
 
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">🐲 Open Finance LLM Leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title">🐲 Open Financial LLM Leaderboard</h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
-🌟 The FinBen FLARE Leaderboard: Evaluate and compare the performance of financial Large Language Models (LLMs).
+🌟 The Open Financial LLM Leaderboard: Evaluate and compare the performance of financial Large Language Models (LLMs).
 
 When you submit a model on the "Submit here!" page, it is automatically evaluated on a set of financial benchmarks.
 
