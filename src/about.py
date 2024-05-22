@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 
+
 @dataclass
 class Task:
     benchmark: str
@@ -11,7 +12,7 @@ class Task:
 # Select your tasks here
 # ---------------------------------------------------
 class Tasks(Enum):
-    # task_key in the json file, metric_key in the json file, name to display in the leaderboard 
+    # task_key in the json file, metric_key in the json file, name to display in the leaderboard
     task0 = Task("FPB", "F1", "FPB")
     task2 = Task("FiQA-SA", "F1", "FiQA-SA")
     task3 = Task("TSA", "RMSE", "TSA")
@@ -47,68 +48,101 @@ class Tasks(Enum):
     task48 = Task("portoseguro", "F1", "portoseguro")
     task50 = Task("travelinsurance", "F1", "travelinsurance")
 
-NUM_FEWSHOT = 0 # Change with your few shot
+
+NUM_FEWSHOT = 0  # Change with your few shot
 # ---------------------------------------------------
 
 
-
 # Your leaderboard name
-TITLE = """<h1 align="center" id="space-title">🐲 The FinBen FLARE Leaderboard</h1>"""
+TITLE = """<h1 align="center" id="space-title">🐲 Open Finance LLM Leaderboard</h1>"""
 
 # What does your leaderboard evaluate?
 INTRODUCTION_TEXT = """
+🌟 The FinBen FLARE Leaderboard: Evaluate and compare the performance of financial Large Language Models (LLMs).
+When you submit a model on the "Submit here!" page, it is automatically evaluated on a set of financial benchmarks.
+The GPU used for evaluation is operated with the support of __[Wuhan University](http://en.whu.edu.cn/)__ and __[University of Florida](https://www.ufl.edu/)__.
+The datasets used for evaluation consist of diverse financial datasets like the `FinBen` benchmark to assess tasks such as sentiment analysis, named entity recognition, question answering, and more.
+More details about the benchmarks and the evaluation process are provided on the “About” page.
 """
 
 # Which evaluations are you running? how can people reproduce what you have?
-LLM_BENCHMARKS_TEXT = f"""
+LLM_BENCHMARKS_TEXT = """
 ## Introduction
-📊 The FinBen FLARE Leaderboard is designed to rigorously track, rank, and evaluate state-of-the-art models in financial Natural Language Understanding and Prediction. 
 
-📈 Unique to FLARE, our leaderboard not only covers standard NLP tasks but also incorporates financial prediction tasks such as stock movement and credit scoring, offering a more comprehensive evaluation for real-world financial applications.
+The **Open Financial LLMs Leaderboard (OFLL)** is meticulously designed to rigorously track, rank, and evaluate state-of-the-art models in financial Natural Language Understanding and Prediction. Our leaderboard not only covers standard NLP tasks but also incorporates financial prediction tasks such as stock movement and credit scoring, offering a comprehensive evaluation for real-world financial applications.
 
-## Metrics
-📚 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance.
-   
-   Metrics for specific tasks are as follows:
-    
-    FPB-F1
-    FiQA-SA-F1
-    TSA-RMSE
-    Headlines-AvgF1
-    FOMC-F1
-    FinArg-ACC-MicroF1
-    FinArg-ARC-MicroF1
-    Multifin-MicroF1
-    MA-MicroF1
-    MLESG-MicroF1
-    NER-EntityF1
-    FINER-ORD-EntityF1
-    FinRED-F1
-    SC-F1
-    CD-F1
-    FinQA-EmAcc
-    TATQA-EmAcc
-    ConvFinQA-EmAcc
-    FNXL-EntityF1
-    FSRL-EntityF1
-    EDTSUM-Rouge-1
-    ECTSUM-Rouge-1
-    BigData22-Acc
-    ACL18-Acc
-    CIKM18-Acc
-    German-F1
-    Australian-F1
-    LendingClub-F1
-    ccf-F1
-    ccfraud-F1
-    polish-F1
-    taiwan-F1
-    portoseguro-F1
-    travelinsurance-F1
-    
-## REPRODUCIBILITY
-🔗 For more details, refer to our GitHub page [here](https://github.com/The-FinAI/PIXIU).
+## Icons & Model Types
 
+- 🟢 : pretrained or continuously pretrained
+- 🔶 : fine-tuned on domain-specific datasets
+- 💬 : chat models (RLHF, DPO, ORPO, ...)
+- 🤝 : base merges and moerges
+
+If the icon is "?", it indicates that there is insufficient information about the model. Please provide information about the model through an issue! 🤩
+
+**Note 1**: We reserve the right to correct any incorrect tags/icons after manual verification to ensure the accuracy and reliability of the leaderboard.
+
+**Note 2** ⚠️: Some models might be widely discussed as subjects of caution by the community, implying that users should exercise restraint when using them. Models that have used the evaluation set for training to achieve a high leaderboard ranking, among others, may be selected as subjects of caution and might result in their deletion from the leaderboard.
+
+## How It Works
+
+📈 We evaluate models using Pixiu, a powerful and straightforward framework to test and assess language models on a large number of different evaluation tasks from FinBen, using datasets validated by financial experts.
+
+### Evaluation Metrics
+
+Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance. Metrics for specific tasks are as follows:
+
+- **FPB**: F1
+- **FiQA-SA**: F1
+- **TSA**: RMSE
+- **Headlines**: AvgF1
+- **FOMC**: F1
+- **FinArg-ACC**: MicroF1
+- **FinArg-ARC**: MicroF1
+- **Multifin**: MicroF1
+- **MA**: MicroF1
+- **MLESG**: MicroF1
+- **NER**: EntityF1
+- **FINER-ORD**: EntityF1
+- **FinRED**: F1
+- **SC**: F1
+- **CD**: F1
+- **FinQA**: EmAcc
+- **TATQA**: EmAcc
+- **ConvFinQA**: EmAcc
+- **FNXL**: EntityF1
+- **FSRL**: EntityF1
+- **EDTSUM**: Rouge-1
+- **ECTSUM**: Rouge-1
+- **BigData22**: Acc
+- **ACL18**: Acc
+- **CIKM18**: Acc
+- **German**: F1
+- **Australian**: F1
+- **LendingClub**: F1
+- **ccf**: F1
+- **ccfraud**: F1
+- **polish**: F1
+- **taiwan**: F1
+- **portoseguro**: F1
+- **travelinsurance**: F1
+
+To ensure a fair and unbiased assessment of the models' true capabilities, all evaluations are conducted in zero-shot settings (0-shots). This approach eliminates any potential advantage from task-specific fine-tuning, providing a clear indication of how well the models can generalize to new tasks.
+
+Given the nature of the tasks, which include multiple-choice and yes/no questions, we extract options from the generated text to evaluate performance.
+
+Please, consider reaching out to us through the discussions tab if you are working on benchmarks for financial LLMs and willing to see them on this leaderboard as well. Your benchmark might change the whole game for financial models!
+
+GPUs are provided by Wuhan University and the University of Florida for the evaluations.
+
+## Details and Logs
+
+- Detailed numerical results in the [results FinBen dataset](https://huggingface.co/datasets/FinBen/results)
+- Community queries and running status in the [requests FinBen dataset](https://huggingface.co/datasets/FinBen/requests)
+
+## More Resources
+
+If you still have questions, you can check our github repository [here](https://github.com/TheFinAI/PIXIU).
 """
 
 EVALUATION_QUEUE_TEXT = """
@@ -144,7 +178,7 @@ If everything is done, check you can launch the EleutherAIHarness on your model 
 CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""
 @misc{xie2024finben,
-          title={The FinBen: An Holistic Financial Benchmark for Large Language Models}, 
+          title={The FinBen: An Holistic Financial Benchmark for Large Language Models},
           author={Qianqian Xie and Weiguang Han and Zhengyu Chen and Ruoyu Xiang and Xiao Zhang and Yueru He and Mengxi Xiao and Dong Li and Yongfu Dai and Duanyu Feng and Yijing Xu and Haoqiang Kang and Ziyan Kuang and Chenhan Yuan and Kailai Yang and Zheheng Luo and Tianlin Zhang and Zhiwei Liu and Guojun Xiong and Zhiyang Deng and Yuechen Jiang and Zhiyuan Yao and Haohang Li and Yangyang Yu and Gang Hu and Jiajia Huang and Xiao-Yang Liu and Alejandro Lopez-Lira and Benyou Wang and Yanzhao Lai and Hao Wang and Min Peng and Sophia Ananiadou and Jimin Huang},
           year={2024},
           eprint={2402.12659},
