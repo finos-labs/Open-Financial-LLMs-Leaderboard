@@ -63,16 +63,22 @@ leaderboard_df = original_df.copy()
 # Searching and filtering
 def update_table(
     hidden_df: pd.DataFrame,
-    columns: list,
+    columns_info: list,
+    columns_eval: list,
+    columns_metadata: list,
+    columns_popularity: list,
+    columns_revision: list,
     type_query: list,
-    precision_query: str,
+    precision_query: list,
     size_query: list,
     show_deleted: bool,
     query: str,
 ):
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
     filtered_df = filter_queries(query, filtered_df)
-    df = select_columns(filtered_df, columns)
+    # Combine all column selections
+    selected_columns = columns_info + columns_eval + columns_metadata + columns_popularity + columns_revision
+    df = select_columns(filtered_df, selected_columns)
     return df
 
 
@@ -131,6 +137,8 @@ def filter_models(
 
     return filtered_df
 
+def uncheck_all():
+    return [], [], [], [], []
 
 demo = gr.Blocks(css=custom_css)
 with demo:
@@ -148,20 +156,54 @@ with demo:
                             elem_id="search-bar",
                         )
                     with gr.Row():
-                        shown_columns = gr.CheckboxGroup(
-                            choices=[
-                                c.name
-                                for c in fields(AutoEvalColumn)
-                                if not c.hidden and not c.never_hidden
+                        with gr.Accordion("Select columns to show"):
+                            with gr.Tab("Model Information"):
+                                shown_columns_info = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Model Information"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Model Information"],
+                                    label="Model Information",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Evaluation Scores"):
+                                shown_columns_eval = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Evaluation Scores"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Evaluation Scores"],
+                                    label="Evaluation Scores",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Model Metadata"):
+                                shown_columns_metadata = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Model Metadata"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Model Metadata"],
+                                    label="Model Metadata",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Popularity Metrics"):
+                                shown_columns_popularity = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Popularity Metrics"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Popularity Metrics"],
+                                    label="Popularity Metrics",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Revision and Availability"):
+                                shown_columns_revision = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Revision and Availability"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Revision and Availability"],
+                                    label="Revision and Availability",
+                                    interactive=True,
+                                )
+                    with gr.Row():
+                        uncheck_all_button = gr.Button("Uncheck All")
+                        uncheck_all_button.click(
+                            uncheck_all,
+                            inputs=[],
+                            outputs=[
+                                shown_columns_info,
+                                shown_columns_eval,
+                                shown_columns_metadata,
+                                shown_columns_popularity,
+                                shown_columns_revision
                             ],
-                            value=[
-                                c.name
-                                for c in fields(AutoEvalColumn)
-                                if c.displayed_by_default and not c.hidden and not c.never_hidden
-                            ],
-                            label="Select columns to show",
-                            elem_id="column-select",
-                            interactive=True,
                         )
                     with gr.Row():
                         deleted_models_visibility = gr.Checkbox(
@@ -191,12 +233,13 @@ with demo:
                         elem_id="filter-columns-size",
                     )
 
-            leaderboard_table = gr.components.Dataframe(
+            leaderboard_table = gr.Dataframe(
                 value=leaderboard_df[
                     [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
-                    + shown_columns.value
+                    + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default]
                 ],
-                headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden] + shown_columns.value,
+                headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden]
+                        + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default],
                 datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
@@ -204,7 +247,7 @@ with demo:
             )
 
             # Dummy leaderboard for handling the case when the user uses backspace key
-            hidden_leaderboard_table_for_search = gr.components.Dataframe(
+            hidden_leaderboard_table_for_search = gr.Dataframe(
                 value=original_df[COLS],
                 headers=COLS,
                 datatype=TYPES,
@@ -212,30 +255,43 @@ with demo:
             )
             search_bar.submit(
                 update_table,
-                [
+                inputs=[
                     hidden_leaderboard_table_for_search,
-                    shown_columns,
+                    shown_columns_info,
+                    shown_columns_eval,
+                    shown_columns_metadata,
+                    shown_columns_popularity,
+                    shown_columns_revision,
                     filter_columns_type,
                     filter_columns_precision,
                     filter_columns_size,
                     deleted_models_visibility,
                     search_bar,
                 ],
-                leaderboard_table,
+                outputs=leaderboard_table,
             )
-            for selector in [shown_columns, filter_columns_type, filter_columns_precision, filter_columns_size, deleted_models_visibility]:
+            for selector in [
+                shown_columns_info, shown_columns_eval, shown_columns_metadata, 
+                shown_columns_popularity, shown_columns_revision, 
+                filter_columns_type, filter_columns_precision, 
+                filter_columns_size, deleted_models_visibility
+            ]:
                 selector.change(
                     update_table,
-                    [
+                    inputs=[
                         hidden_leaderboard_table_for_search,
-                        shown_columns,
+                        shown_columns_info,
+                        shown_columns_eval,
+                        shown_columns_metadata,
+                        shown_columns_popularity,
+                        shown_columns_revision,
                         filter_columns_type,
                         filter_columns_precision,
                         filter_columns_size,
                         deleted_models_visibility,
                         search_bar,
                     ],
-                    leaderboard_table,
+                    outputs=leaderboard_table,
                     queue=True,
                 )
 
@@ -253,7 +309,7 @@ with demo:
                         open=False,
                     ):
                         with gr.Row():
-                            finished_eval_table = gr.components.Dataframe(
+                            finished_eval_table = gr.Dataframe(
                                 value=finished_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
@@ -264,7 +320,7 @@ with demo:
                         open=False,
                     ):
                         with gr.Row():
-                            running_eval_table = gr.components.Dataframe(
+                            running_eval_table = gr.Dataframe(
                                 value=running_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
@@ -276,7 +332,7 @@ with demo:
                         open=False,
                     ):
                         with gr.Row():
-                            pending_eval_table = gr.components.Dataframe(
+                            pending_eval_table = gr.Dataframe(
                                 value=pending_eval_queue_df,
                                 headers=EVAL_COLS,
                                 datatype=EVAL_TYPES,
