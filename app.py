@@ -64,20 +64,29 @@ leaderboard_df = original_df.copy()
 def update_table(
     hidden_df: pd.DataFrame,
     columns_info: list,
-    columns_eval: list,
-    columns_metadata: list,
-    columns_popularity: list,
-    columns_revision: list,
+    columns_IE: list,
+    columns_TA: list,
+    columns_QA: list,
+    columns_TG: list,
+    columns_RM: list,
+    columns_FO: list,
+    columns_DM: list,
+    columns_spanish: list,
+    columns_other: list,
     type_query: list,
     precision_query: list,
     size_query: list,
     show_deleted: bool,
     query: str,
 ):
+    # Combine all column selections
+    selected_columns = (
+        columns_info + columns_IE + columns_TA + columns_QA + columns_TG +
+        columns_RM + columns_FO + columns_DM + columns_spanish + columns_other
+    )
+    # Filter models based on queries
     filtered_df = filter_models(hidden_df, type_query, size_query, precision_query, show_deleted)
     filtered_df = filter_queries(query, filtered_df)
-    # Combine all column selections
-    selected_columns = columns_info + columns_eval + columns_metadata + columns_popularity + columns_revision
     df = select_columns(filtered_df, selected_columns)
     return df
 
@@ -91,11 +100,16 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
         AutoEvalColumn.model_type_symbol.name,
         AutoEvalColumn.model.name,
     ]
+
+    # Ensure no duplicates when never_hidden and displayed_by_default are both True
+    unique_columns = set(always_here_cols + columns)
+
     # We use COLS to maintain sorting
     filtered_df = df[
-        always_here_cols + [c for c in COLS if c in df.columns and c in columns] 
+        [c for c in COLS if c in df.columns and c in unique_columns]
     ]
     return filtered_df
+
 
 
 def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
@@ -138,7 +152,7 @@ def filter_models(
     return filtered_df
 
 def uncheck_all():
-    return [], [], [], [], []
+    return [], [], [], [], [], [], [], [], [], []
 
 demo = gr.Blocks(css=custom_css)
 with demo:
@@ -164,32 +178,67 @@ with demo:
                                     label="Model Information",
                                     interactive=True,
                                 )
-                            with gr.Tab("Evaluation Scores"):
-                                shown_columns_eval = gr.CheckboxGroup(
-                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Evaluation Scores"],
-                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Evaluation Scores"],
-                                    label="Evaluation Scores",
+                            with gr.Tab("Information Extraction (IE)"):
+                                shown_columns_IE = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Information Extraction (IE)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Information Extraction (IE)"],
+                                    label="Information Extraction (IE)",
                                     interactive=True,
                                 )
-                            with gr.Tab("Model Metadata"):
-                                shown_columns_metadata = gr.CheckboxGroup(
-                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Model Metadata"],
-                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Model Metadata"],
-                                    label="Model Metadata",
+                            with gr.Tab("Textual Analysis (TA)"):
+                                shown_columns_TA = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Textual Analysis (TA)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Textual Analysis (TA)"],
+                                    label="Textual Analysis (TA)",
                                     interactive=True,
                                 )
-                            with gr.Tab("Popularity Metrics"):
-                                shown_columns_popularity = gr.CheckboxGroup(
-                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Popularity Metrics"],
-                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Popularity Metrics"],
-                                    label="Popularity Metrics",
+                            with gr.Tab("Question Answering (QA)"):
+                                shown_columns_QA = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Question Answering (QA)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Question Answering (QA)"],
+                                    label="Question Answering (QA)",
                                     interactive=True,
                                 )
-                            with gr.Tab("Revision and Availability"):
-                                shown_columns_revision = gr.CheckboxGroup(
-                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Revision and Availability"],
-                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Revision and Availability"],
-                                    label="Revision and Availability",
+                            with gr.Tab("Text Generation (TG)"):
+                                shown_columns_TG = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Text Generation (TG)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Text Generation (TG)"],
+                                    label="Text Generation (TG)",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Risk Management (RM)"):
+                                shown_columns_RM = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Risk Management (RM)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Risk Management (RM)"],
+                                    label="Risk Management (RM)",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Forecasting (FO)"):
+                                shown_columns_FO = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Forecasting (FO)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Forecasting (FO)"],
+                                    label="Forecasting (FO)",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Decision-Making (DM)"):
+                                shown_columns_DM = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Decision-Making (DM)"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Decision-Making (DM)"],
+                                    label="Decision-Making (DM)",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Spanish"):
+                                shown_columns_spanish = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Spanish"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Spanish"],
+                                    label="Spanish",
+                                    interactive=True,
+                                )
+                            with gr.Tab("Other"):
+                                shown_columns_other = gr.CheckboxGroup(
+                                    choices=[c.name for c in fields(AutoEvalColumn) if c.category == "Other"],
+                                    value=[c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and c.category == "Other"],
+                                    label="Other",
                                     interactive=True,
                                 )
                     with gr.Row():
@@ -199,10 +248,16 @@ with demo:
                             inputs=[],
                             outputs=[
                                 shown_columns_info,
-                                shown_columns_eval,
-                                shown_columns_metadata,
-                                shown_columns_popularity,
-                                shown_columns_revision
+                                shown_columns_IE,
+                                shown_columns_TA,
+                                shown_columns_QA,
+                                shown_columns_TG,
+                                shown_columns_RM,
+                                shown_columns_FO,
+                                shown_columns_DM,
+                                shown_columns_spanish,
+                                shown_columns_other,
+
                             ],
                         )
                     with gr.Row():
@@ -236,15 +291,16 @@ with demo:
             leaderboard_table = gr.Dataframe(
                 value=leaderboard_df[
                     [c.name for c in fields(AutoEvalColumn) if c.never_hidden]
-                    + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default]
+                    + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.never_hidden]
                 ],
                 headers=[c.name for c in fields(AutoEvalColumn) if c.never_hidden]
-                        + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default],
+                        + [c.name for c in fields(AutoEvalColumn) if c.displayed_by_default and not c.never_hidden],
                 datatype=TYPES,
                 elem_id="leaderboard-table",
                 interactive=False,
                 visible=True,
             )
+
 
             # Dummy leaderboard for handling the case when the user uses backspace key
             hidden_leaderboard_table_for_search = gr.Dataframe(
@@ -258,10 +314,15 @@ with demo:
                 inputs=[
                     hidden_leaderboard_table_for_search,
                     shown_columns_info,
-                    shown_columns_eval,
-                    shown_columns_metadata,
-                    shown_columns_popularity,
-                    shown_columns_revision,
+                    shown_columns_IE,
+                    shown_columns_TA,
+                    shown_columns_QA,
+                    shown_columns_TG,
+                    shown_columns_RM,
+                    shown_columns_FO,
+                    shown_columns_DM,
+                    shown_columns_spanish,
+                    shown_columns_other,
                     filter_columns_type,
                     filter_columns_precision,
                     filter_columns_size,
@@ -271,8 +332,16 @@ with demo:
                 outputs=leaderboard_table,
             )
             for selector in [
-                shown_columns_info, shown_columns_eval, shown_columns_metadata, 
-                shown_columns_popularity, shown_columns_revision, 
+                shown_columns_info,
+                shown_columns_IE,
+                shown_columns_TA,
+                shown_columns_QA,
+                shown_columns_TG,
+                shown_columns_RM,
+                shown_columns_FO,
+                shown_columns_DM,
+                shown_columns_spanish,
+                shown_columns_other,
                 filter_columns_type, filter_columns_precision, 
                 filter_columns_size, deleted_models_visibility
             ]:
@@ -281,10 +350,15 @@ with demo:
                     inputs=[
                         hidden_leaderboard_table_for_search,
                         shown_columns_info,
-                        shown_columns_eval,
-                        shown_columns_metadata,
-                        shown_columns_popularity,
-                        shown_columns_revision,
+                        shown_columns_IE,
+                        shown_columns_TA,
+                        shown_columns_QA,
+                        shown_columns_TG,
+                        shown_columns_RM,
+                        shown_columns_FO,
+                        shown_columns_DM,
+                        shown_columns_spanish,
+                        shown_columns_other,
                         filter_columns_type,
                         filter_columns_precision,
                         filter_columns_size,
