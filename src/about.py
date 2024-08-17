@@ -13,21 +13,21 @@ class Task:
 # Select your tasks here
 # ---------------------------------------------------
 class Tasks(Enum):
-    task0 = Task("FPB", "F1", "FPB", category="Spanish")
+    task0 = Task("FPB", "F1", "FPB", category="Textual Analysis (TA)")
     task2 = Task("FiQA-SA", "F1", "FiQA-SA", category="Textual Analysis (TA)")
     task3 = Task("TSA", "RMSE", "TSA", category="Textual Analysis (TA)")
     task4 = Task("Headlines", "AvgF1", "Headlines", category="Textual Analysis (TA)")
-    task5 = Task("FOMC", "F1", "FOMC", category="Forecasting (FO)")
+    task5 = Task("FOMC", "F1", "FOMC", category="Textual Analysis (TA)")
     task7 = Task("FinArg-ACC", "MicroF1", "FinArg-ACC", category="Textual Analysis (TA)")
     task8 = Task("FinArg-ARC", "MicroF1", "FinArg-ARC", category="Textual Analysis (TA)")
-    task9 = Task("MultiFin", "MicroF1", "Multifin", category="Textual Analysis (TA)")
+    task9 = Task("MultiFin", "MicroF1", "MultiFin", category="Textual Analysis (TA)")
     task10 = Task("MA", "MicroF1", "MA", category="Textual Analysis (TA)")
     task11 = Task("MLESG", "MicroF1", "MLESG", category="Textual Analysis (TA)")
     task12 = Task("NER", "EntityF1", "NER", category="Information Extraction (IE)")
     task13 = Task("FINER-ORD", "EntityF1", "FINER-ORD", category="Information Extraction (IE)")
     task14 = Task("FinRED", "F1", "FinRED", category="Information Extraction (IE)")
-    task15 = Task("SC", "F1", "SC", category="Spanish")
-    task16 = Task("CD", "F1", "CD", category="Spanish")
+    task15 = Task("SC", "F1", "SC", category="Information Extraction (IE)")
+    task16 = Task("CD", "F1", "CD", category="Information Extraction (IE)")
     task17 = Task("FinQA", "EmAcc", "FinQA", category="Question Answering (QA)")
     task18 = Task("TATQA", "EmAcc", "TATQA", category="Question Answering (QA)")
     task19 = Task("ConvFinQA", "EmAcc", "ConvFinQA", category="Question Answering (QA)")
@@ -35,11 +35,11 @@ class Tasks(Enum):
     task21 = Task("FSRL", "EntityF1", "FSRL", category="Information Extraction (IE)")
     task22 = Task("EDTSUM", "Rouge-1", "EDTSUM", category="Text Generation (TG)")
     task25 = Task("ECTSUM", "Rouge-1", "ECTSUM", category="Text Generation (TG)")
-    task28 = Task("BigData22", "Acc", "BigData22", category="Risk Management (RM)")
-    task30 = Task("ACL18", "Acc", "ACL18", category="Decision-Making (DM)")
-    task32 = Task("CIKM18", "Acc", "CIKM18", category="Decision-Making (DM)")
-    task34 = Task("German", "MCC", "German", category="Decision-Making (DM)")
-    task36 = Task("Australian", "MCC", "Australian", category="Decision-Making (DM)")
+    task28 = Task("BigData22", "Acc", "BigData22", category="Forecasting (FO)")
+    task30 = Task("ACL18", "Acc", "ACL18", category="Forecasting (FO)")
+    task32 = Task("CIKM18", "Acc", "CIKM18", category="Forecasting (FO)")
+    task34 = Task("German", "MCC", "German", category="Risk Management (RM)")
+    task36 = Task("Australian", "MCC", "Australian", category="Risk Management (RM)")
     task38 = Task("LendingClub", "MCC", "LendingClub", category="Risk Management (RM)")
     task40 = Task("ccf", "MCC", "ccf", category="Risk Management (RM)")
     task42 = Task("ccfraud", "MCC", "ccfraud", category="Risk Management (RM)")
@@ -47,7 +47,6 @@ class Tasks(Enum):
     task46 = Task("taiwan", "MCC", "taiwan", category="Risk Management (RM)")
     task48 = Task("portoseguro", "MCC", "portoseguro", category="Risk Management (RM)")
     task50 = Task("travelinsurance", "MCC", "travelinsurance", category="Risk Management (RM)")
-
 
 NUM_FEWSHOT = 0  # Change with your few shot
 # ---------------------------------------------------
