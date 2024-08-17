@@ -38,8 +38,9 @@ class EvalResult:
         with open(json_filepath) as fp:
             data = json.load(fp)
 
-        config = data.get("config")
+        print(f"Processing file: {json_filepath}")
 
+        config = data.get("config")
         # Precision
         precision = Precision.from_str(config.get("model_dtype"))
 
@@ -82,6 +83,8 @@ class EvalResult:
             mean_acc = np.mean(accs) * 100.0
             results[task.benchmark] = mean_acc
 
+        print(f"Model: {model}, Org: {org}, Results: {results.keys()}")
+
         return self(
             eval_name=result_key,
             full_model=full_model,
@@ -94,6 +97,7 @@ class EvalResult:
             architecture=architecture,
             model_type=model_type
         )
+
 
     def update_with_request_file(self, requests_path):
         """Finds the relevant request file for the current model and updates info with it"""
@@ -176,6 +180,8 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> list[EvalResu
         for file in files:
             model_result_filepaths.append(os.path.join(root, file))
 
+    print(f"Found {len(model_result_filepaths)} JSON files to process.")
+
     eval_results = {}
     for model_result_filepath in model_result_filepaths:
         # Creation of result
@@ -197,4 +203,5 @@ def get_raw_eval_results(results_path: str, requests_path: str) -> list[EvalResu
         except KeyError:  # not all eval values present
             continue
 
+    print(f"Successfully loaded {len(results)} models.")
     return results

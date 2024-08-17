@@ -134,15 +134,11 @@ def filter_queries(query: str, filtered_df: pd.DataFrame) -> pd.DataFrame:
 def filter_models(
     df: pd.DataFrame, type_query: list, size_query: list, precision_query: list, show_deleted: bool
 ) -> pd.DataFrame:
-    print("Initial number of models:", len(df))
-    
     # Show all models
     if show_deleted:
         filtered_df = df
     else:
         filtered_df = df[df[AutoEvalColumn.still_on_hub.name] == True]
-
-    print("After hub filter:", len(filtered_df))
 
     if "All" not in type_query:
         if "?" in type_query:
@@ -151,15 +147,11 @@ def filter_models(
             type_emoji = [t[0] for t in type_query]
             filtered_df = filtered_df.loc[df[AutoEvalColumn.model_type_symbol.name].isin(type_emoji)]
 
-    print("After type filter:", len(filtered_df))
-
     if "All" not in precision_query:
         if "?" in precision_query:
             filtered_df = filtered_df.loc[df[AutoEvalColumn.precision.name].isna()]
         else:
             filtered_df = filtered_df.loc[df[AutoEvalColumn.precision.name].isin(precision_query + ["None"])]
-
-    print("After precision filter:", len(filtered_df))
 
     if "All" not in size_query:
         if "?" in size_query:
@@ -169,8 +161,6 @@ def filter_models(
             params_column = pd.to_numeric(df[AutoEvalColumn.params.name], errors="coerce")
             mask = params_column.apply(lambda x: any(numeric_interval.contains(x)))
             filtered_df = filtered_df.loc[mask]
-
-    print("After size filter:", len(filtered_df))
 
     return filtered_df
 
