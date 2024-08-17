@@ -1,6 +1,5 @@
 import json
 import os
-
 import pandas as pd
 
 from src.display.formatting import has_no_nan_values, make_clickable_model
@@ -14,8 +13,23 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
     all_data_json = [v.to_dict() for v in raw_data]
 
     df = pd.DataFrame.from_records(all_data_json)
+
+    # Add category average columns with default values
+    category_avg_columns = {
+        "Average IE ⬆️": "average_IE",
+        "Average TA ⬆️": "average_TA",
+        "Average QA ⬆️": "average_QA",
+        "Average TG ⬆️": "average_TG",
+        "Average RM ⬆️": "average_RM",
+        "Average FO ⬆️": "average_FO",
+        "Average DM ⬆️": "average_DM",
+        "Average Spanish ⬆️": "average_Spanish"
+    }
+
+    for display_name, internal_name in category_avg_columns.items():
+        df[display_name] = df[internal_name]
+
     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
-    df = df[cols].round(decimals=2)
 
     # Apply the transformation for MCC values
     mcc_tasks = ["German", "Australian", "LendingClub", "ccf", "ccfraud", "polish", "taiwan", "portoseguro", "travelinsurance"]
@@ -23,14 +37,16 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
         if task in df.columns:
             df[task] = (df[task] + 100) / 2.0
 
+    # Now, select the columns that were passed to the function
+    df = df[cols].round(decimals=2)
+
     # Filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, benchmark_cols)]
     return raw_data, df
 
 
-
 def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
-    """Creates the different dataframes for the evaluation queues requestes"""
+    """Creates the different dataframes for the evaluation queues requests"""
     entries = [entry for entry in os.listdir(save_path) if not entry.startswith(".")]
     all_evals = []
 

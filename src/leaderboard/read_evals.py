@@ -117,8 +117,53 @@ class EvalResult:
 
     def to_dict(self):
         """Converts the Eval Result to a dict compatible with our dataframe display"""
-        average = sum([v for v in self.results.values() if v is not None]) / len(Tasks)
-        data_dict = {
+
+        # Initialize category averages
+        category_averages = {
+            "average_IE": [],
+            "average_TA": [],
+            "average_QA": [],
+            "average_TG": [],
+            "average_RM": [],
+            "average_FO": [],
+            "average_DM": [],
+            "average_Spanish": []
+        }
+
+        # Calculate averages for each task
+        for task in Tasks:
+            score = self.results.get(task.value.benchmark)
+            if score is not None:
+                # Append score to the appropriate category
+                if task.value.category == "Information Extraction (IE)":
+                    category_averages["average_IE"].append(score)
+                elif task.value.category == "Textual Analysis (TA)":
+                    category_averages["average_TA"].append(score)
+                elif task.value.category == "Question Answering (QA)":
+                    category_averages["average_QA"].append(score)
+                elif task.value.category == "Text Generation (TG)":
+                    category_averages["average_TG"].append(score)
+                elif task.value.category == "Risk Management (RM)":
+                    category_averages["average_RM"].append(score)
+                elif task.value.category == "Forecasting (FO)":
+                    category_averages["average_FO"].append(score)
+                elif task.value.category == "Decision-Making (DM)":
+                    category_averages["average_DM"].append(score)
+                elif task.value.category == "Spanish":
+                    category_averages["average_Spanish"].append(score)
+
+        # Calculate the mean for each category and add to data_dict
+        data_dict = {}
+        for category, scores in category_averages.items():
+            average = sum(scores) / len(scores) if scores else 0
+            data_dict[category] = average
+
+        # Overall average
+        total_scores = [v for v in self.results.values() if v is not None]
+        overall_average = sum(total_scores) / len(total_scores) if total_scores else 0
+
+        # Add other columns
+        data_dict.update({
             "eval_name": self.eval_name,  # not a column, just a save name,
             AutoEvalColumn.precision.name: self.precision.value.name,
             AutoEvalColumn.model_type.name: self.model_type.value.name,
@@ -127,17 +172,21 @@ class EvalResult:
             AutoEvalColumn.architecture.name: self.architecture,
             AutoEvalColumn.model.name: make_clickable_model(self.full_model),
             AutoEvalColumn.revision.name: self.revision,
-            AutoEvalColumn.average.name: average,
+            AutoEvalColumn.average.name: overall_average,
             AutoEvalColumn.license.name: self.license,
             AutoEvalColumn.likes.name: self.likes,
             AutoEvalColumn.params.name: self.num_params,
             AutoEvalColumn.still_on_hub.name: self.still_on_hub,
-        }
+        })
 
+        # Add task results to the data dictionary
         for task in Tasks:
-            data_dict[task.value.col_name] = self.results[task.value.benchmark]
+            data_dict[task.value.col_name] = self.results.get(task.value.benchmark)
 
         return data_dict
+
+
+
 
 
 def get_request_file_for_model(requests_path, model_name, precision):

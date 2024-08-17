@@ -27,7 +27,17 @@ auto_eval_column_dict = []
 # Model Information
 auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent("T", "str", True, category="Model Information", never_hidden=True)])
 auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, category="Model Information", never_hidden=True)])
+
 auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Average ⬆️", "number", True, category="Model Information")])
+auto_eval_column_dict.append(["average_IE", ColumnContent, ColumnContent("Average IE ⬆️", "number", False, category="Information Extraction (IE)")])
+auto_eval_column_dict.append(["average_TA", ColumnContent, ColumnContent("Average TA ⬆️", "number", False, category="Textual Analysis (TA)")])
+auto_eval_column_dict.append(["average_QA", ColumnContent, ColumnContent("Average QA ⬆️", "number", False, category="Question Answering (QA)")])
+auto_eval_column_dict.append(["average_TG", ColumnContent, ColumnContent("Average TG ⬆️", "number", False, category="Text Generation (TG)")])
+auto_eval_column_dict.append(["average_RM", ColumnContent, ColumnContent("Average RM ⬆️", "number", False, category="Risk Management (RM)")])
+auto_eval_column_dict.append(["average_FO", ColumnContent, ColumnContent("Average FO ⬆️", "number", False, category="Forecasting (FO)")])
+auto_eval_column_dict.append(["average_DM", ColumnContent, ColumnContent("Average DM ⬆️", "number", False, category="Decision-Making (DM)")])
+auto_eval_column_dict.append(["average_Spanish", ColumnContent, ColumnContent("Average Spanish ⬆️", "number", False, category="Spanish")])
+
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False, category="Model Information")])
 auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False, category="Model Information")])
 auto_eval_column_dict.append(["weight_type", ColumnContent, ColumnContent("Weight type", "str", False, category="Model Information", hidden=True)])
