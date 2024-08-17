@@ -17,9 +17,16 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
     df = df[cols].round(decimals=2)
 
-    # filter out if any of the benchmarks have not been produced
+    # Apply the transformation for MCC values
+    mcc_tasks = ["German", "Australian", "LendingClub", "ccf", "ccfraud", "polish", "taiwan", "portoseguro", "travelinsurance"]
+    for task in mcc_tasks:
+        if task in df.columns:
+            df[task] = (df[task] + 100) / 2.0
+
+    # Filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, benchmark_cols)]
     return raw_data, df
+
 
 
 def get_evaluation_queue_df(save_path: str, cols: list) -> list[pd.DataFrame]:
