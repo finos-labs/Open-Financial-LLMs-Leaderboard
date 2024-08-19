@@ -144,7 +144,7 @@ class EvalResult:
                 elif task.value.category == "Text Generation (TG)":
                     category_averages["average_TG"].append(score)
                 elif task.value.category == "Risk Management (RM)":
-                    category_averages["average_RM"].append(score)
+                    category_averages["average_RM"].append((score + 100) / 2)
                 elif task.value.category == "Forecasting (FO)":
                     category_averages["average_FO"].append(score)
                 elif task.value.category == "Decision-Making (DM)":
