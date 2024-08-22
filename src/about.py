@@ -47,6 +47,11 @@ class Tasks(Enum):
     task46 = Task("taiwan", "MCC", "taiwan", category="Risk Management (RM)")
     task48 = Task("portoseguro", "MCC", "portoseguro", category="Risk Management (RM)")
     task50 = Task("travelinsurance", "MCC", "travelinsurance", category="Risk Management (RM)")
+    task51 = Task("MultiFin-ES", "F1", "MultiFin-ES", category="Spanish")
+    task52 = Task("EFP", "F1", "EFP", category="Spanish")
+    task53 = Task("EFPA", "F1", "EFPA", category="Spanish")
+    task54 = Task("FinanceES", "F1", "FinanceES", category="Spanish")
+    task55 = Task("TSA-Spanish", "F1", "TSA-Spanish", category="Spanish")
 
 NUM_FEWSHOT = 0  # Change with your few shot
 # ---------------------------------------------------
@@ -129,6 +134,12 @@ Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUG
 - **taiwan**: MCC
 - **portoseguro**: MCC
 - **travelinsurance**: MCC
+- **MultiFin-ES**: F1
+- **EFP**: F1
+- **EFPA**: F1
+- **FinanceES**: F1
+- **TSA-Spanish**: F1
+
 
 To ensure a fair and unbiased assessment of the models' true capabilities, all evaluations are conducted in zero-shot settings (0-shots). This approach eliminates any potential advantage from task-specific fine-tuning, providing a clear indication of how well the models can generalize to new tasks.
 
