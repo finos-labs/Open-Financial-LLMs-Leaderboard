@@ -14,6 +14,10 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+      - name: Pull latest changes from remote
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: git pull https://jiminHuang:$HF_TOKEN@huggingface.co/spaces/TheFinAI/Open-Financial-LLM-Leaderboard main
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
