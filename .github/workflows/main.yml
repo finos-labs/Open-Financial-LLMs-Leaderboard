@@ -14,6 +14,8 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+      - name: Configure Git to use merge for pull
+        run: git config pull.rebase false
       - name: Pull latest changes from remote
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
