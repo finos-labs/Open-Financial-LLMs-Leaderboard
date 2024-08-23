@@ -100,45 +100,45 @@ If the icon is "?", it indicates that there is insufficient information about th
 
 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance. Metrics for specific tasks are as follows:
 
-- **FPB**: F1
-- **FiQA-SA**: F1
-- **TSA**: RMSE
-- **Headlines**: AvgF1
-- **FOMC**: F1
-- **FinArg-ACC**: MicroF1
-- **FinArg-ARC**: MicroF1
-- **Multifin**: MicroF1
-- **MA**: MicroF1
-- **MLESG**: MicroF1
-- **NER**: EntityF1
-- **FINER-ORD**: EntityF1
-- **FinRED**: F1
-- **SC**: F1
-- **CD**: F1
-- **FinQA**: EmAcc
-- **TATQA**: EmAcc
-- **ConvFinQA**: EmAcc
-- **FNXL**: EntityF1
-- **FSRL**: EntityF1
-- **EDTSUM**: Rouge-1
-- **ECTSUM**: Rouge-1
-- **BigData22**: Acc
-- **ACL18**: Acc
-- **CIKM18**: Acc
-- **German**: MCC
-- **Australian**: MCC
-- **LendingClub**: MCC
-- **ccf**: MCC
-- **ccfraud**: MCC
-- **polish**: MCC
-- **taiwan**: MCC
-- **portoseguro**: MCC
-- **travelinsurance**: MCC
-- **MultiFin-ES**: F1
-- **EFP**: F1
-- **EFPA**: F1
-- **FinanceES**: F1
-- **TSA-Spanish**: F1
+- **FPB**: F1, Accuracy. Financial PhraseBank classification task.
+- **FiQA-SA**: F1. Sentiment analysis on FiQA financial domain.
+- **TSA**: F1, Accuracy. Sentiment analysis.
+- **Headlines**: AvgF1. News headline classification.
+- **FOMC**: F1, Accuracy. Hawkish-dovish classification.
+- **FinArg-ACC**: F1, Accuracy. Financial argument unit classification.
+- **FinArg-ARC**: F1, Accuracy. Financial argument relation classification.
+- **MultiFin**: F1, Accuracy. Multi-class financial sentiment analysis.
+- **MA**: F1, Accuracy. Deal completeness classification.
+- **MLESG**: F1, Accuracy. ESG issue identification.
+- **NER**: EntityF1. Named entity recognition in financial texts.
+- **FINER-ORD**: EntityF1. Ordinal classification in financial NER.
+- **FinRED**: F1, EntityF1. Financial relation extraction from text.
+- **SC**: F1, EntityF1. Causal classification task in the financial domain.
+- **CD**: F1, EntityF1. Causal detection.
+- **FinQA**: EmAcc. Numerical question answering in finance.
+- **TATQA**: F1, EmAcc. Table-based question answering in financial documents.
+- **ConvFinQA**: EmAcc. Multi-turn question answering in finance.
+- **FNXL**: F1, EmAcc. Numeric labeling in financial texts.
+- **FSRL**: F1, EmAcc. Financial statement relation linking.
+- **EDTSUM**: ROUGE, BERTScore, BARTScore. Extractive document summarization in finance.
+- **ECTSUM**: ROUGE, BERTScore, BARTScore. Extractive content summarization.
+- **BigData22**: Accuracy, MCC. Stock movement prediction.
+- **ACL18**: Accuracy, MCC. Financial news-based stock prediction.
+- **CIKM18**: Accuracy, MCC. Financial market prediction using news.
+- **German**: F1, MCC. Credit scoring in the German market.
+- **Australian**: F1, MCC. Credit scoring in the Australian market.
+- **LendingClub**: F1, MCC. Peer-to-peer lending risk prediction.
+- **ccf**: F1, MCC. Credit card fraud detection.
+- **ccfraud**: F1, MCC. Credit card transaction fraud detection.
+- **polish**: F1, MCC. Credit risk prediction in the Polish market.
+- **taiwan**: F1, MCC. Credit risk prediction in the Taiwanese market.
+- **portoseguro**: F1, MCC. Claim analysis in the Brazilian market.
+- **travelinsurance**: F1, MCC. Travel insurance claim prediction.
+- **MultiFin-ES**: F1. Multi-class financial sentiment analysis in Spanish.
+- **EFP**: F1. Financial phrase classification in Spanish.
+- **EFPA**: F1. Financial argument classification in Spanish.
+- **FinanceES**: F1. Financial sentiment classification in Spanish.
+- **TSA-Spanish**: F1. Sentiment analysis in Spanish.
 
 
 To ensure a fair and unbiased assessment of the models' true capabilities, all evaluations are conducted in zero-shot settings (0-shots). This approach eliminates any potential advantage from task-specific fine-tuning, providing a clear indication of how well the models can generalize to new tasks.

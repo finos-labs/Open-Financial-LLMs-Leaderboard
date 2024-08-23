@@ -11,6 +11,7 @@ from src.display.formatting import make_clickable_model
 from src.display.utils import AutoEvalColumn, ModelType, Tasks, Precision, WeightType
 from src.submission.check_validity import is_model_on_hub
 
+task_benchmarks = {task.value.benchmark for task in Tasks}
 
 @dataclass
 class EvalResult:
@@ -37,8 +38,6 @@ class EvalResult:
         """Inits the result from the specific model result file"""
         with open(json_filepath) as fp:
             data = json.load(fp)
-
-        print(f"Processing file: {json_filepath}")
 
         config = data.get("config")
         # Precision
@@ -83,7 +82,11 @@ class EvalResult:
             mean_acc = np.mean(accs) * 100.0
             results[task.benchmark] = mean_acc
 
-        print(f"Model: {model}, Org: {org}, Results: {results.keys()}")
+        # Print missing benchmarks if any
+        missing_benchmarks = task_benchmarks - results.keys()
+        if missing_benchmarks:
+            print(f"(Missing results) Model {model} is missing {', '.join(missing_benchmarks)} from result files")
+
 
         return self(
             eval_name=result_key,
@@ -102,7 +105,6 @@ class EvalResult:
     def update_with_request_file(self, requests_path):
         """Finds the relevant request file for the current model and updates info with it"""
         request_file = get_request_file_for_model(requests_path, self.full_model, self.precision.value.name)
-
         try:
             with open(request_file, "r") as f:
                 request = json.load(f)
