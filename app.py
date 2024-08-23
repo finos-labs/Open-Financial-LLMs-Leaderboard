@@ -3,6 +3,7 @@ import gradio as gr
 import pandas as pd
 from apscheduler.schedulers.background import BackgroundScheduler
 from huggingface_hub import snapshot_download
+import os
 
 from src.about import (
     CITATION_BUTTON_LABEL,
@@ -171,6 +172,10 @@ def filter_models(
 
 def uncheck_all():
     return [], [], [], [], [], [], [], [], [], []
+
+# Get a list of all logo files in the directory
+logos_dir = "logos"
+logo_files = [f for f in os.listdir(logos_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
 
 demo = gr.Blocks(css=custom_css)
 with demo:
@@ -477,6 +482,12 @@ with demo:
                 ],
                 submission_result,
             )
+
+    # Footer with logos
+    with gr.Row(elem_id="footer"):
+        for logo in logo_files:
+            logo_path = os.path.join(logos_dir, logo)
+            gr.Image(logo_path, show_label=False, elem_id="logo-image", width=100, height=100)
 
     with gr.Row():
         with gr.Accordion("📙 Citation", open=False):
