@@ -86,6 +86,9 @@ class EvalResult:
         missing_benchmarks = task_benchmarks - results.keys()
         if missing_benchmarks:
             print(f"(Missing results) Model {model} is missing {', '.join(missing_benchmarks)} from result files")
+            for benchmark in missing_benchmarks:
+                results[benchmark] = "missing"
+
 
 
         return self(
@@ -157,11 +160,16 @@ class EvalResult:
         # Calculate the mean for each category and add to data_dict
         data_dict = {}
         for category, scores in category_averages.items():
-            average = sum(scores) / len(scores) if scores else 0
+            # Calculate the average if there are valid scores, otherwise set to 0
+            valid_scores = [score for score in scores if score != "missing"]
+            if valid_scores:
+                average = sum(valid_scores) / len(valid_scores)
+            else:
+                average = 0
             data_dict[category] = average
 
         # Overall average
-        total_scores = [v for v in self.results.values() if v is not None]
+        total_scores = [v for v in self.results.values() if v != "missing"]
         overall_average = sum(total_scores) / len(total_scores) if total_scores else 0
 
         # Add other columns
