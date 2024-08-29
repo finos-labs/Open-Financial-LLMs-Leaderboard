@@ -52,6 +52,7 @@ class Tasks(Enum):
     task53 = Task("EFPA", "F1", "EFPA", category="Spanish")
     task54 = Task("FinanceES", "F1", "FinanceES", category="Spanish")
     task55 = Task("TSA-Spanish", "F1", "TSA-Spanish", category="Spanish")
+    task56 = Task("FinTrade", "CR", "FinTrade", category="Decision-Making (DM)")
 
 NUM_FEWSHOT = 0  # Change with your few shot
 # ---------------------------------------------------
@@ -100,45 +101,47 @@ If the icon is "?", it indicates that there is insufficient information about th
 
 Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUGE score, BERTScore, and Matthews correlation coefficient (MCC), providing a multidimensional assessment of model performance. Metrics for specific tasks are as follows:
 
-- **FPB**: F1, Accuracy. Financial PhraseBank classification task.
-- **FiQA-SA**: F1. Sentiment analysis on FiQA financial domain.
-- **TSA**: F1, Accuracy. Sentiment analysis.
-- **Headlines**: AvgF1. News headline classification.
-- **FOMC**: F1, Accuracy. Hawkish-dovish classification.
-- **FinArg-ACC**: F1, Accuracy. Financial argument unit classification.
-- **FinArg-ARC**: F1, Accuracy. Financial argument relation classification.
-- **MultiFin**: F1, Accuracy. Multi-class financial sentiment analysis.
-- **MA**: F1, Accuracy. Deal completeness classification.
-- **MLESG**: F1, Accuracy. ESG issue identification.
-- **NER**: EntityF1. Named entity recognition in financial texts.
-- **FINER-ORD**: EntityF1. Ordinal classification in financial NER.
-- **FinRED**: F1, EntityF1. Financial relation extraction from text.
-- **SC**: F1, EntityF1. Causal classification task in the financial domain.
-- **CD**: F1, EntityF1. Causal detection.
-- **FinQA**: EmAcc. Numerical question answering in finance.
-- **TATQA**: F1, EmAcc. Table-based question answering in financial documents.
-- **ConvFinQA**: EmAcc. Multi-turn question answering in finance.
-- **FNXL**: F1, EmAcc. Numeric labeling in financial texts.
-- **FSRL**: F1, EmAcc. Financial statement relation linking.
-- **EDTSUM**: ROUGE, BERTScore, BARTScore. Extractive document summarization in finance.
-- **ECTSUM**: ROUGE, BERTScore, BARTScore. Extractive content summarization.
-- **BigData22**: Accuracy, MCC. Stock movement prediction.
-- **ACL18**: Accuracy, MCC. Financial news-based stock prediction.
-- **CIKM18**: Accuracy, MCC. Financial market prediction using news.
-- **German**: F1, MCC. Credit scoring in the German market.
-- **Australian**: F1, MCC. Credit scoring in the Australian market.
-- **LendingClub**: F1, MCC. Peer-to-peer lending risk prediction.
-- **ccf**: F1, MCC. Credit card fraud detection.
-- **ccfraud**: F1, MCC. Credit card transaction fraud detection.
-- **polish**: F1, MCC. Credit risk prediction in the Polish market.
-- **taiwan**: F1, MCC. Credit risk prediction in the Taiwanese market.
-- **portoseguro**: F1, MCC. Claim analysis in the Brazilian market.
-- **travelinsurance**: F1, MCC. Travel insurance claim prediction.
-- **MultiFin-ES**: F1. Multi-class financial sentiment analysis in Spanish.
-- **EFP**: F1. Financial phrase classification in Spanish.
-- **EFPA**: F1. Financial argument classification in Spanish.
-- **FinanceES**: F1. Financial sentiment classification in Spanish.
-- **TSA-Spanish**: F1. Sentiment analysis in Spanish.
+- **FPB**: F1, Accuracy. Financial PhraseBank classification task. This dataset is from the Financial PhraseBank, containing annotated phrases used in financial contexts. The classification task involves determining sentiment (positive, negative, neutral) for each phrase, essential for understanding financial news and reports.
+- **FiQA-SA**: F1. Sentiment analysis on FiQA financial domain. Derived from the FiQA dataset, this task focuses on sentiment analysis in the financial domain, particularly within news and social media. The dataset is crucial for gauging market sentiment based on financial communications.
+- **TSA**: F1, RMSE. Sentiment analysis on social media. The TSA dataset is utilized to analyze sentiment from tweets related to financial markets. The dataset is essential for real-time sentiment analysis, providing insights into market trends influenced by public opinion.
+- **Headlines**: AvgF1. News headline classification. This dataset consists of financial news headlines, with each headline categorized into various financial events or sentiment classes. The task challenges models to understand and classify brief, context-rich text segments that drive market movements.
+- **FOMC**: F1, Accuracy. Hawkish-dovish classification. Derived from transcripts of the Federal Open Market Committee (FOMC) meetings, this dataset involves classifying statements as hawkish or dovish, which indicates the stance of monetary policy. Accurate classification helps predict market reactions to central bank communications.
+- **FinArg-ACC**: F1, Accuracy. Financial argument unit classification. This dataset involves the classification of argument units in financial documents, such as identifying the main claim, supporting evidence, or counterarguments. The task is crucial for automated financial document analysis, enabling the extraction of structured information from unstructured text.
+- **FinArg-ARC**: F1, Accuracy. Financial argument relation classification. This task focuses on classifying relationships between different argument units within financial texts, such as support, opposition, or neutrality. Understanding these relations is critical for constructing coherent financial narratives from fragmented data.
+- **MultiFin**: F1, Accuracy. Multi-class financial sentiment analysis. The MultiFin dataset includes diverse financial texts requiring sentiment classification across multiple categories, such as bullish, bearish, or neutral. The task is pivotal for analyzing sentiment in financial markets from varied sources like reports, news articles, and social media.
+- **MA**: F1, Accuracy. Deal completeness classification. The dataset revolves around classifying mergers and acquisitions (M&A) reports to determine whether a deal has been completed. The task helps in tracking and analyzing the outcomes of corporate transactions, which is key for investment decisions.
+- **MLESG**: F1, Accuracy. ESG issue identification. This dataset focuses on identifying Environmental, Social, and Governance (ESG) issues within financial texts. Models are evaluated on their ability to correctly classify and categorize ESG-related content, which is increasingly important for responsible investing.
+- **NER**: EntityF1. Named entity recognition in financial texts. This task involves identifying and classifying named entities (e.g., companies, financial instruments, persons) within financial documents. Accurate NER is crucial for information extraction and financial analysis automation.
+- **FINER-ORD**: EntityF1. Ordinal classification in financial NER. This dataset extends standard NER by requiring models to classify entities not just by type but also by their ordinal relevance (e.g., primary, secondary importance) within the text. This is useful for prioritizing information in financial summaries.
+- **FinRED**: F1, EntityF1. Financial relation extraction from text. The task involves extracting relationships between financial entities, such as ownership, acquisition, or partnership relations. This is important for building knowledge graphs and conducting in-depth financial analysis.
+- **SC**: F1, EntityF1. Causal classification task in the financial domain. The dataset requires models to classify causal relationships in financial texts, such as determining whether one event causes another. Understanding causality is critical for risk assessment and decision-making in finance.
+- **CD**: F1, EntityF1. Causal detection. Similar to SC, but focused on detecting causality in a broader range of financial texts, including reports, news, and social media. The task evaluates the model's ability to identify causal links, which are key drivers in financial analysis.
+- **FinQA**: EmAcc. Numerical question answering in finance. FinQA involves answering numerical questions based on financial documents, such as balance sheets or income statements. The task tests a model's ability to perform calculations or identify numerical data in a text.
+- **TATQA**: F1, EmAcc. Table-based question answering in financial documents. This task is centered around answering questions that require interpreting and extracting information from tables in financial documents. It's crucial for automating the analysis of structured financial data.
+- **ConvFinQA**: EmAcc. Multi-turn question answering in finance. ConvFinQA extends standard QA tasks by requiring models to handle multi-turn dialogues, where each question builds on the previous one. This simulates real-world scenarios where financial analysts ask a series of related questions.
+- **FNXL**: F1, EmAcc. Numeric labeling in financial texts. This dataset requires models to label numeric values within financial documents, categorizing them by type (e.g., revenue, profit) and relevance. It tests the model's ability to understand the role of numbers in financial contexts.
+- **FSRL**: F1, EmAcc. Financial statement relation linking. The task involves linking related information across different financial statements, such as matching revenue figures from income statements with corresponding cash flow data. This is key for comprehensive financial analysis.
+- **EDTSUM**: ROUGE, BERTScore, BARTScore. Extractive document summarization in finance. The dataset involves summarizing lengthy financial documents by extracting the most relevant sentences. This task evaluates a model's ability to generate concise summaries that retain critical information.
+- **ECTSUM**: ROUGE, BERTScore, BARTScore. Extractive content summarization. Similar to EDTSUM, but with a broader focus on summarizing content from various financial document types, including reports, articles, and regulatory filings.
+- **BigData22**: Accuracy, MCC. Stock movement prediction. This dataset is used for predicting stock price movements based on financial news and reports. The task evaluates a model's ability to forecast market trends, which is essential for investment strategies.
+- **ACL18**: Accuracy, MCC. Financial news-based stock prediction. The ACL18 dataset focuses on predicting stock movements specifically using news headlines and articles. It's a benchmark for evaluating the impact of news on stock prices.
+- **CIKM18**: Accuracy, MCC. Financial market prediction using news. This task involves predicting broader market movements, such as indices, based on financial news. It tests the model's ability to aggregate and interpret multiple sources of financial information.
+- **German**: F1, MCC. Credit scoring in the German market. The dataset includes data on loan applicants in Germany, with the task being to predict creditworthiness. This is important for financial institutions in assessing loan risks.
+- **Australian**: F1, MCC. Credit scoring in the Australian market. Similar to the German dataset, but tailored for the Australian financial context, this task evaluates the model's ability to predict credit risk in this specific market.
+- **LendingClub**: F1, MCC. Peer-to-peer lending risk prediction. This dataset involves predicting the risk of default for loans issued through the LendingClub platform, which is a major peer-to-peer lending service. The task is crucial for risk management in alternative finance.
+- **ccf**: F1, MCC. Credit card fraud detection. The dataset is used to identify fraudulent transactions within a large dataset of credit card operations. Accurate detection is critical for financial security and fraud prevention.
+- **ccfraud**: F1, MCC. Credit card transaction fraud detection. Similar to the ccf dataset but focusing on transaction-level analysis, this task evaluates the model's ability to detect anomalies that indicate fraud.
+- **polish**: F1, MCC. Credit risk prediction in the Polish market. This task involves predicting the likelihood of default for loan applicants in Poland, with the dataset tailored to local economic and financial conditions.
+- **taiwan**: F1, MCC. Credit risk prediction in the Taiwanese market. Similar to the Polish dataset but focused on Taiwan, this task evaluates the model's ability to assess credit risk in this market.
+- **portoseguro**: F1, MCC. Claim analysis in the Brazilian market. The dataset involves predicting insurance claim risks in Brazil, specifically for auto insurance. The task tests the model's ability to assess and manage insurance risks.
+- **travelinsurance**: F1, MCC. Travel insurance claim prediction. This dataset is used for predicting the likelihood of a travel insurance claim being made, which is important for risk pricing and policy management in the travel insurance industry.
+- **MultiFin-ES**: F1. Multi-class financial sentiment analysis in Spanish. This dataset is used to analyze sentiment in Spanish-language financial texts. It evaluates the model's ability to handle sentiment classification across multiple categories in a non-English context.
+- **EFP**: F1. Financial phrase classification in Spanish. Similar to the FPB dataset but in Spanish, this task involves classifying financial phrases according to sentiment or intent, specifically for Spanish-language content.
+- **EFPA**: F1. Financial argument classification in Spanish. This dataset requires the classification of arguments in Spanish financial documents, focusing on identifying claims, evidence, and other argumentative structures.
+- **FinanceES**: F1. Financial sentiment classification in Spanish. The task involves classifying sentiment in a broad range of Spanish financial documents, including news articles and reports. It tests the model's ability to adapt sentiment analysis techniques to a non-English language.
+- **TSA-Spanish**: F1. Sentiment analysis in Spanish. This dataset involves sentiment analysis on Spanish-language tweets and short texts, similar to the English TSA dataset but tailored for Spanish speakers. It evaluates the model's ability to process and analyze sentiment in social media content.
+- **FinTrade**: CR, SR, DV, AV, MD. Stock trading dataset. FinTrade is a novel dataset developed specifically for evaluating stock trading tasks using LLMs. It incorporates historical stock prices, financial news, and sentiment data from 10 different stocks over a year. This dataset is designed to simulate real-world trading scenarios, allowing models to perform agent-based financial trading. The task evaluates the models on multiple financial metrics such as Cumulative Return (CR), Sharpe Ratio (SR), Daily Volatility (DV), Annualized Volatility (AV), and Maximum Drawdown (MD). These metrics provide a comprehensive assessment of the model's profitability, risk management, and decision-making capabilities.
+
 
 
 To ensure a fair and unbiased assessment of the models' true capabilities, all evaluations are conducted in zero-shot settings (0-shots). This approach eliminates any potential advantage from task-specific fine-tuning, providing a clear indication of how well the models can generalize to new tasks.
