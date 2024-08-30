@@ -485,9 +485,12 @@ with demo:
 
     # Footer with logos
     with gr.Row(elem_id="footer"):
-        for logo in logo_files:
-            logo_path = os.path.join(logos_dir, logo)
-            gr.Image(logo_path, show_label=False, elem_id="logo-image", width=100, height=100)
+        num_columns = min(5, len(logo_files))
+        for i in range(0, len(logo_files), num_columns):
+            with gr.Row():
+                for logo in logo_files[i:i + num_columns]:
+                    logo_path = os.path.join(logos_dir, logo)
+                    gr.Image(logo_path, show_label=False, elem_id="logo-image", width=100, height=100)
 
     with gr.Row():
         with gr.Accordion("📙 Citation", open=False):
