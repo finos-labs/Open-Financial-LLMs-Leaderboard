@@ -1,6 +1,7 @@
 import json
 import os
 import pandas as pd
+import numpy as np
 
 from src.display.formatting import has_no_nan_values, make_clickable_model
 from src.display.utils import AutoEvalColumn, EvalQueueColumn
@@ -42,10 +43,23 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
             df.loc[index, "FinTrade"] = (row["FinTrade"] + 3) / 6
 
     # Now, select the columns that were passed to the function
-    df = df[cols].round(decimals=2)
+    df = df[cols]
+
+    # Function to round numeric values, including those in string format
+    def round_numeric(x):
+        try:
+            return round(float(x), 1)
+        except ValueError:
+            return x
+
+    # Apply rounding to all columns except 'T' and 'Model'
+    for col in df.columns:
+        if col not in ['T', 'Model']:
+            df[col] = df[col].apply(round_numeric)
 
     # Filter out if any of the benchmarks have not been produced
     df = df[has_no_nan_values(df, benchmark_cols)]
+
     return raw_data, df
 
 
