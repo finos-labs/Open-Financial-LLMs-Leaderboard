@@ -52,7 +52,7 @@ class Tasks(Enum):
     task53 = Task("EFPA", "F1", "EFPA", category="Spanish")
     task54 = Task("FinanceES", "F1", "FinanceES", category="Spanish")
     task55 = Task("TSA-Spanish", "F1", "TSA-Spanish", category="Spanish")
-    task56 = Task("FinTrade", "CR", "FinTrade", category="Decision-Making (DM)")
+    task56 = Task("FinTrade", "SR", "FinTrade", category="Decision-Making (DM)")
 
 NUM_FEWSHOT = 0  # Change with your few shot
 # ---------------------------------------------------
@@ -140,7 +140,7 @@ Our evaluation metrics include, but are not limited to, Accuracy, F1 Score, ROUG
 - **EFPA**: F1. Financial argument classification in Spanish. This dataset requires the classification of arguments in Spanish financial documents, focusing on identifying claims, evidence, and other argumentative structures.
 - **FinanceES**: F1. Financial sentiment classification in Spanish. The task involves classifying sentiment in a broad range of Spanish financial documents, including news articles and reports. It tests the model's ability to adapt sentiment analysis techniques to a non-English language.
 - **TSA-Spanish**: F1. Sentiment analysis in Spanish. This dataset involves sentiment analysis on Spanish-language tweets and short texts, similar to the English TSA dataset but tailored for Spanish speakers. It evaluates the model's ability to process and analyze sentiment in social media content.
-- **FinTrade**: CR, SR, DV, AV, MD. Stock trading dataset. FinTrade is a novel dataset developed specifically for evaluating stock trading tasks using LLMs. It incorporates historical stock prices, financial news, and sentiment data from 10 different stocks over a year. This dataset is designed to simulate real-world trading scenarios, allowing models to perform agent-based financial trading. The task evaluates the models on multiple financial metrics such as Cumulative Return (CR), Sharpe Ratio (SR), Daily Volatility (DV), Annualized Volatility (AV), and Maximum Drawdown (MD). These metrics provide a comprehensive assessment of the model's profitability, risk management, and decision-making capabilities.
+- **FinTrade**: SR. Stock trading dataset. FinTrade is a novel dataset developed specifically for evaluating stock trading tasks using LLMs. It incorporates historical stock prices, financial news, and sentiment data from 10 different stocks over a year. This dataset is designed to simulate real-world trading scenarios, allowing models to perform agent-based financial trading. The task evaluates the models on multiple financial metrics such as Cumulative Return (CR), Sharpe Ratio (SR), Daily Volatility (DV), Annualized Volatility (AV), and Maximum Drawdown (MD). These metrics provide a comprehensive assessment of the model's profitability, risk management, and decision-making capabilities.
 
 
 

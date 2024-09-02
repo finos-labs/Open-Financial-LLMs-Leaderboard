@@ -35,7 +35,11 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
     mcc_tasks = ["German", "Australian", "LendingClub", "ccf", "ccfraud", "polish", "taiwan", "portoseguro", "travelinsurance"]
     for task in mcc_tasks:
         if task in df.columns:
-            df[task] = (df[task] + 100) / 2.0
+            df[task] = df.apply(lambda row: (row[task] + 100) / 2.0 if row[task] != "missing" else row[task], axis=1)
+
+    for index, row in df.iterrows():
+        if "FinTrade" in row and row["FinTrade"] != "missing":
+            df.loc[index, "FinTrade"] = (row["FinTrade"] + 3) / 6
 
     # Now, select the columns that were passed to the function
     df = df[cols].round(decimals=2)
