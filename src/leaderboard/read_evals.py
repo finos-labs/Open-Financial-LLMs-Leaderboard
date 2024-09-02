@@ -37,6 +37,7 @@ class EvalResult:
     def init_from_json_file(self, json_filepath):
         """Inits the result from the specific model result file"""
         with open(json_filepath) as fp:
+            print(json_filepath)
             data = json.load(fp)
 
         config = data.get("config")
@@ -149,11 +150,17 @@ class EvalResult:
                 elif task.value.category == "Text Generation (TG)":
                     category_averages["average_TG"].append(score)
                 elif task.value.category == "Risk Management (RM)":
-                    category_averages["average_RM"].append((score + 100) / 2)
+                    if score == "missing":
+                        category_averages["average_RM"].append(score)
+                    else:
+                        category_averages["average_RM"].append((score + 100) / 2)
                 elif task.value.category == "Forecasting (FO)":
                     category_averages["average_FO"].append(score)
                 elif task.value.category == "Decision-Making (DM)":
-                    category_averages["average_DM"].append(score)
+                    if task.value.benchmark == "FinTrade" and score != "missing":
+                        category_averages["average_DM"].append((score + 3)/6)
+                    else:
+                        category_averages["average_DM"].append(score)
                 elif task.value.category == "Spanish":
                     category_averages["average_Spanish"].append(score)
 
