@@ -40,7 +40,7 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
 
     for index, row in df.iterrows():
         if "FinTrade" in row and row["FinTrade"] != "missing":
-            df.loc[index, "FinTrade"] = (row["FinTrade"] + 3) / 6
+            df.loc[index, "FinTrade"] = (row["FinTrade"] + 300) / 6
 
     # Now, select the columns that were passed to the function
     df = df[cols]
