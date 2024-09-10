@@ -32,6 +32,37 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
 
     df = df.sort_values(by=[AutoEvalColumn.average.name], ascending=False)
 
+    def normalize_column(df: pd.DataFrame, col: str):
+        """Normalize a column to a 0-100 range based on its min and max values.
+        Non-numeric values will be treated as 0."""
+        # Convert non-numeric values to 0
+        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+
+        min_val = df[col].min()
+        max_val = df[col].max()
+
+        # Avoid division by zero if max == min
+        if max_val != min_val:
+            df[col] = df[col].apply(lambda x: ((x - min_val) / (max_val - min_val)) * 100)
+        else:
+            df[col] = 100  # if all values are the same, set them to 100 (since they are all "max")
+
+    def normalize_all_columns(df: pd.DataFrame):
+        """Normalize all columns in the DataFrame to a 0-100 range, skipping boolean and string columns."""
+        for col in df.columns:
+            if pd.api.types.is_bool_dtype(df[col]):
+                continue
+            elif pd.api.types.is_string_dtype(df[col]):
+                continue
+            elif pd.api.types.is_numeric_dtype(df[col]):
+                normalize_column(df, col)
+        return df
+
+    # Example usage
+    df = normalize_all_columns(df)
+
+    '''
+    print(df.columns)
     # Apply the transformation for MCC values
     mcc_tasks = ["German", "Australian", "LendingClub", "ccf", "ccfraud", "polish", "taiwan", "portoseguro", "travelinsurance"]
     for task in mcc_tasks:
@@ -41,7 +72,7 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
     for index, row in df.iterrows():
         if "FinTrade" in row and row["FinTrade"] != "missing":
             df.loc[index, "FinTrade"] = (row["FinTrade"] + 300) / 6
-
+    '''
     # Now, select the columns that were passed to the function
     df = df[cols]
 
