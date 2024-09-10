@@ -158,7 +158,7 @@ class EvalResult:
                     category_averages["average_FO"].append(score)
                 elif task.value.category == "Decision-Making (DM)":
                     if task.value.benchmark == "FinTrade" and score != "missing":
-                        category_averages["average_DM"].append((score + 3)/6)
+                        category_averages["average_DM"].append((score + 300)/6)
                     else:
                         category_averages["average_DM"].append(score)
                 elif task.value.category == "Spanish":

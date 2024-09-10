@@ -101,16 +101,8 @@ def select_columns(df: pd.DataFrame, columns: list) -> pd.DataFrame:
         AutoEvalColumn.model_type_symbol.name,
         AutoEvalColumn.model.name,
     ]
-
-    # Ensure no duplicates and add the new average columns
     unique_columns = set(always_here_cols + columns)
-
-    # We use COLS to maintain sorting
     filtered_df = df[[c for c in COLS if c in df.columns and c in unique_columns]]
-
-    # Debugging print to see if the new columns are included
-    print(f"Columns included in DataFrame: {filtered_df.columns.tolist()}")
-
     return filtered_df
 
 

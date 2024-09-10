@@ -29,14 +29,14 @@ auto_eval_column_dict.append(["model_type_symbol", ColumnContent, ColumnContent(
 auto_eval_column_dict.append(["model", ColumnContent, ColumnContent("Model", "markdown", True, category="Model Information", never_hidden=True)])
 
 auto_eval_column_dict.append(["average", ColumnContent, ColumnContent("Average ⬆️", "number", True, category="Model Information")])
-auto_eval_column_dict.append(["average_IE", ColumnContent, ColumnContent("Average IE ⬆️", "number", False, category="Information Extraction (IE)")])
-auto_eval_column_dict.append(["average_TA", ColumnContent, ColumnContent("Average TA ⬆️", "number", False, category="Textual Analysis (TA)")])
-auto_eval_column_dict.append(["average_QA", ColumnContent, ColumnContent("Average QA ⬆️", "number", False, category="Question Answering (QA)")])
-auto_eval_column_dict.append(["average_TG", ColumnContent, ColumnContent("Average TG ⬆️", "number", False, category="Text Generation (TG)")])
-auto_eval_column_dict.append(["average_RM", ColumnContent, ColumnContent("Average RM ⬆️", "number", False, category="Risk Management (RM)")])
-auto_eval_column_dict.append(["average_FO", ColumnContent, ColumnContent("Average FO ⬆️", "number", False, category="Forecasting (FO)")])
-auto_eval_column_dict.append(["average_DM", ColumnContent, ColumnContent("Average DM ⬆️", "number", False, category="Decision-Making (DM)")])
-auto_eval_column_dict.append(["average_Spanish", ColumnContent, ColumnContent("Average Spanish ⬆️", "number", False, category="Spanish")])
+auto_eval_column_dict.append(["average_IE", ColumnContent, ColumnContent("Average IE ⬆️", "number", True, category="Information Extraction (IE)")])
+auto_eval_column_dict.append(["average_TA", ColumnContent, ColumnContent("Average TA ⬆️", "number", True, category="Textual Analysis (TA)")])
+auto_eval_column_dict.append(["average_QA", ColumnContent, ColumnContent("Average QA ⬆️", "number", True, category="Question Answering (QA)")])
+auto_eval_column_dict.append(["average_TG", ColumnContent, ColumnContent("Average TG ⬆️", "number", True, category="Text Generation (TG)")])
+auto_eval_column_dict.append(["average_RM", ColumnContent, ColumnContent("Average RM ⬆️", "number", True, category="Risk Management (RM)")])
+auto_eval_column_dict.append(["average_FO", ColumnContent, ColumnContent("Average FO ⬆️", "number", True, category="Forecasting (FO)")])
+auto_eval_column_dict.append(["average_DM", ColumnContent, ColumnContent("Average DM ⬆️", "number", True, category="Decision-Making (DM)")])
+auto_eval_column_dict.append(["average_Spanish", ColumnContent, ColumnContent("Average Spanish ⬆️", "number", True, category="Spanish")])
 
 auto_eval_column_dict.append(["model_type", ColumnContent, ColumnContent("Type", "str", False, category="Model Information")])
 auto_eval_column_dict.append(["architecture", ColumnContent, ColumnContent("Architecture", "str", False, category="Model Information")])
@@ -49,7 +49,7 @@ auto_eval_column_dict.append(["still_on_hub", ColumnContent, ColumnContent("Avai
 auto_eval_column_dict.append(["revision", ColumnContent, ColumnContent("Model sha", "str", False, category="Model Information", hidden=False)])
 
 for task in Tasks:
-    auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", True, category=task.value.category)])
+    auto_eval_column_dict.append([task.name, ColumnContent, ColumnContent(task.value.col_name, "number", False, category=task.value.category)])
 
 # We use make_dataclass to dynamically fill the scores from Tasks
 AutoEvalColumn = make_dataclass("AutoEvalColumn", auto_eval_column_dict, frozen=True)
