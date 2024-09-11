@@ -44,6 +44,8 @@ def get_leaderboard_df(results_path: str, requests_path: str, cols: list, benchm
         # Avoid division by zero if max == min
         if max_val != min_val:
             df[col] = df[col].apply(lambda x: ((x - min_val) / (max_val - min_val)) * 100)
+        elif max_val == min_val and max_val == 0:
+            df[col] = 0
         else:
             df[col] = 100  # if all values are the same, set them to 100 (since they are all "max")
 
