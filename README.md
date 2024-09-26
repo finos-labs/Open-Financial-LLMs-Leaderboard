@@ -1,10 +1,10 @@
 ---
-title: Demo Leaderboard
+title: Open FinLLM Leaderboard
 emoji: 🥇
 colorFrom: green
 colorTo: indigo
 sdk: gradio
-sdk_version: 4.4.0
+sdk_version: 4.42.0
 app_file: app.py
 pinned: true
 license: apache-2.0
