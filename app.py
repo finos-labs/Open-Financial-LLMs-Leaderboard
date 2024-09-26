@@ -175,7 +175,7 @@ def uncheck_all():
 
 # Get a list of all logo files in the directory
 logos_dir = "logos"
-logo_files = [f for f in os.listdir(logos_dir) if f.endswith(('.png', '.jpg', '.jpeg'))]
+logo_files = sorted([f for f in os.listdir(logos_dir) if f.endswith(('.png', '.jpg', '.jpeg'))])
 
 demo = gr.Blocks(css=custom_css)
 with demo:
