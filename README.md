@@ -1,3 +1,5 @@
+![badge-labs](https://user-images.githubusercontent.com/327285/230928932-7c75f8ed-e57b-41db-9fb7-a292a13a1e58.svg)
+
 ---
 title: Open FinLLM Leaderboard
 emoji: 🥇
@@ -43,3 +45,11 @@ You'll find
 - the main table' columns names and properties in `src/display/utils.py`
 - the logic to read all results and request files, then convert them in dataframe lines, in `src/leaderboard/read_evals.py`, and `src/populate.py`
 - teh logic to allow or filter submissions in `src/submission/submit.py` and `src/submission/check_validity.py`
+
+## License
+
+Copyright 2024 Fintech Open Source Foundation
+
+Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+SPDX-License-Identifier: [Apache-2.0](https://spdx.org/licenses/Apache-2.0)

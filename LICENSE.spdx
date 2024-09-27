@@ -1,0 +1,7 @@
+SPDXVersion: SPDX-2.0
+DataLicense: CC0-1.0
+Creator: The Fintech Open Source Foundation
+PackageName: Open Financial LLMs Leaderboard
+PackageOriginator: The Fintech Open Source Foundation
+PackageHomePage: https://github.com/finos/open-financial-llms-leaderboard
+PackageLicenseDeclared: Apache-2.0
