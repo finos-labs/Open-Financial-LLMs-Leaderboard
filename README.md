@@ -37,31 +37,50 @@ OFLL provides a specialized evaluation framework tailored specifically to the fi
 The Open Financial LLM Leaderboard aims to set a new standard in evaluating the capabilities of language models in the financial domain, offering a specialized, real-world-focused benchmarking solution.
 
 
-# Start the configuration
+# Contribute to OFLL 
 
-Most of the variables to change for a default leaderboard are in `src/env.py` (replace the path for your leaderboard) and `src/about.py` (for tasks).
+To make the leaderboard more accessible for external contributors, we offer clear guidelines for adding tasks, updating result files, and other maintenance activities.
 
-Results files should have the following format and be stored as json files:
-```json
-{
-    "config": {
-        "model_dtype": "torch.float16", # or torch.bfloat16 or 8bit or 4bit
-        "model_name": "path of the model on the hub: org/model",
-        "model_sha": "revision on the hub",
-    },
-    "results": {
-        "task_name": {
-            "metric_name": score,
-        },
-        "task_name2": {
-            "metric_name": score,
-        }
-    }
-}
-```
+1. **Primary Files**:
+   - `src/env.py`: Modify variables like repository paths for customization.
+   - `src/about.py`: Update task configurations here to add new datasets.
 
-Request files are created automatically by this tool.
+2. **Adding New Tasks**:
+   - Navigate to `src/about.py` and specify new tasks in the `Tasks` enum section.
+   - Each task requires details such as `benchmark`, `metric`, `col_name`, and `category`. For example:
+     ```python
+     taskX = Task("DatasetName", "MetricType", "ColumnName", category="Category")
+     ```
 
+3. **Updating Results Files**:
+   - Results files should be in JSON format and structured as follows:
+     ```json
+     {
+         "config": {
+             "model_dtype": "torch.float16",
+             "model_name": "path of the model on the hub: org/model",
+             "model_sha": "revision on the hub"
+         },
+         "results": {
+             "task_name": {
+                 "metric_name": score
+             },
+             "task_name2": {
+                 "metric_name": score
+             }
+         }
+     }
+     ```
+     
+4. **Updating Leaderboard Data**:
+   - When a new task is added, ensure that the results JSON files reflect this update. This process will be automated in future releases.
+   - Access the current results at [Hugging Face Datasets](https://huggingface.co/datasets/TheFinAI/results/tree/main/demo-leaderboard).
+
+5. **Useful Links**:
+   - [Hugging Face Leaderboard Documentation](https://huggingface.co/docs/leaderboards/en/leaderboards/building_page)
+   - [OFLL Demo on Hugging Face](https://huggingface.co/spaces/finosfoundation/Open-Financial-LLM-Leaderboard)
+
+    
 If you encounter problem on the space, don't hesitate to restart it to remove the create eval-queue, eval-queue-bk, eval-results and eval-results-bk created folder.
 
 # Code logic for more complex edits
