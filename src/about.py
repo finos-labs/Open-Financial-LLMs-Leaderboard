@@ -201,7 +201,6 @@ CITATION_BUTTON_TEXT = r"""
   year={2024},
 }
 
-CITATION_BUTTON_TEXT = r"""
 @article{Xie2023PIXIU,
   title={PIXIU: A comprehensive benchmark, instruction dataset and large language model for finance},
   author={Qianqian Xie and Weiguang Han and Xiao Zhang and Yanzhao Lai and  Min Peng and Alejandro Lopez-Lira and Jimin Huang},
