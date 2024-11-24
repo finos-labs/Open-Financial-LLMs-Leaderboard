@@ -200,11 +200,7 @@ CITATION_BUTTON_TEXT = r"""
   journal={NeurIPS, Special Track on Datasets and Benchmarks},
   year={2024},
 }
-"""
 
-"""
-
-CITATION_BUTTON_LABEL = "Copy the following snippet to cite these results"
 CITATION_BUTTON_TEXT = r"""
 @article{Xie2023PIXIU,
   title={PIXIU: A comprehensive benchmark, instruction dataset and large language model for finance},
