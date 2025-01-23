@@ -14,7 +14,7 @@ license: apache-2.0
 
 # Open Financial LLM Leaderboard (OFLL)
 
-The growing complexity of financial language models (LLMs) demands evaluations that go beyond general NLP benchmarks. Traditional leaderboards often focus on broader tasks like translation or summarization, but they fall short of addressing the specific needs of the finance industry. Financial tasks such as predicting stock movements, assessing credit risks, and extracting information from financial reports present unique challenges, requiring models with specialized capabilities. This is why we created the **Open Financial LLM Leaderboard (OFLL)**.
+The growing complexity of financial large language models (LLMs) demands evaluations that go beyond general NLP benchmarks. Traditional leaderboards often focus on broader tasks like translation or summarization, but they fall short of addressing the specific needs of the finance industry. Financial tasks such as predicting stock movements, assessing credit risks, and extracting information from financial reports present unique challenges, requiring models with specialized capabilities. This is why we created the **Open Financial LLM Leaderboard (OFLL)**.
 
 ## Why OFLL?
 
