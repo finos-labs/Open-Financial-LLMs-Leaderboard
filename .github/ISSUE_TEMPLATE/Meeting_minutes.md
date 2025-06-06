@@ -10,8 +10,8 @@ assignees: jiminHuang
 YYYYMMDD - time
 
 ## Zoom details
-https://zoom.us/j/12234XXXXXXX (TBA)
-Meeting ID: 12234XXXXXXX (TBA)
+https://zoom.us/j/12234XXXXXXXYYYYY (TBA)
+Meeting ID: 12234XXXXXXXYYYYY (TBA)
 Passcode: (TBA)
 
 
