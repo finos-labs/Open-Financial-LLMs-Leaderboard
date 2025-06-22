@@ -18,7 +18,7 @@ const Footer = () => {
     >
       <Stack spacing={2}>
         <Typography variant="body2" color="text.secondary">
-          © {currentYear} The Fin AI - Open Financial LLM Leaderboard
+          © {currentYear} Finos Fundation - Open Financial LLM Leaderboard
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center">
           <Link
