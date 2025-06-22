@@ -19,10 +19,10 @@ jobs:
           git config --global user.email "leyradc@gmail.com"
           git config --global user.name "Colin Lin"
           git config pull.rebase false
-      - name: Pull latest changes from remote
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git pull https://jiminHuang:$HF_TOKEN@huggingface.co/spaces/TheFinAI/Open-Financial-LLM-Leaderboard main
+
+      - name: Ignore large files
+        run : git filter-branch --index-filter 'git rm -rf --cached --ignore-unmatch "frontend/public/*.png"' HEAD
+
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
