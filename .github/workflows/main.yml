@@ -26,4 +26,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://jiminHuang:$HF_TOKEN@huggingface.co/spaces/TheFinAI/Open-Financial-LLM-Leaderboard main
+        run: git push https://jiminHuang:$HF_TOKEN@huggingface.co/spaces/TheFinAI/Open-Financial-LLM-Leaderboard main --force
