@@ -22,7 +22,7 @@ const Footer = () => {
         </Typography>
         <Stack direction="row" spacing={2} justifyContent="center">
           <Link
-            href="https://thefin.ai"
+            href="https://www.finos.org/"
             target="_blank"
             rel="noopener noreferrer"
             color="inherit"
@@ -31,7 +31,7 @@ const Footer = () => {
             Home
           </Link>
           <Link
-            href="https://github.com/thefin-ai"
+            href="https://github.com/finos-labs/Open-Financial-LLMs-Leaderboard"
             target="_blank"
             rel="noopener noreferrer"
             color="inherit"
@@ -40,7 +40,7 @@ const Footer = () => {
             GitHub
           </Link>
           <Link
-            href="https://thefin.ai/docs"
+            href="https://finllm-leaderboard.readthedocs.io/en/latest/"
             target="_blank"
             rel="noopener noreferrer"
             color="inherit"
