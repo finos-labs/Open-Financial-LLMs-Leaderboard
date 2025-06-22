@@ -1,0 +1,25 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+# Install required system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install poetry
+RUN pip install poetry
+
+# Copy Poetry configuration files
+COPY pyproject.toml poetry.lock* ./
+
+# Install dependencies
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi --no-root
+
+# Environment variables configuration for logs
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=INFO
+
+# In dev, mount volume directly
+CMD ["uvicorn", "app.asgi:app", "--host", "0.0.0.0", "--port", "7860", "--reload", "--log-level", "warning", "--no-access-log"]

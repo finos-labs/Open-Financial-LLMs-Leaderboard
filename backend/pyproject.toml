@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "llm-leaderboard-backend"
+version = "0.1.0"
+description = "Backend for the Open LLM Leaderboard"
+authors = ["Your Name <your.email@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = "^0.115.6"
+uvicorn = {extras = ["standard"], version = "^0.34.0"}
+numpy = "^2.2.0"
+pandas = "^2.2.3"
+datasets = "^3.2.0"
+pyarrow = "^18.1.0"
+python-multipart = "^0.0.20"
+huggingface-hub = "^0.27.0"
+transformers = "^4.47.0"
+safetensors = "^0.4.5"
+aiofiles = "^24.1.0"
+fastapi-cache2 = "^0.2.1"
+python-dotenv = "^1.0.1"
+pydantic = "^2.10.4"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.4"
+black = "^24.10.0"
+isort = "^5.13.2"
+flake8 = "^6.1.0"
+    
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api" 

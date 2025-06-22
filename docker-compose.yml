@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+      args:
+        - HF_TOKEN=${HF_TOKEN}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - HF_TOKEN=${HF_TOKEN}
+      - HF_HOME=${HF_HOME:-/.cache}
+    command: uvicorn app.asgi:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "${FRONTEND_PORT:-7860}:7860"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=${ENVIRONMENT:-development}
+      - CHOKIDAR_USEPOLLING=true
+      - PORT=${FRONTEND_PORT:-7860}
+    command: npm start
+    stdin_open: true
+    tty: true
