@@ -14,11 +14,11 @@ license: apache-2.0
 
 # Open Financial LLM Leaderboard (OFLL)
 
-The growing complexity of financial large language models (LLMs) demands evaluations that go beyond general NLP benchmarks. Traditional leaderboards often focus on broader tasks like translation or summarization, but they fall short of addressing the specific needs of the finance industry. Financial tasks such as predicting stock movements, assessing credit risks, and extracting information from financial reports present unique challenges, requiring models with specialized capabilities. This is why we created the **Open Financial LLM Leaderboard (OFLL)**.
+The growing complexity of financial large language models (LLMs) and agents demands evaluations and benchmarks that go beyond general NLP benchmarks. Traditional leaderboards often focus on broader tasks like translation or summarization, but they fall short of addressing the specific needs of the finance industry. Financial tasks such as predicting stock movements, assessing credit risks, market sentiment analysis, and extracting information from financial reports present unique challenges, requiring models with specialized capabilities. This is why we created the **Open Financial LLM Leaderboard (OFLL)**.
 
 ## Why OFLL?
 
-OFLL provides a specialized evaluation framework tailored specifically to the financial sector. It fills a critical gap by offering a transparent, one-stop solution to assess model readiness for real-world financial applications. The leaderboard focuses on tasks that matter most to finance professionals—information extraction from financial documents, market sentiment analysis, and financial trend forecasting.
+OFLL provides a specialized evaluation framework tailored specifically to the finance sector. It fills a critical gap by offering a transparent, one-stop solution to assess model readiness for real-world financial applications. The leaderboard focuses on tasks that matter most to finance professionals—information extraction from financial documents, market sentiment analysis, and financial trend forecasting.
 
 ## Key Differentiators
 
@@ -92,14 +92,14 @@ You'll find
 
 ## License
 
-Copyright 2024 Fintech Open Source Foundation
+Copyright 2024 Fintech Open Source Foundation and SecureFinAI Lab at Columbia University
 
 Distributed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 SPDX-License-Identifier: [Apache-2.0](https://spdx.org/licenses/Apache-2.0)
 
 
-### Current submissions are manully evaluated. Will open a automatic evaluation pipeline in the future update
+### Current submissions are manully evaluated. Will open an automatic evaluation pipeline in the future update
 tags:
   - leaderboard
   - modality:text
